@@ -153,36 +153,36 @@ protect.textContent=t.protect;
 device.textContent=t.device;
 
 function updateEmail(){
- if(!u){
-  emailStatus.textContent=t.no;
-  return;
- }
- emailStatus.textContent=u.emailVerified?t.ok:t.not;
+if(!u){
+emailStatus.textContent=t.no;
+return;
+}
+emailStatus.textContent=u.emailVerified?t.ok:t.not;
 }
 
 window.changePassword=async()=>{
- if(!u||!u.email)return alert(t.no);
- try{
-  await sendPasswordResetEmail(auth,u.email);
-  alert(t.sent);
- }catch(e){
-  alert("Error: "+e.message);
- }
+if(!u||!u.email)return alert(t.no);
+try{
+await sendPasswordResetEmail(auth,u.email);
+alert(t.sent);
+}catch(e){
+alert("Error: "+e.message);
+}
 };
 
 window.verifyEmail=async()=>{
- if(!u)return;
- if(u.emailVerified){
-  emailStatus.textContent=t.ok;
-  return;
- }
- try{
-  await sendEmailVerification(u);
-  alert(t.vsent);
-  emailStatus.textContent=t.vsent;
- }catch(e){
-  alert("Error: "+e.message);
- }
+if(!u)return;
+if(u.emailVerified){
+emailStatus.textContent=t.ok;
+return;
+}
+try{
+await sendEmailVerification(u);
+alert(t.vsent);
+emailStatus.textContent=t.vsent;
+}catch(e){
+alert("Error: "+e.message);
+}
 };
 
 document.body.classList.toggle("dark",localStorage.dark==="1");
