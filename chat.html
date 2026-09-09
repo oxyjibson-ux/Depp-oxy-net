@@ -4,141 +4,82 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Depp Net Chat</title>
-
 <style>
 *{box-sizing:border-box;font-family:Arial}
-body{margin:0;background:#f2f4f7}
-.chat{height:100vh;display:flex;flex-direction:column}
-
-header{
-height:60px;background:#1877f2;color:white;
-display:flex;align-items:center;padding:8px 12px;gap:10px
-}
-.back,.call{
-border:0;border-radius:50%;
-width:42px;height:42px;font-size:21px
-}
-.back{background:white}
-.call{background:#25a244;color:white}
-h2{font-size:18px;flex:1}
-
-.users{
-display:flex;gap:10px;overflow-x:auto;
-background:white;padding:10px
-}
-.user{
-min-width:65px;text-align:center;
-font-size:12px;cursor:pointer
-}
-.avatar{
-width:48px;height:48px;border-radius:50%;
-background:#1877f2;color:white;
-display:flex;align-items:center;
-justify-content:center;
-margin:auto auto 4px;font-weight:bold
-}
-
-.title{
-background:white;padding:11px;
-border-bottom:1px solid #ddd;font-weight:bold
-}
-
-.messages{
-flex:1;overflow-y:auto;padding:10px;
-display:flex;flex-direction:column;gap:7px
-}
-.msg{
-max-width:75%;padding:10px 13px;
-border-radius:15px;word-break:break-word
-}
-.mine{align-self:flex-end;background:#1877f2;color:white}
-.theirs{align-self:flex-start;background:white}
-
-.input{
-display:flex;gap:7px;
-padding:8px;background:white
-}
-#messageInput{
-flex:1;border:1px solid #ccc;
-border-radius:22px;padding:11px
-}
-#send,#record{
-width:46px;height:46px;
-border:0;border-radius:50%;
-color:white;font-size:19px
-}
-#send{background:#1877f2}
-#record{background:#25a244}
-
-#callBox{
-display:none;position:fixed;
-inset:0;background:#111;color:white;
-z-index:20;
-align-items:center;
-justify-content:center;
-flex-direction:column;
-gap:18px
-}
-#endCall{
-width:65px;height:65px;
-border:0;border-radius:50%;
-background:#e53935;color:white;
-font-size:25px
-}
-audio{width:220px}
+body{margin:0;background:#eef2f7}
+header{height:56px;background:#1877f2;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 10px}
+button{border:0;border-radius:20px;padding:9px 12px}
+header b{font-size:20px}
+#users{padding:10px}
+.user{background:#fff;margin:8px 0;padding:11px;border-radius:15px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 7px #ddd}
+.av{width:44px;height:44px;border-radius:50%;background:#1877f2;color:#fff;display:grid;place-items:center;font-weight:bold}
+.info{flex:1}.on{color:#16a34a;font-size:12px}.off{color:#888;font-size:12px}
+#chat{display:none;height:calc(100vh - 56px);background:#eef2f7}
+.top{height:58px;background:#fff;display:flex;align-items:center;gap:8px;padding:7px;border-bottom:1px solid #ddd}
+#msgs{height:calc(100% - 125px);overflow:auto;padding:10px}
+.m{max-width:78%;width:max-content;padding:9px 12px;margin:6px 0;background:#fff;border-radius:16px;box-shadow:0 1px 3px #ddd}
+.mine{margin-left:auto;background:#1877f2;color:#fff}
+.typ{height:20px;padding-left:12px;color:#777;font-size:12px}
+.send{height:67px;background:#fff;display:flex;gap:5px;padding:8px}
+#txt{flex:1;border:1px solid #ddd;border-radius:22px;padding:10px;outline:0}
+.rec{background:#e53935;color:#fff}
+#call,#incoming{display:none;position:fixed;inset:0;z-index:20;background:#111}
+#remote{width:100%;height:100%;object-fit:cover}
+#local{position:absolute;right:10px;top:65px;width:110px;height:155px;object-fit:cover;border:2px solid #fff;border-radius:12px}
+.controls{position:absolute;bottom:25px;width:100%;text-align:center}
+.controls button{font-size:20px;width:52px;height:52px;margin:4px}
+#incoming{z-index:30;color:#fff;text-align:center;padding-top:30vh}
+#incoming button{margin:8px}
 </style>
 </head>
-
 <body>
 
-<div class="chat">
-
 <header>
-<button class="back" id="back">←</button>
-<h2>Depp Net Chat</h2>
-<button class="call" id="callBtn">📞</button>
+<button onclick="back()">←</button><b>Depp Net</b>
+<button onclick="location.href='home.html'">⌂</button>
 </header>
 
-<div id="users" class="users">⏳ Contacts...</div>
+<div id="users">Turiko turarondera...</div>
+<div id="net" style="display:none;text-align:center;padding:7px;font-size:13px"></div>
 
-<div id="title" class="title">
-Hitamwo umuntu uganira na we
+<div id="chat">
+<div class="top">
+<button onclick="back()">←</button>
+<div class="av" id="av">U</div>
+<div class="info"><b id="name">User</b><br><small id="status">Offline</small></div>
+<button onclick="makeCall('audio')">📞</button>
+<button onclick="makeCall('video')">📹</button>
+</div>
+<div id="msgs"></div>
+<div id="typing" class="typ"></div>
+<div class="send">
+<button class="rec" id="rec" onclick="record()">🎙️</button>
+<input id="txt" placeholder="Andika ubutumwa...">
+<button onclick="send()">➤</button>
+</div>
 </div>
 
-<div id="messages" class="messages"></div>
-
-<div class="input">
-<button id="record">🎙️</button>
-<input id="messageInput" placeholder="Andika ubutumwa...">
-<button id="send">➤</button>
+<div id="call">
+<video id="remote" autoplay playsinline></video>
+<video id="local" autoplay muted playsinline></video>
+<div class="controls">
+<button onclick="toggleMic()">🎤</button>
+<button onclick="toggleCam()">📷</button>
+<button onclick="endCall()">📕</button>
+</div>
 </div>
 
-</div>
-
-<div id="callBox">
-<h2 id="callTitle">📞 Depp Net Call</h2>
-<p id="callStatus">Turiko turahuza...</p>
-<audio id="remoteAudio" autoplay></audio>
-<button id="endCall">☎️</button>
+<div id="incoming">
+<h2>📞 Call iraje</h2>
+<p id="ctype"></p>
+<button onclick="answer()">✅ Kwakira</button>
+<button onclick="reject()">❌ Kwanka</button>
 </div>
 
 <script type="module">
-
-import{initializeApp}from
-"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-
-import{
-getAuth,onAuthStateChanged
-}from
-"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-
-import{
-getFirestore,collection,getDocs,addDoc,
-onSnapshot,query,orderBy,serverTimestamp,
-doc,setDoc,updateDoc
-}from
-"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import{getFirestore,collection,doc,getDoc,setDoc,addDoc,onSnapshot,query,orderBy,serverTimestamp,updateDoc,arrayUnion,enableIndexedDbPersistence}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const app=initializeApp({
 apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
@@ -146,595 +87,220 @@ authDomain:"depp-net-apk.firebaseapp.com",
 projectId:"depp-net-apk",
 storageBucket:"depp-net-apk.firebasestorage.app",
 messagingSenderId:"664141462348",
-appId:"1:664141462348:web:8202143fef6fcdafcede9"
+appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
+});
+const auth=getAuth(app),db=getFirestore(app);
+
+enableIndexedDbPersistence(db).catch(e=>{
+console.log("Offline cache:",e.code);
+});
+let me,to,chatId,pc,stream,callId,incoming,recorder,chunks=[];
+const ice={iceServers:[{urls:"stun:stun.l.google.com:19302"}]};
+const $=id=>document.getElementById(id);
+  function net(){
+let n=document.getElementById("net");
+if(!n)return;
+n.textContent=navigator.onLine?
+"🟢 Online":"📴 Offline — ubutumwa burabikwa kuri telefone";
+n.style.display="block";
+n.style.background=navigator.onLine?"#d1fae5":"#fff3cd";
+}
+addEventListener("online",net);
+addEventListener("offline",net);
+net();
+
+onAuthStateChanged(auth,u=>{
+if(!u)return location.href="login.html";
+me=u;setPresence(true);loadUsers();watchIncoming();
 });
 
-const auth=getAuth(app);
-const db=getFirestore(app);
-
-let me=null;
-let selected="";
-let selectedName="";
-let stopMessages=null;
-
-let pc=null;
-let stream=null;
-let callId="";
-let callUnsub=null;
-let candidateUnsub=null;
-
-const users=document.getElementById("users");
-const messages=document.getElementById("messages");
-const title=document.getElementById("title");
-const input=document.getElementById("messageInput");
-const callBox=document.getElementById("callBox");
-const callStatus=document.getElementById("callStatus");
-const remoteAudio=document.getElementById("remoteAudio");
-
-
-function chatId(){
-return[me.uid,selected].sort().join("_");
+async function setPresence(x){
+await setDoc(doc(db,"presence",me.uid),{online:x,lastSeen:serverTimestamp()},{merge:true});
 }
 
-
-/* LOGIN */
-
-onAuthStateChanged(auth,async u=>{
-
-if(!u){
-location.href="login.html";
-return;
-}
-
-me=u;
-
-await loadContacts();
-listenIncomingCalls();
-
-});
-
-
-/* CONTACTS */
-
-async function loadContacts(){
-
-users.innerHTML="";
-
-const snap=await getDocs(
-collection(db,"users",me.uid,"contacts")
-);
-
+function loadUsers(){
+onSnapshot(collection(db,"users"),snap=>{
+$("users").innerHTML="";
 snap.forEach(d=>{
-
-let x=d.data();
-let name=x.name||x.username||"User";
-
-let el=document.createElement("div");
-el.className="user";
-
-el.innerHTML=
-`<div class="avatar">
-${name.charAt(0).toUpperCase()}
-</div>${name}`;
-
-el.onclick=()=>{
-selected=x.uid||d.id;
-selectedName=name;
-
-title.textContent="💬 "+name;
-
-loadMessages();
-};
-
-users.appendChild(el);
-
+if(d.id===me.uid)return;
+let u={uid:d.id,...d.data()},box=document.createElement("div");
+box.className="user";
+box.innerHTML=`<div class="av">${(u.name||"U")[0]}</div>
+<div class="info"><b>${u.name||"User"}</b><br><small>@${u.username||""}</small></div>
+<span id="p${u.uid}" class="off">● Offline</span>`;
+box.onclick=()=>openChat(u);
+$("users").appendChild(box);
+onSnapshot(doc(db,"presence",u.uid),p=>{
+let x=p.data()||{},e=$("p"+u.uid);
+if(e){e.className=x.online?"on":"off";e.textContent=x.online?"● Online":"● Offline"}
 });
-
-if(!users.children.length)
-users.innerHTML="Nta contacts ufise.";
-
+});
+});
 }
 
-
-/* CHAT */
+async function openChat(u){
+to=u;
+chatId=[me.uid,to.uid].sort().join("_");
+$("users").style.display="none";
+$("chat").style.display="block";
+$("name").textContent=to.name||"User";
+$("av").textContent=(to.name||"U")[0];
+loadMessages();
+watchTyping();
+}
 
 function loadMessages(){
-
-if(stopMessages)stopMessages();
-
-messages.innerHTML="";
-
-let q=query(
-collection(db,"chats",chatId(),"messages"),
-orderBy("createdAt")
-);
-
-stopMessages=onSnapshot(q,snap=>{
-
-messages.innerHTML="";
-
-snap.forEach(d=>{
-
-let x=d.data();
-
-let el=document.createElement("div");
-
-el.className=
-"msg "+(x.senderId==me.uid?"mine":"theirs");
-
+onSnapshot(query(collection(db,"chats",chatId,"messages"),orderBy("createdAt")),s=>{
+$("msgs").innerHTML="";
+s.forEach(d=>{
+let x=d.data(),m=document.createElement("div");
+m.className="m "+(x.uid===me.uid?"mine":"");
 if(x.audio){
-
-el.innerHTML=
-`<audio controls src="${x.audio}"></audio>`;
-
-}else{
-
-el.textContent=x.text||"";
-
+let a=document.createElement("audio");a.controls=true;a.src=x.audio;m.appendChild(a);
+}else m.textContent=x.text||"";
+$("msgs").appendChild(m);
+});
+$("msgs").scrollTop=$("msgs").scrollHeight;
+});
 }
 
-messages.appendChild(el);
-
+function watchTyping(){
+onSnapshot(doc(db,"typing",chatId),s=>{
+let x=s.data()||{};
+$("typing").textContent=x.uid===to.uid&&x.on?"Ariko arandika...":"";
 });
-
-messages.scrollTop=messages.scrollHeight;
-
-});
-
 }
 
-
-/* SEND MESSAGE */
-
-document.getElementById("send").onclick=sendMessage;
-
-input.onkeydown=e=>{
-if(e.key=="Enter")sendMessage();
+$("txt").oninput=async()=>{
+if(!to)return;
+await setDoc(doc(db,"typing",chatId),{uid:me.uid,on:true},{merge:true});
+clearTimeout(window.t);
+window.t=setTimeout(()=>setDoc(doc(db,"typing",chatId),{uid:me.uid,on:false},{merge:true}),900);
 };
 
-async function sendMessage(){
+window.send=async()=>{
+let t=$("txt").value.trim();
+if(!t||!to)return;
+await addDoc(collection(db,"chats",chatId,"messages"),{
+uid:me.uid,toUid:to.uid,text:t,createdAt:serverTimestamp()
+});
+$("txt").value="";
+};
 
-let text=input.value.trim();
-
-if(!text||!selected)return;
-
-await addDoc(
-collection(db,"chats",chatId(),"messages"),
-{
-senderId:me.uid,
-receiverId:selected,
-text:text,
-createdAt:serverTimestamp()
-}
-);
-
-input.value="";
-
-}
-
-
-/* AUDIO RECORDING */
-
-let recorder=null;
-let audioChunks=[];
-
-document.getElementById("record").onclick=
-async function(){
-
-if(!selected){
-alert("Banza uhitemwo contact.");
-return;
-}
-
-if(recorder&&recorder.state=="recording"){
-
-recorder.stop();
-this.textContent="🎙️";
-return;
-
-}
-
+window.record=async()=>{
+if(recorder?.state==="recording"){recorder.stop();return}
 try{
-
-let s=await navigator.mediaDevices.getUserMedia({
-audio:true
-});
-
-recorder=new MediaRecorder(s);
-audioChunks=[];
-
-recorder.ondataavailable=e=>{
-if(e.data.size)audioChunks.push(e.data);
-};
-
+let s=await navigator.mediaDevices.getUserMedia({audio:true});
+chunks=[];recorder=new MediaRecorder(s);
+recorder.ondataavailable=e=>chunks.push(e.data);
 recorder.onstop=()=>{
-
-let blob=new Blob(audioChunks,{
-type:"audio/webm"
-});
-
-let reader=new FileReader();
-
-reader.onload=async()=>{
-
-await addDoc(
-collection(db,"chats",chatId(),"messages"),
-{
-senderId:me.uid,
-receiverId:selected,
-audio:reader.result,
-createdAt:serverTimestamp()
-}
-);
-
 s.getTracks().forEach(t=>t.stop());
-
-};
-
-reader.readAsDataURL(blob);
-
-};
-
-recorder.start();
-this.textContent="⏹️";
-
-}catch(e){
-
-alert("Microphone ntiyemeye.");
-
-}
-
-};
-
-
-/* BACK */
-
-document.getElementById("back").onclick=()=>{
-if(stopMessages)stopMessages();
-location.href="home.html";
-};
-
-
-/* ================= CALL ================= */
-
-document.getElementById("callBtn").onclick=()=>{
-startCall();
-};
-
-
-async function makePeer(){
-
-pc=new RTCPeerConnection({
-iceServers:[
-{urls:"stun:stun.l.google.com:19302"},
-{urls:"stun:stun1.l.google.com:19302"}
-]
+let r=new FileReader();
+r.onload=async()=>{
+if(r.result.length>900000)return alert("Ijwi ni rirerire.");
+await addDoc(collection(db,"chats",chatId,"messages"),{
+uid:me.uid,toUid:to.uid,audio:r.result,createdAt:serverTimestamp()
 });
-
-pc.ontrack=e=>{
-remoteAudio.srcObject=e.streams[0];
+};
+r.readAsDataURL(new Blob(chunks,{type:"audio/webm"}));
+$("rec").textContent="🎙️";
+};
+recorder.start();$("rec").textContent="⏹️";
+}catch(e){alert("Emera microphone muri browser.");}
 };
 
-pc.onconnectionstatechange=()=>{
-
-if(
-pc.connectionState=="connected"
-)callStatus.textContent="📞 Call irakora";
-
-if(
-["failed","disconnected","closed"].includes(pc.connectionState)
-){
-endCall(false);
-}
-
-};
-
-}
-
-
-/* START CALL */
-
-async function startCall(){
-
-if(!selected){
-alert("Banza uhitemwo contact.");
-return;
-}
-
+window.makeCall=async type=>{
+if(!to)return;
 try{
-
-callId=me.uid+"_"+Date.now();
-
-callBox.style.display="flex";
-callStatus.textContent=
-"Turiko turahamagara "+selectedName+"...";
-
-stream=await navigator.mediaDevices.getUserMedia({
-audio:true
-});
-
-await makePeer();
-
-stream.getTracks().forEach(t=>{
-pc.addTrack(t,stream);
-});
-
-
-pc.onicecandidate=async e=>{
-
-if(!e.candidate)return;
-
-await addDoc(
-collection(db,"calls",callId,"callerCandidates"),
-e.candidate.toJSON()
-);
-
+stream=await navigator.mediaDevices.getUserMedia({audio:true,video:type==="video"});
+$("local").srcObject=stream;$("call").style.display="block";
+pc=new RTCPeerConnection(ice);
+stream.getTracks().forEach(t=>pc.addTrack(t,stream));
+pc.ontrack=e=>$("remote").srcObject=e.streams[0];
+callId=chatId+"_"+Date.now();
+let ref=doc(db,"calls",callId);
+pc.onicecandidate=e=>e.candidate&&updateDoc(ref,{candidates:arrayUnion(JSON.stringify(e.candidate.toJSON()))});
+await setDoc(ref,{caller:me.uid,receiver:to.uid,type,status:"calling",candidates:[]});
+let o=await pc.createOffer();
+await pc.setLocalDescription(o);
+await updateDoc(ref,{offer:{type:o.type,sdp:o.sdp}});
+watchCall(ref,true);
+}catch(e){alert("Call ntishoboye gutangura. Emeza Camera/Microphone.");}
 };
 
-
-let offer=await pc.createOffer();
-
-await pc.setLocalDescription(offer);
-
-await setDoc(
-doc(db,"calls",callId),
-{
-caller:me.uid,
-receiver:selected,
-name:me.displayName||"User",
-offer:{
-type:offer.type,
-sdp:offer.sdp
-},
-status:"ringing",
-createdAt:serverTimestamp()
+function watchIncoming(){
+onSnapshot(collection(db,"calls"),s=>{
+s.docChanges().forEach(c=>{
+let x=c.doc.data();
+if(x.receiver===me.uid&&x.status==="calling"){
+callId=c.doc.id;incoming=x;
+$("ctype").textContent=x.type==="video"?"📹 Video Call":"📞 Audio Call";
+$("incoming").style.display="block";
 }
-);
-
-
-/* WAIT ANSWER */
-
-callUnsub=onSnapshot(
-doc(db,"calls",callId),
-async snap=>{
-
-let x=snap.data();
-
-if(
-x?.answer&&
-!pc.currentRemoteDescription
-){
-
-await pc.setRemoteDescription(
-new RTCSessionDescription(x.answer)
-);
-
-callStatus.textContent="📞 Call irakora";
-
-listenCandidates(
-callId,
-"receiverCandidates"
-);
-
-}
-
-if(x?.status=="ended")
-endCall(false);
-
 });
-
-}catch(e){
-
-alert("Call yanse gutangura.");
-endCall(false);
-
-}
-
-}
-
-
-/* INCOMING CALL */
-
-function listenIncomingCalls(){
-
-onSnapshot(
-collection(db,"calls"),
-async snap=>{
-
-for(let change of snap.docChanges()){
-
-if(change.type!="added")continue;
-
-let x=change.doc.data();
-
-if(
-x.receiver!=me.uid||
-x.status!="ringing"
-)continue;
-
-let ok=confirm(
-"📞 "+(x.name||"User")+
-" ariko araguhamagara. Kwakira?"
-);
-
-if(ok){
-
-await answerCall(
-change.doc.id,x
-);
-
-}else{
-
-await updateDoc(
-change.doc.ref,
-{status:"ended"}
-);
-
-}
-
-}
-
 });
-
 }
 
-
-/* ANSWER CALL */
-
-async function answerCall(id,x){
-
-try{
-
-callId=id;
-
-callBox.style.display="flex";
-callStatus.textContent=
-"📞 Turiko turakira call...";
-
-stream=await navigator.mediaDevices.getUserMedia({
-audio:true
-});
-
-await makePeer();
-
-stream.getTracks().forEach(t=>{
-pc.addTrack(t,stream);
-});
-
-
-pc.onicecandidate=async e=>{
-
-if(!e.candidate)return;
-
-await addDoc(
-collection(db,"calls",id,"receiverCandidates"),
-e.candidate.toJSON()
-);
-
+window.answer=async()=>{
+$("incoming").style.display="none";
+to=await getUser(incoming.caller);
+stream=await navigator.mediaDevices.getUserMedia({audio:true,video:incoming.type==="video"});
+$("local").srcObject=stream;$("call").style.display="block";
+pc=new RTCPeerConnection(ice);
+stream.getTracks().forEach(t=>pc.addTrack(t,stream));
+pc.ontrack=e=>$("remote").srcObject=e.streams[0];
+let ref=doc(db,"calls",callId),x=(await getDoc(ref)).data();
+await pc.setRemoteDescription(x.offer);
+let a=await pc.createAnswer();
+await pc.setLocalDescription(a);
+pc.onicecandidate=e=>e.candidate&&updateDoc(ref,{candidates:arrayUnion(JSON.stringify(e.candidate.toJSON()))});
+await updateDoc(ref,{answer:{type:a.type,sdp:a.sdp},status:"connected"});
+watchCall(ref,false);
 };
 
-
-await pc.setRemoteDescription(
-new RTCSessionDescription(x.offer)
-);
-
-
-listenCandidates(
-id,
-"callerCandidates"
-);
-
-
-let answer=await pc.createAnswer();
-
-await pc.setLocalDescription(answer);
-
-await updateDoc(
-doc(db,"calls",id),
-{
-answer:{
-type:answer.type,
-sdp:answer.sdp
-},
-status:"accepted"
-}
-);
-
-callStatus.textContent="📞 Call irakora";
-
-}catch(e){
-
-alert("Call ntiyakiriwe neza.");
-endCall(false);
-
+async function getUser(uid){
+let d=await getDoc(doc(db,"users",uid));
+return d.exists()?{uid,...d.data()}:null;
 }
 
-}
-
-
-/* ICE CANDIDATES */
-
-function listenCandidates(id,side){
-
-if(candidateUnsub)candidateUnsub();
-
-candidateUnsub=onSnapshot(
-collection(db,"calls",id,side),
-snap=>{
-
-snap.docChanges().forEach(async change=>{
-
-if(change.type!="added")return;
-
-try{
-
-await pc.addIceCandidate(
-new RTCIceCandidate(change.doc.data())
-);
-
-}catch(e){}
-
+function watchCall(ref,caller){
+onSnapshot(ref,async s=>{
+let x=s.data();if(!x||!pc)return;
+if(caller&&x.answer&&!pc.currentRemoteDescription)
+await pc.setRemoteDescription(x.answer);
+if(x.status==="ended")endCall(false);
+if(x.candidates&&pc.remoteDescription)
+for(let z of x.candidates)try{await pc.addIceCandidate(JSON.parse(z))}catch(e){}
 });
-
-});
-
 }
 
-
-/* END CALL */
-
-document.getElementById("endCall").onclick=()=>{
-endCall(true);
+window.reject=async()=>{
+await updateDoc(doc(db,"calls",callId),{status:"ended"});
+$("incoming").style.display="none";
 };
 
+window.toggleMic=()=>{
+let t=stream?.getAudioTracks()[0];if(t)t.enabled=!t.enabled;
+};
+window.toggleCam=()=>{
+let t=stream?.getVideoTracks()[0];if(t)t.enabled=!t.enabled;
+};
 
-async function endCall(changeStatus=true){
+window.endCall=async local=>{
+if(local!==false&&callId)
+await updateDoc(doc(db,"calls",callId),{status:"ended"}).catch(()=>{});
+stream?.getTracks().forEach(t=>t.stop());
+pc?.close();stream=null;pc=null;
+$("call").style.display="none";
+};
 
-if(callUnsub){
-callUnsub();
-callUnsub=null;
-}
+window.back=()=>{
+if($("chat").style.display==="block"){
+$("chat").style.display="none";$("users").style.display="block";
+}else location.href="home.html";
+};
 
-if(candidateUnsub){
-candidateUnsub();
-candidateUnsub=null;
-}
-
-if(stream){
-
-stream.getTracks().forEach(t=>t.stop());
-stream=null;
-
-}
-
-if(pc){
-
-pc.close();
-pc=null;
-
-}
-
-remoteAudio.srcObject=null;
-
-if(changeStatus&&callId){
-
-try{
-
-await updateDoc(
-doc(db,"calls",callId),
-{status:"ended"}
-);
-
-}catch(e){}
-
-}
-
-callId="";
-callBox.style.display="none";
-
-}
-
+addEventListener("beforeunload",()=>me&&setPresence(false));
 </script>
-
 </body>
 </html>
