@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="rn">
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Depp Net - Register</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f2f4f7;
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px;
+}
+
+.box{
+width:100%;
+max-width:420px;
+background:white;
+padding:25px 20px;
+border-radius:14px;
+box-shadow:0 3px 12px rgba(0,0,0,.1);
+}
+
+h1{
+text-align:center;
+color:#1877f2;
+margin-bottom:8px;
+}
+
+.subtitle{
+text-align:center;
+color:#666;
+margin-bottom:22px;
+}
+
+input{
+width:100%;
+padding:13px;
+margin-bottom:12px;
+border:1px solid #ddd;
+border-radius:8px;
+font-size:16px;
+outline:none;
+}
+
+input:focus{
+border-color:#1877f2;
+}
+
+button{
+width:100%;
+padding:13px;
+border:none;
+border-radius:8px;
+background:#1877f2;
+color:white;
+font-size:17px;
+cursor:pointer;
+}
+
+button:active{
+opacity:.8;
+}
+
+button:disabled{
+opacity:.6;
+cursor:not-allowed;
+}
+
+.login{
+display:block;
+text-align:center;
+margin-top:18px;
+color:#1877f2;
+text-decoration:none;
+}
+
+#message{
+text-align:center;
+margin-top:15px;
+font-weight:bold;
+line-height:1.4;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h1>Depp Net</h1>
+
+<p class="subtitle">
+Rema konti nshasha
+</p>
+
+<form id="registerForm">
+
+<input
+type="text"
+id="name"
+placeholder="Amazina yawe"
+required
+>
+
+<input
+type="text"
+id="username"
+placeholder="Username"
+required
+>
+
+<input
+type="tel"
+id="phone"
+placeholder="Numero ya telefone (+257...)"
+required
+>
+
+<input
+type="email"
+id="email"
+placeholder="Email"
+required
+>
+
+<input
+type="password"
+id="password"
+placeholder="Password"
+required
+>
+
+<input
+type="password"
+id="confirmPassword"
+placeholder="Subiramwo Password"
+required
+>
+
+<button
+type="submit"
+id="registerButton"
+>
+Iyandikishe
+</button>
+
+</form>
+
+<div id="message"></div>
+
+<a
+href="login.html"
+class="login"
+>
+Usanzwe ufise konti? Injira
+</a>
+
+</div>
+
+
+<script type="module">
+
+/* =========================
+   FIREBASE
+========================= */
+
+import {
+initializeApp
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import {
+getAuth,
+createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import {
+getFirestore,
+doc,
+setDoc,
+serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+/* =========================
+   FIREBASE CONFIG
+========================= */
+
+const firebaseConfig = {
+
+apiKey:
+"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
+
+authDomain:
+"depp-net-apk.firebaseapp.com",
+
+projectId:
+"depp-net-apk",
+
+storageBucket:
+"depp-net-apk.firebasestorage.app",
+
+messagingSenderId:
+"664141462348",
+
+appId:
+"1:664141462348:web:8202143fef6fcdaf9cede9",
+
+measurementId:
+"G-DMBZT3C6MK"
+
+};
+
+
+/* =========================
+   START FIREBASE
+========================= */
+
+const app =
+initializeApp(firebaseConfig);
+
+const auth =
+getAuth(app);
+
+const db =
+getFirestore(app);
+
+
+/* =========================
+   ELEMENTS
+========================= */
+
+const form =
+document.getElementById("registerForm");
+
+const message =
+document.getElementById("message");
+
+const button =
+document.getElementById("registerButton");
+
+
+/* =========================
+   MESSAGE
+========================= */
+
+function showMessage(text,color){
+
+message.textContent=text;
+
+message.style.color=color;
+
+}
+
+
+/* =========================
+   PHONE
+========================= */
+
+function cleanPhone(phone){
+
+return String(phone || "")
+.trim()
+.replace(/[\s\-().]/g,"");
+
+}
+
+
+/* =========================
+   REGISTER
+========================= */
+
+form.addEventListener(
+"submit",
+async function(event){
+
+event.preventDefault();
+
+
+/* =========================
+   GET DATA
+========================= */
+
+const name =
+document.getElementById("name")
+.value
+.trim();
+
+const username =
+document.getElementById("username")
+.value
+.trim();
+
+const phone =
+cleanPhone(
+document.getElementById("phone")
+.value
+);
+
+const email =
+document.getElementById("email")
+.value
+.trim()
+.toLowerCase();
+
+const password =
+document.getElementById("password")
+.value;
+
+const confirmPassword =
+document.getElementById("confirmPassword")
+.value;
+
+
+/* =========================
+   VALIDATION
+========================= */
+
+if(
+!name ||
+!username ||
+!phone ||
+!email ||
+!password ||
+!confirmPassword
+){
+
+showMessage(
+"Uzuza ibisabwa vyose.",
+"red"
+);
+
+return;
+
+}
+
+
+if(password.length < 6){
+
+showMessage(
+"Password itegerezwa kuba nibura inyuguti 6.",
+"red"
+);
+
+return;
+
+}
+
+
+if(password !== confirmPassword){
+
+showMessage(
+"Password ntizisa.",
+"red"
+);
+
+return;
+
+}
+
+
+/* =========================
+   BUTTON
+========================= */
+
+button.disabled=true;
+
+button.textContent=
+"Turiko turakora konti...";
+
+
+try{
+
+
+/* =========================
+   CREATE AUTH ACCOUNT
+========================= */
+
+const credential =
+await createUserWithEmailAndPassword(
+auth,
+email,
+password
+);
+
+const user =
+credential.user;
+
+
+/* =========================
+   SAVE USER IN FIRESTORE
+========================= */
+
+try{
+
+await setDoc(
+doc(
+db,
+"users",
+user.uid
+),
+{
+
+uid:
+user.uid,
+
+name:
+name,
+
+username:
+username,
+
+usernameLower:
+username.toLowerCase(),
+
+email:
+email,
+
+phone:
+phone,
+
+createdAt:
+serverTimestamp()
+
+}
+);
+
+}catch(firestoreError){
+
+console.error(
+"Firestore error:",
+firestoreError
+);
+
+
+/*
+   AUTH account yamaze kuremwa.
+   Naho Firestore yanse, user ashobora
+   gukomeza kuri Login.
+*/
+
+showMessage(
+"Konti yarakozwe, ariko amakuru ya profile ntiyabitswe neza. Urashobora kwinjira.",
+"orange"
+);
+
+
+/* =========================
+   GO LOGIN
+========================= */
+
+setTimeout(function(){
+
+window.location.href=
+"login.html";
+
+},1500);
+
+return;
+
+}
+
+
+/* =========================
+   LOCAL STORAGE
+========================= */
+
+const localUser={
+
+id:
+user.uid,
+
+uid:
+user.uid,
+
+name:
+name,
+
+username:
+username,
+
+email:
+email,
+
+phone:
+phone,
+
+createdAt:
+new Date().toISOString()
+
+};
+
+
+let users=[];
+
+
+try{
+
+users =
+JSON.parse(
+localStorage.getItem(
+"deppNetUsers"
+) || "[]"
+);
+
+if(!Array.isArray(users)){
+
+users=[];
+
+}
+
+}catch(error){
+
+users=[];
+
+}
+
+
+users.push(localUser);
+
+
+try{
+
+localStorage.setItem(
+"deppNetUsers",
+JSON.stringify(users)
+);
+
+}catch(error){
+
+console.log(
+"LocalStorage error:",
+error
+);
+
+}
+
+
+/* =========================
+   SUCCESS
+========================= */
+
+showMessage(
+"Konti yawe yarakozwe neza! ✅",
+"green"
+);
+
+
+/* =========================
+   CLEAR
+========================= */
+
+form.reset();
+
+
+/* =========================
+   LOGIN
+========================= */
+
+setTimeout(function(){
+
+window.location.href=
+"login.html";
+
+},1200);
+
+
+}catch(error){
+
+console.error(
+"Register error:",
+error
+);
+
+
+/* =========================
+   ERRORS
+========================= */
+
+if(
+error.code ===
+"auth/email-already-in-use"
+){
+
+showMessage(
+"Iyi Email isanzwe ifise konti. Koresha iyindi Email.",
+"red"
+);
+
+}
+
+else if(
+error.code ===
+"auth/invalid-email"
+){
+
+showMessage(
+"Email siyo. Suzuma neza Email yawe.",
+"red"
+);
+
+}
+
+else if(
+error.code ===
+"auth/weak-password"
+){
+
+showMessage(
+"Password itegerezwa kuba nibura inyuguti 6.",
+"red"
+);
+
+}
+
+else if(
+error.code ===
+"auth/network-request-failed"
+){
+
+showMessage(
+"Internet ntiyabonetse. Suzuma connexion yawe.",
+"red"
+);
+
+}
+
+else{
+
+showMessage(
+"Habaye ikibazo mu kwiyandikisha: " +
+(error.message || "ongera ugerageze."),
+"red"
+);
+
+}
+
+
+/* =========================
+   ENABLE BUTTON
+========================= */
+
+button.disabled=false;
+
+button.textContent=
+"Iyandikishe";
+
+}
+
+});
+
+</script>
+
+</body>
+</html>

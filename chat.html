@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="rn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Depp Net Chat</title>
+
+<style>
+*{box-sizing:border-box;font-family:Arial}
+body{margin:0;background:#f2f4f7}
+.chat{height:100vh;display:flex;flex-direction:column}
+
+header{
+height:60px;background:#1877f2;color:white;
+display:flex;align-items:center;padding:8px 12px;gap:10px
+}
+.back,.call{
+border:0;border-radius:50%;
+width:42px;height:42px;font-size:21px
+}
+.back{background:white}
+.call{background:#25a244;color:white}
+h2{font-size:18px;flex:1}
+
+.users{
+display:flex;gap:10px;overflow-x:auto;
+background:white;padding:10px
+}
+.user{
+min-width:65px;text-align:center;
+font-size:12px;cursor:pointer
+}
+.avatar{
+width:48px;height:48px;border-radius:50%;
+background:#1877f2;color:white;
+display:flex;align-items:center;
+justify-content:center;
+margin:auto auto 4px;font-weight:bold
+}
+
+.title{
+background:white;padding:11px;
+border-bottom:1px solid #ddd;font-weight:bold
+}
+
+.messages{
+flex:1;overflow-y:auto;padding:10px;
+display:flex;flex-direction:column;gap:7px
+}
+.msg{
+max-width:75%;padding:10px 13px;
+border-radius:15px;word-break:break-word
+}
+.mine{align-self:flex-end;background:#1877f2;color:white}
+.theirs{align-self:flex-start;background:white}
+
+.input{
+display:flex;gap:7px;
+padding:8px;background:white
+}
+#messageInput{
+flex:1;border:1px solid #ccc;
+border-radius:22px;padding:11px
+}
+#send,#record{
+width:46px;height:46px;
+border:0;border-radius:50%;
+color:white;font-size:19px
+}
+#send{background:#1877f2}
+#record{background:#25a244}
+
+#callBox{
+display:none;position:fixed;
+inset:0;background:#111;color:white;
+z-index:20;
+align-items:center;
+justify-content:center;
+flex-direction:column;
+gap:18px
+}
+#endCall{
+width:65px;height:65px;
+border:0;border-radius:50%;
+background:#e53935;color:white;
+font-size:25px
+}
+audio{width:220px}
+</style>
+</head>
+
+<body>
+
+<div class="chat">
+
+<header>
+<button class="back" id="back">←</button>
+<h2>Depp Net Chat</h2>
+<button class="call" id="callBtn">📞</button>
+</header>
+
+<div id="users" class="users">⏳ Contacts...</div>
+
+<div id="title" class="title">
+Hitamwo umuntu uganira na we
+</div>
+
+<div id="messages" class="messages"></div>
+
+<div class="input">
+<button id="record">🎙️</button>
+<input id="messageInput" placeholder="Andika ubutumwa...">
+<button id="send">➤</button>
+</div>
+
+</div>
+
+<div id="callBox">
+<h2 id="callTitle">📞 Depp Net Call</h2>
+<p id="callStatus">Turiko turahuza...</p>
+<audio id="remoteAudio" autoplay></audio>
+<button id="endCall">☎️</button>
+</div>
+
+<script type="module">
+
+import{initializeApp}from
+"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import{
+getAuth,onAuthStateChanged
+}from
+"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import{
+getFirestore,collection,getDocs,addDoc,
+onSnapshot,query,orderBy,serverTimestamp,
+doc,setDoc,updateDoc
+}from
+"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+const app=initializeApp({
+apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
+authDomain:"depp-net-apk.firebaseapp.com",
+projectId:"depp-net-apk",
+storageBucket:"depp-net-apk.firebasestorage.app",
+messagingSenderId:"664141462348",
+appId:"1:664141462348:web:8202143fef6fcdafcede9"
+});
+
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+let me=null;
+let selected="";
+let selectedName="";
+let stopMessages=null;
+
+let pc=null;
+let stream=null;
+let callId="";
+let callUnsub=null;
+let candidateUnsub=null;
+
+const users=document.getElementById("users");
+const messages=document.getElementById("messages");
+const title=document.getElementById("title");
+const input=document.getElementById("messageInput");
+const callBox=document.getElementById("callBox");
+const callStatus=document.getElementById("callStatus");
+const remoteAudio=document.getElementById("remoteAudio");
+
+
+function chatId(){
+return[me.uid,selected].sort().join("_");
+}
+
+
+/* LOGIN */
+
+onAuthStateChanged(auth,async u=>{
+
+if(!u){
+location.href="login.html";
+return;
+}
+
+me=u;
+
+await loadContacts();
+listenIncomingCalls();
+
+});
+
+
+/* CONTACTS */
+
+async function loadContacts(){
+
+users.innerHTML="";
+
+const snap=await getDocs(
+collection(db,"users",me.uid,"contacts")
+);
+
+snap.forEach(d=>{
+
+let x=d.data();
+let name=x.name||x.username||"User";
+
+let el=document.createElement("div");
+el.className="user";
+
+el.innerHTML=
+`<div class="avatar">
+${name.charAt(0).toUpperCase()}
+</div>${name}`;
+
+el.onclick=()=>{
+selected=x.uid||d.id;
+selectedName=name;
+
+title.textContent="💬 "+name;
+
+loadMessages();
+};
+
+users.appendChild(el);
+
+});
+
+if(!users.children.length)
+users.innerHTML="Nta contacts ufise.";
+
+}
+
+
+/* CHAT */
+
+function loadMessages(){
+
+if(stopMessages)stopMessages();
+
+messages.innerHTML="";
+
+let q=query(
+collection(db,"chats",chatId(),"messages"),
+orderBy("createdAt")
+);
+
+stopMessages=onSnapshot(q,snap=>{
+
+messages.innerHTML="";
+
+snap.forEach(d=>{
+
+let x=d.data();
+
+let el=document.createElement("div");
+
+el.className=
+"msg "+(x.senderId==me.uid?"mine":"theirs");
+
+if(x.audio){
+
+el.innerHTML=
+`<audio controls src="${x.audio}"></audio>`;
+
+}else{
+
+el.textContent=x.text||"";
+
+}
+
+messages.appendChild(el);
+
+});
+
+messages.scrollTop=messages.scrollHeight;
+
+});
+
+}
+
+
+/* SEND MESSAGE */
+
+document.getElementById("send").onclick=sendMessage;
+
+input.onkeydown=e=>{
+if(e.key=="Enter")sendMessage();
+};
+
+async function sendMessage(){
+
+let text=input.value.trim();
+
+if(!text||!selected)return;
+
+await addDoc(
+collection(db,"chats",chatId(),"messages"),
+{
+senderId:me.uid,
+receiverId:selected,
+text:text,
+createdAt:serverTimestamp()
+}
+);
+
+input.value="";
+
+}
+
+
+/* AUDIO RECORDING */
+
+let recorder=null;
+let audioChunks=[];
+
+document.getElementById("record").onclick=
+async function(){
+
+if(!selected){
+alert("Banza uhitemwo contact.");
+return;
+}
+
+if(recorder&&recorder.state=="recording"){
+
+recorder.stop();
+this.textContent="🎙️";
+return;
+
+}
+
+try{
+
+let s=await navigator.mediaDevices.getUserMedia({
+audio:true
+});
+
+recorder=new MediaRecorder(s);
+audioChunks=[];
+
+recorder.ondataavailable=e=>{
+if(e.data.size)audioChunks.push(e.data);
+};
+
+recorder.onstop=()=>{
+
+let blob=new Blob(audioChunks,{
+type:"audio/webm"
+});
+
+let reader=new FileReader();
+
+reader.onload=async()=>{
+
+await addDoc(
+collection(db,"chats",chatId(),"messages"),
+{
+senderId:me.uid,
+receiverId:selected,
+audio:reader.result,
+createdAt:serverTimestamp()
+}
+);
+
+s.getTracks().forEach(t=>t.stop());
+
+};
+
+reader.readAsDataURL(blob);
+
+};
+
+recorder.start();
+this.textContent="⏹️";
+
+}catch(e){
+
+alert("Microphone ntiyemeye.");
+
+}
+
+};
+
+
+/* BACK */
+
+document.getElementById("back").onclick=()=>{
+if(stopMessages)stopMessages();
+location.href="home.html";
+};
+
+
+/* ================= CALL ================= */
+
+document.getElementById("callBtn").onclick=()=>{
+startCall();
+};
+
+
+async function makePeer(){
+
+pc=new RTCPeerConnection({
+iceServers:[
+{urls:"stun:stun.l.google.com:19302"},
+{urls:"stun:stun1.l.google.com:19302"}
+]
+});
+
+pc.ontrack=e=>{
+remoteAudio.srcObject=e.streams[0];
+};
+
+pc.onconnectionstatechange=()=>{
+
+if(
+pc.connectionState=="connected"
+)callStatus.textContent="📞 Call irakora";
+
+if(
+["failed","disconnected","closed"].includes(pc.connectionState)
+){
+endCall(false);
+}
+
+};
+
+}
+
+
+/* START CALL */
+
+async function startCall(){
+
+if(!selected){
+alert("Banza uhitemwo contact.");
+return;
+}
+
+try{
+
+callId=me.uid+"_"+Date.now();
+
+callBox.style.display="flex";
+callStatus.textContent=
+"Turiko turahamagara "+selectedName+"...";
+
+stream=await navigator.mediaDevices.getUserMedia({
+audio:true
+});
+
+await makePeer();
+
+stream.getTracks().forEach(t=>{
+pc.addTrack(t,stream);
+});
+
+
+pc.onicecandidate=async e=>{
+
+if(!e.candidate)return;
+
+await addDoc(
+collection(db,"calls",callId,"callerCandidates"),
+e.candidate.toJSON()
+);
+
+};
+
+
+let offer=await pc.createOffer();
+
+await pc.setLocalDescription(offer);
+
+await setDoc(
+doc(db,"calls",callId),
+{
+caller:me.uid,
+receiver:selected,
+name:me.displayName||"User",
+offer:{
+type:offer.type,
+sdp:offer.sdp
+},
+status:"ringing",
+createdAt:serverTimestamp()
+}
+);
+
+
+/* WAIT ANSWER */
+
+callUnsub=onSnapshot(
+doc(db,"calls",callId),
+async snap=>{
+
+let x=snap.data();
+
+if(
+x?.answer&&
+!pc.currentRemoteDescription
+){
+
+await pc.setRemoteDescription(
+new RTCSessionDescription(x.answer)
+);
+
+callStatus.textContent="📞 Call irakora";
+
+listenCandidates(
+callId,
+"receiverCandidates"
+);
+
+}
+
+if(x?.status=="ended")
+endCall(false);
+
+});
+
+}catch(e){
+
+alert("Call yanse gutangura.");
+endCall(false);
+
+}
+
+}
+
+
+/* INCOMING CALL */
+
+function listenIncomingCalls(){
+
+onSnapshot(
+collection(db,"calls"),
+async snap=>{
+
+for(let change of snap.docChanges()){
+
+if(change.type!="added")continue;
+
+let x=change.doc.data();
+
+if(
+x.receiver!=me.uid||
+x.status!="ringing"
+)continue;
+
+let ok=confirm(
+"📞 "+(x.name||"User")+
+" ariko araguhamagara. Kwakira?"
+);
+
+if(ok){
+
+await answerCall(
+change.doc.id,x
+);
+
+}else{
+
+await updateDoc(
+change.doc.ref,
+{status:"ended"}
+);
+
+}
+
+}
+
+});
+
+}
+
+
+/* ANSWER CALL */
+
+async function answerCall(id,x){
+
+try{
+
+callId=id;
+
+callBox.style.display="flex";
+callStatus.textContent=
+"📞 Turiko turakira call...";
+
+stream=await navigator.mediaDevices.getUserMedia({
+audio:true
+});
+
+await makePeer();
+
+stream.getTracks().forEach(t=>{
+pc.addTrack(t,stream);
+});
+
+
+pc.onicecandidate=async e=>{
+
+if(!e.candidate)return;
+
+await addDoc(
+collection(db,"calls",id,"receiverCandidates"),
+e.candidate.toJSON()
+);
+
+};
+
+
+await pc.setRemoteDescription(
+new RTCSessionDescription(x.offer)
+);
+
+
+listenCandidates(
+id,
+"callerCandidates"
+);
+
+
+let answer=await pc.createAnswer();
+
+await pc.setLocalDescription(answer);
+
+await updateDoc(
+doc(db,"calls",id),
+{
+answer:{
+type:answer.type,
+sdp:answer.sdp
+},
+status:"accepted"
+}
+);
+
+callStatus.textContent="📞 Call irakora";
+
+}catch(e){
+
+alert("Call ntiyakiriwe neza.");
+endCall(false);
+
+}
+
+}
+
+
+/* ICE CANDIDATES */
+
+function listenCandidates(id,side){
+
+if(candidateUnsub)candidateUnsub();
+
+candidateUnsub=onSnapshot(
+collection(db,"calls",id,side),
+snap=>{
+
+snap.docChanges().forEach(async change=>{
+
+if(change.type!="added")return;
+
+try{
+
+await pc.addIceCandidate(
+new RTCIceCandidate(change.doc.data())
+);
+
+}catch(e){}
+
+});
+
+});
+
+}
+
+
+/* END CALL */
+
+document.getElementById("endCall").onclick=()=>{
+endCall(true);
+};
+
+
+async function endCall(changeStatus=true){
+
+if(callUnsub){
+callUnsub();
+callUnsub=null;
+}
+
+if(candidateUnsub){
+candidateUnsub();
+candidateUnsub=null;
+}
+
+if(stream){
+
+stream.getTracks().forEach(t=>t.stop());
+stream=null;
+
+}
+
+if(pc){
+
+pc.close();
+pc=null;
+
+}
+
+remoteAudio.srcObject=null;
+
+if(changeStatus&&callId){
+
+try{
+
+await updateDoc(
+doc(db,"calls",callId),
+{status:"ended"}
+);
+
+}catch(e){}
+
+}
+
+callId="";
+callBox.style.display="none";
+
+}
+
+</script>
+
+</body>
+</html>

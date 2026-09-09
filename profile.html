@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="rn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Depp Net - Profile</title>
+
+<style>
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+body{margin:0;background:#f2f4f7;min-height:100vh}
+header{height:60px;background:#1877f2;color:white;display:flex;align-items:center;padding:10px 12px}
+.back{width:40px;height:40px;border:0;border-radius:50%;font-size:22px;background:white;margin-right:10px}
+.logo{font-size:22px;font-weight:bold}
+.box{max-width:600px;margin:auto;padding:20px 15px}
+.card{background:white;border-radius:14px;padding:22px 18px;text-align:center;box-shadow:0 2px 8px #ddd}
+.photo{width:130px;height:130px;border-radius:50%;object-fit:cover;border:4px solid #1877f2;background:#e8f0fe}
+.default{width:130px;height:130px;border-radius:50%;background:#e8f0fe;border:4px solid #1877f2;margin:auto;display:flex;align-items:center;justify-content:center;font-size:60px}
+.name{font-size:22px;font-weight:bold;margin-top:12px}
+.username{color:#777;margin:5px 0 20px}
+button{width:100%;border:0;padding:13px;margin-top:9px;border-radius:9px;font-size:15px}
+.blue{background:#1877f2;color:white}
+.red{background:#ff3b30;color:white}
+.green{background:#16833b;color:white;font-weight:bold}
+.gray{background:#eee}
+input[type=file]{display:none}
+.namebox{display:none;margin-top:12px}
+.namebox input{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:15px}
+.msg{margin-top:12px;font-weight:bold}
+</style>
+</head>
+
+<body>
+
+<header>
+<button class="back" onclick="goHome()">←</button>
+<div class="logo">Depp Net</div>
+</header>
+
+<div class="box">
+<div class="card">
+
+<div id="photoBox"></div>
+
+<div id="profileName" class="name">User</div>
+<div id="profileUsername" class="username">@user</div>
+
+<input id="photoInput" type="file" accept="image/*">
+
+<button class="blue" onclick="photoInput.click()">
+📷 Shiramwo Photo
+</button>
+
+<button class="red" onclick="removePhoto()">
+❌ Kuramwo Photo
+</button>
+
+<button class="gray" onclick="showName()">
+✏️ Hindura Izina
+</button>
+
+<div id="nameBox" class="namebox">
+<input id="nameInput" type="text" placeholder="Andika izina">
+<button class="blue" onclick="applyName()">✓ Shira Izina</button>
+</div>
+
+<button class="green" onclick="saveProfile()">
+💾 Save Profile
+</button>
+
+<button class="gray" onclick="goHome()">
+🏠 Subira kuri Home
+</button>
+
+<div id="msg" class="msg"></div>
+
+</div>
+</div>
+
+<script>
+
+function getUser(){
+try{
+return JSON.parse(localStorage.getItem("deppNetUser")||"null");
+}catch(e){return null}
+}
+
+let user=getUser();
+
+if(!user){
+location.href="login.html";
+}
+
+/* SHOW PROFILE */
+
+function loadProfile(){
+
+if(!user)return;
+
+profileName.textContent=user.name||"User";
+profileUsername.textContent="@"+(user.username||"user");
+
+showPhoto();
+}
+
+function showPhoto(){
+
+if(user.photo){
+
+photoBox.innerHTML=
+`<img class="photo" src="${user.photo}" alt="Profile">`;
+
+}else{
+
+photoBox.innerHTML=
+`<div class="default">👤</div>`;
+
+}
+
+}
+
+/* ADD PHOTO */
+
+photoInput.onchange=function(){
+
+let file=this.files[0];
+
+if(!file)return;
+
+if(file.size>5*1024*1024){
+
+showMsg("⚠️ Photo ni nini cane. Hitamwo iri munsi ya 5MB.","red");
+this.value="";
+return;
+
+}
+
+let reader=new FileReader();
+
+reader.onload=function(e){
+
+user.photo=e.target.result;
+
+showPhoto();
+
+showMsg(
+"📷 Photo yashizweko. Kanda Save Profile kugira ibikwe.",
+"#16833b"
+);
+
+};
+
+reader.readAsDataURL(file);
+
+};
+
+/* REMOVE PHOTO */
+
+function removePhoto(){
+
+if(!user)return;
+
+user.photo=null;
+
+showPhoto();
+
+showMsg(
+"❌ Photo yakuwemwo. Kanda Save Profile kugira bibikwe.",
+"#16833b"
+);
+
+}
+
+/* CHANGE NAME */
+
+function showName(){
+
+nameBox.style.display="block";
+nameInput.value=user.name||"";
+nameInput.focus();
+
+}
+
+function applyName(){
+
+let name=nameInput.value.trim();
+
+if(!name){
+
+showMsg("⚠️ Andika izina.","red");
+return;
+
+}
+
+user.name=name;
+
+profileName.textContent=name;
+
+nameBox.style.display="none";
+
+showMsg(
+"✏️ Izina ryahindutse. Kanda Save Profile.",
+"#16833b"
+);
+
+}
+
+/* SAVE */
+
+function saveProfile(){
+
+try{
+
+localStorage.setItem(
+"deppNetUser",
+JSON.stringify(user)
+);
+
+showMsg(
+"✅ Profile yabitswe neza!",
+"#16833b"
+);
+
+}catch(e){
+
+showMsg(
+"❌ Profile ntiyashoboye kubikwa.",
+"red"
+);
+
+}
+
+}
+
+/* MESSAGE */
+
+function showMsg(text,color){
+
+msg.textContent=text;
+msg.style.color=color;
+
+setTimeout(function(){
+msg.textContent="";
+},4000);
+
+}
+
+/* HOME */
+
+function goHome(){
+
+location.href="home.html";
+
+}
+
+loadProfile();
+
+</script>
+
+</body>
+</html>

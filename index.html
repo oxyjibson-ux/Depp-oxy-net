@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="rn">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Depp Net</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f4f7;
+            color: #222;
+        }
+
+        .app {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            height: 60px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        header h1 {
+            font-size: 24px;
+        }
+
+        #menuBtn {
+            border: none;
+            background: none;
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .welcome {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            padding: 30px 20px;
+            border-radius: 18px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .welcome h2 {
+            font-size: 23px;
+            margin-bottom: 15px;
+        }
+
+        .welcome p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        #startBtn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: #1877f2;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #startBtn:active {
+            transform: scale(0.98);
+        }
+
+        footer {
+            text-align: center;
+            padding: 18px;
+            color: #777;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app">
+
+        <header>
+            <h1>Depp Net</h1>
+
+            <button id="menuBtn">
+                ☰
+            </button>
+        </header>
+
+        <main>
+
+            <div class="welcome">
+
+                <h2>
+                    Murakaza neza kuri Depp Net 👋
+                </h2>
+
+                <p>
+                    Depp Net ni application
+                    yo gusangira, kuganira
+                    no guhurira hamwe n'abandi.
+                </p>
+
+                <button id="startBtn">
+                    Tangura
+                </button>
+
+            </div>
+
+        </main>
+
+        <footer>
+            © 2026 Depp Net
+        </footer>
+
+    </div>
+
+
+    <script>
+
+        const startBtn =
+            document.getElementById("startBtn");
+
+        const menuBtn =
+            document.getElementById("menuBtn");
+
+
+        startBtn.addEventListener("click", function () {
+    window.location.href = "login.html";
+});
+
+
+        menuBtn.addEventListener("click", function () {
+
+            alert(
+                "Menu ya Depp Net iriko irategurwa..."
+            );
+
+        });
+
+    </script>
+
+</body>
+</html>

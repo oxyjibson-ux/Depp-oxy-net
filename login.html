@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="rn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Depp Net - Login</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f2f4f7;
+    color:#222;
+}
+
+header{
+    background:#1877f2;
+    color:white;
+    text-align:center;
+    padding:18px;
+    font-size:25px;
+    font-weight:bold;
+}
+
+.container{
+    width:92%;
+    max-width:420px;
+    margin:45px auto;
+}
+
+.card{
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 3px 12px rgba(0,0,0,.12);
+}
+
+h2{
+    text-align:center;
+    margin-top:0;
+}
+
+input{
+    width:100%;
+    padding:14px;
+    margin:8px 0;
+    border:1px solid #ccc;
+    border-radius:10px;
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    margin-top:10px;
+    border:0;
+    border-radius:10px;
+    background:#1877f2;
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+}
+
+button:active{
+    transform:scale(.98);
+}
+
+button:disabled{
+    opacity:.6;
+}
+
+.links{
+    text-align:center;
+    margin-top:18px;
+}
+
+.links a{
+    display:block;
+    margin:10px;
+    color:#1877f2;
+    text-decoration:none;
+}
+
+#error{
+    display:none;
+    background:#ffe5e5;
+    color:#d00000;
+    padding:10px;
+    border-radius:8px;
+    margin-top:10px;
+    text-align:center;
+}
+
+#success{
+    display:none;
+    background:#e4ffe8;
+    color:#087a1d;
+    padding:10px;
+    border-radius:8px;
+    margin-top:10px;
+    text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    Depp Net
+</header>
+
+<div class="container">
+
+    <div class="card">
+
+        <h2>Injira muri account</h2>
+
+        <input
+            type="email"
+            id="email"
+            placeholder="Email"
+            autocomplete="email"
+        >
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Mot de passe"
+            autocomplete="current-password"
+        >
+
+        <button
+            id="loginButton"
+            onclick="login()"
+        >
+            Injira
+        </button>
+
+        <div id="error"></div>
+        <div id="success"></div>
+
+        <div class="links">
+
+            <a href="forgot-password.html">
+                Wibagiye mot de passe?
+            </a>
+
+            <a href="register.html">
+                Nta account ufise? Iyandikishe
+            </a>
+
+            <a href="index.html">
+                Subira inyuma
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script type="module">
+
+/* =========================
+   FIREBASE IMPORTS
+========================= */
+
+import {
+    initializeApp
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import {
+    getAuth,
+    signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import {
+    getFirestore,
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+/* =========================
+   FIREBASE CONFIG
+========================= */
+
+const firebaseConfig = {
+
+    apiKey:
+    "AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
+
+    authDomain:
+    "depp-net-apk.firebaseapp.com",
+
+    projectId:
+    "depp-net-apk",
+
+    storageBucket:
+    "depp-net-apk.firebasestorage.app",
+
+    messagingSenderId:
+    "664141462348",
+
+    appId:
+    "1:664141462348:web:8202143fef6fcdaf9cede9",
+
+    measurementId:
+    "G-DMBZT3C6MK"
+
+};
+
+
+/* =========================
+   INITIALIZE FIREBASE
+========================= */
+
+const app =
+    initializeApp(firebaseConfig);
+
+const auth =
+    getAuth(app);
+
+const db =
+    getFirestore(app);
+
+
+/* =========================
+   LOGIN
+========================= */
+
+window.login = async function(){
+
+    const email =
+        document
+        .getElementById("email")
+        .value
+        .trim()
+        .toLowerCase();
+
+    const password =
+        document
+        .getElementById("password")
+        .value;
+
+    const error =
+        document.getElementById("error");
+
+    const success =
+        document.getElementById("success");
+
+    const loginButton =
+        document.getElementById("loginButton");
+
+
+    error.style.display = "none";
+    success.style.display = "none";
+
+
+    /* =========================
+       CHECK EMPTY
+    ========================= */
+
+    if(!email || !password){
+
+        error.textContent =
+            "Shiramwo email na mot de passe.";
+
+        error.style.display =
+            "block";
+
+        return;
+    }
+
+
+    /* =========================
+       DISABLE BUTTON
+    ========================= */
+
+    loginButton.disabled =
+        true;
+
+    loginButton.textContent =
+        "Turiko turinjiza...";
+
+
+    try{
+
+
+        /* =========================
+           FIREBASE LOGIN
+        ========================= */
+
+        const userCredential =
+            await signInWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+
+
+        const firebaseUser =
+            userCredential.user;
+
+
+        /* =========================
+           GET USER FROM FIRESTORE
+        ========================= */
+
+        const userDoc =
+            await getDoc(
+                doc(
+                    db,
+                    "users",
+                    firebaseUser.uid
+                )
+            );
+
+
+        let userData = null;
+
+
+        if(userDoc.exists()){
+
+            userData =
+                userDoc.data();
+
+        }
+
+
+        /* =========================
+           USER DATA
+        ========================= */
+
+        const user = {
+
+            id:
+                firebaseUser.uid,
+
+            uid:
+                firebaseUser.uid,
+
+            name:
+                userData &&
+                userData.name
+                ? userData.name
+                : firebaseUser.email,
+
+            username:
+                userData &&
+                userData.username
+                ? userData.username
+                : "",
+
+            email:
+                firebaseUser.email,
+
+            phone:
+                userData &&
+                userData.phone
+                ? userData.phone
+                : ""
+
+        };
+
+
+        /* =========================
+           SAVE ACTIVE USER
+        ========================= */
+
+        localStorage.setItem(
+            "deppNetUser",
+            JSON.stringify(user)
+        );
+
+
+        localStorage.setItem(
+            "deppNetLoggedIn",
+            "true"
+        );
+
+
+        /* =========================
+           SUCCESS
+        ========================= */
+
+        success.textContent =
+            "Murakaza neza " +
+            user.name +
+            "!";
+
+        success.style.display =
+            "block";
+
+
+        /* =========================
+           GO HOME
+        ========================= */
+
+        setTimeout(function(){
+
+            window.location.href =
+                "home.html";
+
+        },700);
+
+
+    }catch(errorObject){
+
+        console.error(
+            "Firebase Login Error:",
+            errorObject
+        );
+
+
+        /* =========================
+           FIREBASE ERRORS
+        ========================= */
+
+        if(
+            errorObject.code ===
+            "auth/invalid-credential"
+        ){
+
+            error.textContent =
+                "Email canke mot de passe si vyo.";
+
+        }
+
+        else if(
+            errorObject.code ===
+            "auth/user-not-found"
+        ){
+
+            error.textContent =
+                "Iyi Email nta konti ifise.";
+
+        }
+
+        else if(
+            errorObject.code ===
+            "auth/wrong-password"
+        ){
+
+            error.textContent =
+                "Mot de passe si wo.";
+
+        }
+
+        else if(
+            errorObject.code ===
+            "auth/invalid-email"
+        ){
+
+            error.textContent =
+                "Email siyo. Suzuma neza.";
+
+        }
+
+        else if(
+            errorObject.code ===
+            "auth/too-many-requests"
+        ){
+
+            error.textContent =
+                "Wagerageje incuro nyinshi. Rindira gatoyi hanyuma wongere ugerageze.";
+
+        }
+
+        else if(
+            errorObject.code ===
+            "auth/network-request-failed"
+        ){
+
+            error.textContent =
+                "Internet ntiyabonetse. Suzuma connexion yawe.";
+
+        }
+
+        else{
+
+            error.textContent =
+                "Habaye ikibazo mu kwinjira. Ongera ugerageze.";
+
+        }
+
+
+        error.style.display =
+            "block";
+
+
+        /* =========================
+           ENABLE BUTTON
+        ========================= */
+
+        loginButton.disabled =
+            false;
+
+        loginButton.textContent =
+            "Injira";
+
+    }
+
+};
+
+
+/* =========================
+   ENTER KEY
+========================= */
+
+document.addEventListener(
+    "keydown",
+    function(e){
+
+        if(e.key === "Enter"){
+
+            window.login();
+
+        }
+
+    }
+);
+
+</script>
+
+</body>
+</html>

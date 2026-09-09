@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="rn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Depp Net - Notifications</title>
+<style>
+*{box-sizing:border-box;font-family:Arial}
+body{margin:0;background:#f2f4f7}
+header{height:58px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid #ddd;position:sticky;top:0}
+h3{margin:0;color:#222}
+button{border:0;background:#eee;border-radius:8px;padding:9px 12px}
+#list{padding:10px}
+.n{background:#fff;margin-bottom:8px;padding:13px;border-radius:12px;box-shadow:0 1px 4px #ddd}
+.n.unread{background:#eaf3ff}
+.n small{display:block;color:#888;margin-top:5px}
+.empty{text-align:center;color:#777;margin-top:50px}
+.top{display:flex;gap:7px}
+</style>
+</head>
+<body>
+
+<header>
+<button onclick="location.href='home.html'">←</button>
+<h3>🔔 Notifications <span id="badge"></span></h3>
+<div class="top">
+<button onclick="readAll()">Soma zose</button>
+<button onclick="location.href='home.html'">⌂</button>
+</div>
+</header>
+
+<div id="list"><div class="empty">Turiko turarondera...</div></div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import{getFirestore,collection,onSnapshot,doc,updateDoc}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+const app=initializeApp({
+ apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
+ authDomain:"depp-net-apk.firebaseapp.com",
+ projectId:"depp-net-apk",
+ storageBucket:"depp-net-apk.firebasestorage.app",
+ messagingSenderId:"664141462348",
+ appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
+});
+const auth=getAuth(app),db=getFirestore(app);
+let me,all=[];
+
+onAuthStateChanged(auth,u=>{
+ if(!u){location.href="login.html";return}
+ me=u;
+ onSnapshot(collection(db,"notifications"),s=>{
+  all=s.docs.map(d=>({id:d.id,...d.data()}))
+   .filter(x=>x.toUid===me.uid)
+   .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+  show();
+ });
+});
+
+function show(){
+ let unread=all.filter(x=>x.read!==true).length;
+ badge.textContent=unread?"("+unread+")":"";
+ if(!all.length){
+  list.innerHTML='<div class="empty">Nta notification nshasha.</div>';return;
+ }
+ list.innerHTML=all.map(x=>{
+  let icon=x.type==="like"?"❤️":x.type==="comment"?"💬":"🔔";
+  let text=x.type==="like"?"yakunze post yawe":x.type==="comment"?"yatanze comment kuri post yawe":"yagutumye notification";
+  let time=x.createdAt?.toDate?x.createdAt.toDate().toLocaleString():"";
+  return `<div class="n ${x.read===true?"":"unread"}" onclick="readOne('${x.id}')">
+   ${icon} <b>${x.fromUsername||x.name||"Umuntu"}</b> ${text}.
+   <small>${time}</small>
+  </div>`;
+ }).join("");
+}
+
+window.readOne=async id=>{
+ try{await updateDoc(doc(db,"notifications",id),{read:true})}catch(e){console.log(e)}
+};
+
+window.readAll=async()=>{
+ for(const x of all.filter(x=>x.read!==true))
+  try{await updateDoc(doc(db,"notifications",x.id),{read:true})}catch(e){}
+};
+
+</script>
+</body>
+</html>

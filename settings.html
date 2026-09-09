@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="rn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Depp Net - Settings</title>
+<style>
+*{box-sizing:border-box;font-family:Arial}
+body{margin:0;background:#f1f4f8;color:#222;transition:.2s}
+header{height:58px;background:#1877f2;color:white;display:flex;align-items:center;padding:0 12px;gap:12px;position:sticky;top:0}
+header b{font-size:20px}header button{background:#fff;color:#1877f2}
+button{border:0;border-radius:20px;padding:9px 13px}
+main{max-width:600px;margin:auto;padding:12px}
+.card{background:white;border-radius:16px;margin:10px 0;overflow:hidden;box-shadow:0 2px 8px #ddd}
+.title{padding:14px;font-weight:bold;color:#1877f2;border-bottom:1px solid #eee}
+.row{padding:14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eee}
+.row:last-child{border:0}.left{display:flex;align-items:center;gap:12px}
+.icon{font-size:21px;width:30px;text-align:center}.small{font-size:12px;color:#777}
+select{padding:8px;border:1px solid #ddd;border-radius:10px}
+.switch{width:45px;height:24px;background:#bbb;border-radius:20px;position:relative}
+.switch:after{content:"";width:20px;height:20px;background:white;border-radius:50%;position:absolute;top:2px;left:2px;transition:.2s}
+.switch.on{background:#1877f2}.switch.on:after{left:23px}
+.danger{color:#e53935}.link{color:#1877f2}
+.dark{background:#121212;color:#eee}.dark .card{background:#1e1e1e;box-shadow:none}
+.dark .row,.dark .title{border-color:#333}.dark .small{color:#aaa}
+.dark select{background:#222;color:white;border-color:#444}
+</style>
+</head>
+<body>
+
+<header>
+<button onclick="back()">←</button>
+<b id="head">⚙️ Settings</b>
+</header>
+
+<main>
+
+<div class="card">
+<div class="title" id="general">General</div>
+
+<div class="row">
+<div class="left"><span class="icon">🌙</span><span id="darkTxt">Dark Mode</span></div>
+<div class="switch" id="dark" onclick="toggle('dark')"></div>
+</div>
+
+<div class="row">
+<div class="left"><span class="icon">🌍</span><span id="langTxt">Language</span></div>
+<select id="lang" onchange="language(this.value)">
+<option value="rn">🇧🇮 Kirundi</option>
+<option value="fr">🇫🇷 Français</option>
+<option value="en">🇬🇧 English</option>
+</select>
+</div>
+
+<div class="row">
+<div class="left"><span class="icon">🔔</span><span id="notifTxt">Notifications</span></div>
+<div class="switch on" id="notif" onclick="toggle('notif')"></div>
+</div>
+
+<div class="row">
+<div class="left"><span class="icon">🟢</span><span id="onlineTxt">Online Status</span></div>
+<div class="switch on" id="online" onclick="toggle('online')"></div>
+</div>
+</div>
+
+<div class="card">
+<div class="title" id="privacy">Privacy</div>
+
+<div class="row" onclick="location.href='privacy-settings.html'">
+<div class="left"><span class="icon">🔒</span><span id="privacyTxt">Privacy Settings</span></div><span>›</span>
+</div>
+
+<div class="row" onclick="location.href='blocked.html'"
+<div class="left"><span class="icon">🚫</span><span id="blockedTxt">Blocked Users</span></div><span>›</span>
+</div>
+</div>
+
+<div class="card">
+<div class="title" id="account">Account & Security</div>
+
+<div class="row" onclick="location.href='account.html'">
+<div class="left"><span class="icon">👤</span><span id="accountTxt">Account</span></div><span>›</span>
+</>
+
+<div class="row" onclick="location.href='security.html'">
+<div class="left"><span class="icon">🔐</span><span id="securityTxt">Security</span></div><span>›</span>
+</>
+</div>
+
+<div class="row" onclick="location.href='terms.html'">
+<div class="left"><span class="icon">📜</span><span id="rulesTxt">Terms & Conditions</span></div><span>›</span>
+</div>
+
+<div class="row" onclick="location.href='privacy.html'">
+<div class="left"><span class="icon">📋</span><span id="policyTxt">Privacy Policy</span></div><span>›</span>
+</div>
+
+<div class="card">
+<div class="row" onclick="logout()" style="color:#e53935;font-weight:bold">
+<div class="left"><span class="icon">🚪</span><span id="logoutTxt">Logout</span></div><span>›</span>
+</div>
+</div>
+
+</main>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import{getAuth,signOut}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+const app=initializeApp({
+apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
+authDomain:"depp-net-apk.firebaseapp.com",
+projectId:"depp-net-apk",
+storageBucket:"depp-net-apk.firebasestorage.app",
+messagingSenderId:"664141462348",
+appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
+});
+const auth=getAuth(app),$=x=>document.getElementById(x);
+
+let lang=localStorage.lang||"rn";
+let dark=localStorage.dark==="1";
+let notif=localStorage.notif!=="0";
+let online=localStorage.online!=="0";
+
+function sw(id,x){$(id).classList.toggle("on",x)}
+function save(){
+localStorage.lang=lang;localStorage.dark=dark?"1":"0";
+localStorage.notif=notif?"1":"0";localStorage.online=online?"1":"0";
+}
+function apply(){
+document.body.classList.toggle("dark",dark);
+sw("dark",dark);sw("notif",notif);sw("online",online);
+$("lang").value=lang;
+}
+window.toggle=id=>{
+if(id==="dark")dark=!dark;
+if(id==="notif")notif=!notif;
+if(id==="online")online=!online;
+save();apply();
+};
+const text={
+rn:{
+head:"⚙️ Settings",general:"Rusangi",dark:"Dark Mode",lang:"Ururimi",
+notif:"Notifications",online:"Uko uri Online",privacy:"Ukwikingira",
+privacyTxt:"Settings zo kwikingira",blocked:"Abantu wabujije",
+account:"Konti & Umutekano",accountTxt:"Konti",security:"Umutekano",
+rules:"Amategeko & Conditions",terms:"Amategeko n'ivyo wemera",
+policy:"Privacy Policy",logout:"Sohoka"
+},
+fr:{
+head:"⚙️ Paramètres",general:"Général",dark:"Mode sombre",lang:"Langue",
+notif:"Notifications",online:"Statut en ligne",privacy:"Confidentialité",
+privacyTxt:"Paramètres de confidentialité",blocked:"Utilisateurs bloqués",
+account:"Compte & Sécurité",accountTxt:"Compte",security:"Sécurité",
+rules:"Règles & Conditions",terms:"Conditions d'utilisation",
+policy:"Politique de confidentialité",logout:"Déconnexion"
+},
+en:{
+head:"⚙️ Settings",general:"General",dark:"Dark Mode",lang:"Language",
+notif:"Notifications",online:"Online Status",privacy:"Privacy",
+privacyTxt:"Privacy Settings",blocked:"Blocked Users",
+account:"Account & Security",accountTxt:"Account",security:"Security",
+rules:"Rules & Conditions",terms:"Terms & Conditions",
+policy:"Privacy Policy",logout:"Logout"
+}};
+window.language=x=>{lang=x;save();draw();apply()};
+function draw(){
+let t=text[lang];
+$("head").textContent=t.head;$("general").textContent=t.general;
+$("darkTxt").textContent=t.dark;$("langTxt").textContent=t.lang;
+$("notifTxt").textContent=t.notif;$("onlineTxt").textContent=t.online;
+$("privacy").textContent=t.privacy;$("privacyTxt").textContent=t.privacyTxt;
+$("blockedTxt").textContent=t.blocked;$("account").textContent=t.account;
+$("accountTxt").textContent=t.accountTxt;$("securityTxt").textContent=t.security;
+$("rules").textContent=t.rules;$("rulesTxt").textContent=t.terms;
+$("policyTxt").textContent=t.policy;$("logoutTxt").textContent=t.logout;
+}
+window.alertMsg=x=>{
+let t=text[lang];
+let m=x==="rules"?t.terms:x==="policy"?t.policy:
+x==="blocked"?t.blocked:x==="security"?t.security:
+x==="account"?t.accountTxt:t.privacyTxt;
+alert(m+" — Depp Net");
+};
+window.logout=async()=>{
+if(confirm(lang==="rn"?"Urashaka gusohoka?":lang==="fr"?"Voulez-vous vous déconnecter ?":"Do you want to logout?")){
+await signOut(auth);location.href="login.html";
+}};
+window.back=()=>location.href="home.html";
+draw();apply();
+</script>
+</body>
+</html>

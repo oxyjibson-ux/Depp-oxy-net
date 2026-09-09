@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="rn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Depp Net - Security</title>
+<style>
+*{box-sizing:border-box;font-family:Arial}
+body{margin:0;background:#f1f4f8;color:#222}
+header{height:58px;background:#1877f2;color:#fff;display:flex;align-items:center;padding:0 12px;gap:12px}
+header button{border:0;border-radius:20px;padding:8px 13px;background:#fff;color:#1877f2}
+header b{font-size:19px}
+main{max-width:600px;margin:auto;padding:12px}
+.card{background:#fff;border-radius:15px;margin:10px 0;padding:15px;box-shadow:0 2px 8px #ddd}
+.title{font-weight:bold;color:#1877f2;margin-bottom:12px}
+.row{padding:13px 0;border-top:1px solid #eee;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.left{display:flex;align-items:center;gap:10px}
+.icon{font-size:21px}
+button.action{border:0;border-radius:10px;padding:9px 12px;background:#1877f2;color:#fff}
+.small{font-size:12px;color:#777}
+.dark{background:#121212;color:#eee}
+.dark .card{background:#1e1e1e;box-shadow:none}
+.dark .row{border-color:#333}
+.dark .small{color:#aaa}
+</style>
+</head>
+
+<body>
+
+<header>
+<button onclick="history.back()">←</button>
+<b id="title">🔐 Security</b>
+</header>
+
+<main>
+
+<div class="card">
+<div class="title" id="security">Account Security</div>
+
+<div class="row">
+<div class="left">
+<span class="icon">🔑</span>
+<div>
+<b id="pass">Password</b><br>
+<span class="small" id="passInfo">Hindura password yawe</span>
+</div>
+</div>
+<button class="action" onclick="changePassword()" id="change">Hindura</button>
+</div>
+
+<div class="row">
+<div class="left">
+<span class="icon">📧</span>
+<div>
+<b id="email">Email Verification</b><br>
+<span class="small" id="emailStatus">Turiko turagenzura...</span>
+</div>
+</div>
+<button class="action" onclick="verifyEmail()" id="verify">Verify</button>
+</div>
+
+</div>
+
+<div class="card">
+<div class="title" id="login">Login Security</div>
+
+<div class="row">
+<div class="left">
+<span class="icon">🛡️</span>
+<span id="protect">Account Protection</span>
+</div>
+<span>✓</span>
+</div>
+
+<div class="row">
+<div class="left">
+<span class="icon">📱</span>
+<span id="device">Current Device</span>
+</div>
+<span class="small">This device</span>
+</div>
+
+</div>
+
+</main>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import{getAuth,sendPasswordResetEmail,sendEmailVerification}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+const app=initializeApp({
+apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
+authDomain:"depp-net-apk.firebaseapp.com",
+projectId:"depp-net-apk",
+storageBucket:"depp-net-apk.firebasestorage.app",
+messagingSenderId:"664141462348",
+appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
+});
+
+const auth=getAuth(app);
+let lang=localStorage.lang||"rn";
+let u=auth.currentUser;
+
+const T={
+rn:{
+title:"🔐 Umutekano",security:"Umutekano wa Konti",
+pass:"Password",passInfo:"Hindura password yawe",
+change:"Hindura",email:"Kwemeza Email",
+verify:"Emeza",login:"Umutekano wo kwinjira",
+protect:"Umutekano wa Konti",device:"Telefone ikoreshwa",
+ok:"Email yawe yamaze kwemezwa.",
+not:"Email yawe ntiraremezwa.",
+sent:"Email yo guhindura password yarungitswe.",
+vsent:"Email yo kwemeza yarungitswe.",
+no:"Nta email yabonetse."
+},
+fr:{
+title:"🔐 Sécurité",security:"Sécurité du compte",
+pass:"Mot de passe",passInfo:"Modifier votre mot de passe",
+change:"Modifier",email:"Vérification email",
+verify:"Vérifier",login:"Sécurité de connexion",
+protect:"Protection du compte",device:"Appareil actuel",
+ok:"Votre email est déjà vérifié.",
+not:"Votre email n'est pas encore vérifié.",
+sent:"L'email de réinitialisation a été envoyé.",
+vsent:"L'email de vérification a été envoyé.",
+no:"Aucun email trouvé."
+},
+en:{
+title:"🔐 Security",security:"Account Security",
+pass:"Password",passInfo:"Change your password",
+change:"Change",email:"Email Verification",
+verify:"Verify",login:"Login Security",
+protect:"Account Protection",device:"Current Device",
+ok:"Your email is already verified.",
+not:"Your email is not verified.",
+sent:"Password reset email sent.",
+vsent:"Verification email sent.",
+no:"No email found."
+}};
+
+let t=T[lang]||T.rn;
+
+title.textContent=t.title;
+security.textContent=t.security;
+pass.textContent=t.pass;
+passInfo.textContent=t.passInfo;
+change.textContent=t.change;
+email.textContent=t.email;
+verify.textContent=t.verify;
+login.textContent=t.login;
+protect.textContent=t.protect;
+device.textContent=t.device;
+
+function updateEmail(){
+ if(!u){
+  emailStatus.textContent=t.no;
+  return;
+ }
+ emailStatus.textContent=u.emailVerified?t.ok:t.not;
+}
+
+window.changePassword=async()=>{
+ if(!u||!u.email)return alert(t.no);
+ try{
+  await sendPasswordResetEmail(auth,u.email);
+  alert(t.sent);
+ }catch(e){
+  alert("Error: "+e.message);
+ }
+};
+
+window.verifyEmail=async()=>{
+ if(!u)return;
+ if(u.emailVerified){
+  emailStatus.textContent=t.ok;
+  return;
+ }
+ try{
+  await sendEmailVerification(u);
+  alert(t.vsent);
+  emailStatus.textContent=t.vsent;
+ }catch(e){
+  alert("Error: "+e.message);
+ }
+};
+
+document.body.classList.toggle("dark",localStorage.dark==="1");
+updateEmail();
+</script>
+
+</body>
+</html>

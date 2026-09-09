@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="rn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Depp Net - Blocked Users</title>
+<style>
+*{box-sizing:border-box;font-family:Arial}
+body{margin:0;background:#f1f4f8;color:#222}
+header{height:58px;background:#1877f2;color:#fff;display:flex;align-items:center;padding:0 12px;gap:12px}
+header button{border:0;border-radius:20px;padding:8px 13px;background:#fff;color:#1877f2}
+header b{font-size:19px}
+main{max-width:600px;margin:auto;padding:12px}
+.card{background:#fff;border-radius:15px;margin:10px 0;padding:15px;box-shadow:0 2px 8px #ddd}
+.user{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee}
+.user:last-child{border:0}
+.name{font-weight:bold}
+.empty{text-align:center;color:#777;padding:30px 10px}
+.dark{background:#121212;color:#eee}
+.dark .card{background:#1e1e1e;box-shadow:none}
+.dark .user{border-color:#333}
+</style>
+</head>
+<body>
+
+<header>
+<button onclick="history.back()">←</button>
+<b>🚫 Blocked Users</b>
+</header>
+
+<main>
+<div class="card">
+<div id="list">
+<div class="empty">Nta muntu wabujije.</div>
+</div>
+</div>
+</main>
+
+<script>
+document.body.classList.toggle("dark",localStorage.dark==="1");
+
+let blocked=JSON.parse(localStorage.getItem("blockedUsers")||"[]");
+let list=document.getElementById("list");
+
+function show(){
+ if(!blocked.length){
+  list.innerHTML='<div class="empty">Nta muntu wabujije.</div>';
+  return;
+ }
+
+ list.innerHTML=blocked.map((u,i)=>`
+ <div class="user">
+  <div>
+   <div class="name">🚫 ${u.name||"User"}</div>
+   <small>@${u.username||""}</small>
+  </div>
+  <button onclick="unblock(${i})">Unblock</button>
+ </div>
+ `).join("");
+}
+
+window.unblock=i=>{
+ blocked.splice(i,1);
+ localStorage.setItem("blockedUsers",JSON.stringify(blocked));
+ show();
+};
+
+show();
+</script>
+
+</body>
+</html>

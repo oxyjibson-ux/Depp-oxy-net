@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="rn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Depp Net - Privacy</title>
+<style>
+*{box-sizing:border-box;font-family:Arial}
+body{margin:0;background:#f1f4f8;color:#222}
+header{height:58px;background:#1877f2;color:white;display:flex;align-items:center;padding:0 12px;gap:12px}
+header button{border:0;border-radius:20px;padding:8px 13px;background:white;color:#1877f2}
+header b{font-size:19px}
+main{max-width:600px;margin:auto;padding:12px}
+.card{background:white;border-radius:15px;margin:10px 0;overflow:hidden;box-shadow:0 2px 8px #ddd}
+.title{padding:14px;font-weight:bold;color:#1877f2}
+.row{padding:14px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
+.left{display:flex;gap:12px;align-items:center}
+.icon{font-size:21px}
+select{padding:8px;border:1px solid #ddd;border-radius:9px}
+.dark{background:#121212;color:#eee}
+.dark .card{background:#1e1e1e;box-shadow:none}
+.dark .row{border-color:#333}
+.dark select{background:#222;color:#fff;border-color:#444}
+</style>
+</head>
+<body>
+
+<header>
+<button onclick="history.back()">←</button>
+<b id="title">🔒 Privacy Settings</b>
+</header>
+
+<main>
+
+<div class="card">
+<div class="title" id="privacy">Privacy</div>
+
+<div class="row">
+<div class="left">
+<span class="icon">👤</span>
+<span id="profileTxt">Who can see my profile</span>
+</div>
+<select id="profile">
+<option>Everyone</option>
+<option>Contacts</option>
+<option>Only me</option>
+</select>
+</div>
+
+<div class="row">
+<div class="left">
+<span class="icon">🟢</span>
+<span id="onlineTxt">Show online status</span>
+</div>
+<input type="checkbox" id="online" checked>
+</div>
+
+<div class="row">
+<div class="left">
+<span class="icon">👁️</span>
+<span id="seenTxt">Show last seen</span>
+</div>
+<input type="checkbox" id="seen" checked>
+</div>
+
+</div>
+
+<div class="card">
+<div class="title" id="activity">Activity</div>
+
+<div class="row">
+<div class="left">
+<span class="icon">🔔</span>
+<span id="notifTxt">Who can send notifications</span>
+</div>
+<select id="notif">
+<option>Everyone</option>
+<option>Contacts</option>
+</select>
+</div>
+
+</div>
+
+</main>
+
+<script>
+let lang=localStorage.lang||"rn";
+document.body.classList.toggle("dark",localStorage.dark==="1");
+
+const T={
+rn:{
+title:"🔒 Privacy Settings",privacy:"Ukwikingira",
+profile:"Ninde ashobora kubona Profile yanje",
+online:"Erekana ko ndi Online",
+seen:"Erekana Last Seen",
+activity:"Ibikorwa",
+notif:"Ninde ashobora kundungikira Notifications"
+},
+fr:{
+title:"🔒 Paramètres de confidentialité",privacy:"Confidentialité",
+profile:"Qui peut voir mon profil",
+online:"Afficher mon statut en ligne",
+seen:"Afficher la dernière connexion",
+activity:"Activité",
+notif:"Qui peut m'envoyer des notifications"
+},
+en:{
+title:"🔒 Privacy Settings",privacy:"Privacy",
+profile:"Who can see my profile",
+online:"Show online status",
+seen:"Show last seen",
+activity:"Activity",
+notif:"Who can send notifications"
+}};
+
+let t=T[lang]||T.rn;
+title.textContent=t.title;
+privacy.textContent=t.privacy;
+profileTxt.textContent=t.profile;
+onlineTxt.textContent=t.online;
+seenTxt.textContent=t.seen;
+activity.textContent=t.activity;
+notifTxt.textContent=t.notif;
+
+profile.value=localStorage.profilePrivacy||"Everyone";
+online.checked=localStorage.showOnline!=="0";
+seen.checked=localStorage.showSeen!=="0";
+notif.value=localStorage.notifWho||"Everyone";
+
+profile.onchange=()=>localStorage.profilePrivacy=profile.value;
+online.onchange=()=>localStorage.showOnline=online.checked?"1":"0";
+seen.onchange=()=>localStorage.showSeen=seen.checked?"1":"0";
+notif.onchange=()=>localStorage.notifWho=notif.value;
+</script>
+
+</body>
+</html>

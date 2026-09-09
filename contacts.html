@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="rn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Depp Net - Contacts</title>
+
+<style>
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f2f4f7;
+min-height:100vh;
+color:#222;
+}
+
+header{
+background:#1877f2;
+color:white;
+height:60px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 15px;
+}
+
+.logo{
+font-size:22px;
+font-weight:bold;
+}
+
+.home-btn{
+border:none;
+background:white;
+color:#1877f2;
+padding:9px 13px;
+border-radius:8px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.container{
+width:100%;
+max-width:650px;
+margin:auto;
+padding:15px;
+}
+
+.card{
+background:white;
+border-radius:12px;
+padding:16px;
+margin-bottom:15px;
+box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.title{
+font-size:20px;
+font-weight:bold;
+margin-bottom:15px;
+}
+
+.input{
+width:100%;
+padding:12px;
+border:1px solid #ddd;
+border-radius:9px;
+outline:none;
+font-size:15px;
+margin-bottom:10px;
+}
+
+.input:focus{
+border-color:#1877f2;
+}
+
+.add-btn{
+width:100%;
+border:none;
+background:#1877f2;
+color:white;
+padding:12px;
+border-radius:9px;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.add-btn:disabled{
+opacity:.6;
+}
+
+.search{
+width:100%;
+padding:12px;
+border:1px solid #ddd;
+border-radius:9px;
+outline:none;
+font-size:15px;
+margin-bottom:12px;
+}
+
+.contact{
+display:flex;
+align-items:center;
+gap:12px;
+padding:12px;
+border-radius:10px;
+background:#f2f4f7;
+margin-top:9px;
+}
+
+.avatar{
+width:48px;
+height:48px;
+border-radius:50%;
+background:#1877f2;
+color:white;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:20px;
+font-weight:bold;
+flex-shrink:0;
+}
+
+.contact-info{
+flex:1;
+min-width:0;
+}
+
+.contact-name{
+font-weight:bold;
+font-size:16px;
+}
+
+.contact-phone{
+font-size:13px;
+color:#777;
+margin-top:4px;
+margin-bottom:8px;
+}
+
+.chat-btn{
+border:none;
+background:#1877f2;
+color:white;
+padding:8px 10px;
+border-radius:8px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.delete-btn{
+border:none;
+background:#e53935;
+color:white;
+padding:8px 10px;
+border-radius:8px;
+font-weight:bold;
+cursor:pointer;
+margin-left:5px;
+}
+
+.empty{
+text-align:center;
+color:#777;
+padding:25px 10px;
+}
+
+.small-title{
+font-size:17px;
+font-weight:bold;
+margin-bottom:12px;
+}
+
+.status{
+text-align:center;
+padding:10px;
+color:#777;
+font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">
+Depp Net
+</div>
+
+<button class="home-btn" id="homeBtn">
+🏠 Home
+</button>
+
+</header>
+
+<div class="container">
+
+<div class="card">
+
+<div class="title">
+👤 Yongerako Contact
+</div>
+
+<input
+id="contactName"
+class="input"
+type="text"
+placeholder="Izina ry'umuntu"
+>
+
+<input
+id="contactPhone"
+class="input"
+type="tel"
+placeholder="Numero ya telefone"
+>
+
+<button
+id="addContactBtn"
+class="add-btn"
+>
+➕ Yongerako Contact
+</button>
+
+</div>
+
+<div class="card">
+
+<div class="small-title">
+📱 Contacts zawe
+</div>
+
+<input
+id="searchInput"
+class="search"
+type="text"
+placeholder="Rondera contact..."
+>
+
+<div id="contactsList">
+
+<div class="status">
+⏳ Contacts ziriko zirazanwa...
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script type="module">
+
+/* =====================================================
+   FIREBASE
+===================================================== */
+
+import {
+initializeApp
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import {
+getAuth,
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import {
+getFirestore,
+collection,
+query,
+where,
+getDocs,
+doc,
+setDoc,
+deleteDoc,
+serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
+
+authDomain: "depp-net-apk.firebaseapp.com",
+
+projectId: "depp-net-apk",
+
+storageBucket: "depp-net-apk.firebasestorage.app",
+
+messagingSenderId: "664141462348",
+
+appId: "1:664141462348:web:8202143fef6fcdaf9cede9",
+
+measurementId: "G-DMBZT3C6MK"
+
+};
+
+
+const app =
+initializeApp(firebaseConfig);
+
+const auth =
+getAuth(app);
+
+const db =
+getFirestore(app);
+
+
+/* =====================================================
+   ELEMENTS
+===================================================== */
+
+const homeBtn =
+document.getElementById("homeBtn");
+
+const addContactBtn =
+document.getElementById("addContactBtn");
+
+const nameInput =
+document.getElementById("contactName");
+
+const phoneInput =
+document.getElementById("contactPhone");
+
+const searchInput =
+document.getElementById("searchInput");
+
+const contactsList =
+document.getElementById("contactsList");
+
+
+/* =====================================================
+   CURRENT FIREBASE USER
+===================================================== */
+
+let firebaseCurrentUser = null;
+
+let contacts = [];
+
+
+/* =====================================================
+   HOME BUTTON
+===================================================== */
+
+homeBtn.addEventListener("click",function(){
+
+window.location.href="home.html";
+
+});
+
+
+/* =====================================================
+   NORMALIZE PHONE
+===================================================== */
+
+function normalizePhone(phone){
+
+return String(phone || "")
+.trim()
+.replace(/[\s\-().]/g,"");
+
+}
+
+
+/* =====================================================
+   LOCAL STORAGE KEY
+===================================================== */
+
+function getContactsKey(){
+
+const localUser =
+JSON.parse(
+localStorage.getItem("deppNetUser") || "null"
+);
+
+const username =
+String(localUser?.username || "")
+.trim()
+.toLowerCase();
+
+if(username){
+
+return "deppNetContacts_" + username;
+
+}
+
+if(firebaseCurrentUser){
+
+return "deppNetContacts_" +
+firebaseCurrentUser.uid;
+
+}
+
+return "deppNetContacts_unknown";
+
+}
+
+
+/* =====================================================
+   SAVE LOCAL CONTACTS
+===================================================== */
+
+function saveLocalContacts(){
+
+try{
+
+localStorage.setItem(
+getContactsKey(),
+JSON.stringify(contacts)
+);
+
+}catch(error){
+
+console.log(
+"Local contacts error:",
+error
+);
+
+}
+
+}
+
+
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
+
+function escapeHTML(value){
+
+const div =
+document.createElement("div");
+
+div.textContent =
+String(value ?? "");
+
+return div.innerHTML;
+
+}
+
+
+/* =====================================================
+   FIND USER BY PHONE
+===================================================== */
+
+async function findUserByPhone(phone){
+
+const normalized =
+normalizePhone(phone);
+
+if(!normalized){
+
+return null;
+
+}
+
+
+/* Exact normalized number */
+
+let result =
+await getDocs(
+query(
+collection(db,"users"),
+where("phone","==",normalized)
+)
+);
+
+if(!result.empty){
+
+return result.docs[0];
+
+}
+
+
+/* Try original number */
+
+const original =
+String(phone || "").trim();
+
+if(original !== normalized){
+
+result =
+await getDocs(
+query(
+collection(db,"users"),
+where("phone","==",original)
+)
+);
+
+if(!result.empty){
+
+return result.docs[0];
+
+}
+
+}
+
+
+/* Try +257 for local Burundi number */
+
+if(
+normalized.startsWith("0") &&
+normalized.length >= 9
+){
+
+const burundiNumber =
+"+257" + normalized.substring(1);
+
+result =
+await getDocs(
+query(
+collection(db,"users"),
+where("phone","==",burundiNumber)
+)
+);
+
+if(!result.empty){
+
+return result.docs[0];
+
+}
+
+}
+
+
+/* Try 257 without + */
+
+if(
+normalized.startsWith("257")
+){
+
+const withPlus =
+"+" + normalized;
+
+result =
+await getDocs(
+query(
+collection(db,"users"),
+where("phone","==",withPlus)
+)
+);
+
+if(!result.empty){
+
+return result.docs[0];
+
+}
+
+}
+
+
+/* Try +257 if user typed 8-digit Burundi number */
+
+if(
+normalized.length === 8 &&
+/^[0-9]+$/.test(normalized)
+){
+
+const burundiNumber =
+"+257" + normalized;
+
+result =
+await getDocs(
+query(
+collection(db,"users"),
+where("phone","==",burundiNumber)
+)
+);
+
+if(!result.empty){
+
+return result.docs[0];
+
+}
+
+}
+
+
+return null;
+
+}
+
+
+/* =====================================================
+   ADD CONTACT
+===================================================== */
+
+async function addContact(){
+
+const name =
+nameInput.value.trim();
+
+const phone =
+phoneInput.value.trim();
+
+
+if(!name){
+
+alert(
+"Andika izina rya contact."
+);
+
+nameInput.focus();
+
+return;
+
+}
+
+
+if(!phone){
+
+alert(
+"Andika numero ya telefone."
+);
+
+phoneInput.focus();
+
+return;
+
+}
+
+
+if(!firebaseCurrentUser){
+
+alert(
+"Ntushobora kwongerako contact. Banza winjire."
+);
+
+return;
+
+}
+
+
+addContactBtn.disabled = true;
+
+addContactBtn.textContent =
+"⏳ Rondera user...";
+
+
+try{
+
+
+/* Find registered user */
+
+const userDoc =
+await findUserByPhone(phone);
+
+
+if(!userDoc){
+
+alert(
+"Uyu muntu ntarafungura konti ya Depp Net."
+);
+
+return;
+
+}
+
+
+const userData =
+userDoc.data();
+
+const contactUid =
+userDoc.id;
+
+
+/* Cannot add yourself */
+
+if(
+contactUid === firebaseCurrentUser.uid
+){
+
+alert(
+"Ntushobora kwongerako numero yawe nka contact."
+);
+
+return;
+
+}
+
+
+/* Contact data */
+
+const contact = {
+
+uid: contactUid,
+
+id: contactUid,
+
+name:
+userData.name ||
+name,
+
+username:
+userData.username ||
+"",
+
+phone:
+userData.phone ||
+normalizePhone(phone),
+
+email:
+userData.email ||
+"",
+
+createdAt:
+serverTimestamp()
+
+};
+
+
+/* Check duplicate */
+
+const normalizedNewPhone =
+normalizePhone(contact.phone);
+
+const exists =
+contacts.some(function(item){
+
+return(
+String(item.uid || "") === contactUid
+||
+normalizePhone(item.phone) === normalizedNewPhone
+);
+
+});
+
+
+if(exists){
+
+alert(
+"Uyu muntu asanzwe ari muri Contacts zawe."
+);
+
+return;
+
+}
+
+
+/* Firestore path */
+
+const contactRef =
+doc(
+db,
+"users",
+firebaseCurrentUser.uid,
+"contacts",
+contactUid
+);
+
+
+/* Save */
+
+await setDoc(
+contactRef,
+contact
+);
+
+
+/* Local cache */
+
+contacts.unshift({
+
+uid: contact.uid,
+
+id: contact.id,
+
+name: contact.name,
+
+username: contact.username,
+
+phone: contact.phone,
+
+email: contact.email,
+
+createdAt:
+new Date().toISOString()
+
+});
+
+
+saveLocalContacts();
+
+nameInput.value = "";
+phoneInput.value = "";
+
+renderContacts();
+
+alert(
+"Contact yongewemwo neza."
+);
+
+
+}catch(error){
+
+console.error(
+"Add contact error:",
+error
+);
+
+alert(
+"Habaye ikibazo mu kwongerako contact: " +
+error.message
+);
+
+}finally{
+
+addContactBtn.disabled = false;
+
+addContactBtn.textContent =
+"➕ Yongerako Contact";
+
+}
+
+}
+
+
+addContactBtn.addEventListener(
+"click",
+addContact
+);
+
+
+/* =====================================================
+   LOAD CONTACTS FROM FIREBASE
+===================================================== */
+
+async function loadContactsFromFirebase(){
+
+if(!firebaseCurrentUser){
+
+return;
+
+}
+
+
+contactsList.innerHTML = `
+
+<div class="status">
+⏳ Contacts ziriko zirazanwa...
+</div>
+
+`;
+
+
+try{
+
+const contactsRef =
+collection(
+db,
+"users",
+firebaseCurrentUser.uid,
+"contacts"
+);
+
+const snapshot =
+await getDocs(contactsRef);
+
+contacts = [];
+
+
+snapshot.forEach(function(docSnap){
+
+const data =
+docSnap.data();
+
+contacts.push({
+
+uid:
+data.uid ||
+docSnap.id,
+
+id:
+data.uid ||
+docSnap.id,
+
+name:
+data.name ||
+"User",
+
+username:
+data.username ||
+"",
+
+phone:
+data.phone ||
+"",
+
+email:
+data.email ||
+"",
+
+createdAt:
+data.createdAt ||
+null
+
+});
+
+});
+
+
+/* Newest first */
+
+contacts.sort(function(a,b){
+
+const aTime =
+a.createdAt?.seconds ||
+0;
+
+const bTime =
+b.createdAt?.seconds ||
+0;
+
+return bTime - aTime;
+
+});
+
+
+saveLocalContacts();
+
+renderContacts();
+
+
+}catch(error){
+
+console.error(
+"Load contacts error:",
+error
+);
+
+contactsList.innerHTML = `
+
+<div class="empty">
+
+❌ Contacts ntizashoboye kuzana.
+
+</div>
+
+`;
+
+}
+
+}
+
+
+/* =====================================================
+   RENDER CONTACTS
+===================================================== */
+
+function renderContacts(){
+
+const search =
+searchInput.value
+.trim()
+.toLowerCase();
+
+
+const filtered =
+contacts.filter(function(contact){
+
+const name =
+String(contact.name || "")
+.toLowerCase();
+
+const phone =
+String(contact.phone || "")
+.toLowerCase();
+
+const username =
+String(contact.username || "")
+.toLowerCase();
+
+return(
+!search
+||
+name.includes(search)
+||
+phone.includes(search)
+||
+username.includes(search)
+);
+
+});
+
+
+if(filtered.length === 0){
+
+if(contacts.length === 0){
+
+contactsList.innerHTML = `
+
+<div class="empty">
+
+📱 Nta contact urashiramwo.
+
+</div>
+
+`;
+
+}else{
+
+contactsList.innerHTML = `
+
+<div class="empty">
+
+🔎 Nta contact ibonetse.
+
+</div>
+
+`;
+
+}
+
+return;
+
+}
+
+
+contactsList.innerHTML =
+filtered.map(function(contact){
+
+const name =
+String(contact.name || "User");
+
+const phone =
+String(contact.phone || "");
+
+const firstLetter =
+name
+.trim()
+.charAt(0)
+.toUpperCase() || "U";
+
+return `
+
+<div class="contact">
+
+<div class="avatar">
+${escapeHTML(firstLetter)}
+</div>
+
+<div class="contact-info">
+
+<div class="contact-name">
+${escapeHTML(name)}
+</div>
+
+<div class="contact-phone">
+📞 ${escapeHTML(phone)}
+</div>
+
+<button
+class="chat-btn"
+data-uid="${escapeHTML(contact.uid || "")}"
+data-phone="${escapeHTML(phone)}"
+data-name="${escapeHTML(name)}"
+>
+💬 Chat
+</button>
+
+<button
+class="delete-btn"
+data-uid="${escapeHTML(contact.uid || "")}"
+>
+🗑️ Siba
+</button>
+
+</div>
+
+</div>
+
+`;
+
+}).join("");
+
+
+/* Chat buttons */
+
+document
+.querySelectorAll(".chat-btn")
+.forEach(function(button){
+
+button.addEventListener(
+"click",
+function(){
+
+const phone =
+button.dataset.phone || "";
+
+const name =
+button.dataset.name || "";
+
+const uid =
+button.dataset.uid || "";
+
+
+localStorage.setItem(
+"deppNetSelectedContactPhone",
+phone
+);
+
+localStorage.setItem(
+"deppNetSelectedContactName",
+name
+);
+
+localStorage.setItem(
+"deppNetSelectedContactUid",
+uid
+);
+
+window.location.href =
+"chat.html";
+
+}
+);
+
+});
+
+
+/* Delete buttons */
+
+document
+.querySelectorAll(".delete-btn")
+.forEach(function(button){
+
+button.addEventListener(
+"click",
+function(){
+
+const uid =
+button.dataset.uid || "";
+
+deleteContact(uid);
+
+}
+);
+
+});
+
+}
+
+
+/* =====================================================
+   SEARCH
+===================================================== */
+
+searchInput.addEventListener(
+"input",
+renderContacts
+);
+
+
+/* =====================================================
+   DELETE CONTACT
+===================================================== */
+
+async function deleteContact(uid){
+
+if(!firebaseCurrentUser){
+
+return;
+
+}
+
+
+const contact =
+contacts.find(function(item){
+
+return String(item.uid) ===
+String(uid);
+
+});
+
+
+if(!contact){
+
+return;
+
+}
+
+
+const yes =
+confirm(
+"Urashaka gukuraho " +
+contact.name +
+" muri Contacts?"
+);
+
+
+if(!yes){
+
+return;
+
+}
+
+
+try{
+
+
+/* Delete Firebase */
+
+await deleteDoc(
+doc(
+db,
+"users",
+firebaseCurrentUser.uid,
+"contacts",
+uid
+)
+);
+
+
+/* Delete local */
+
+contacts =
+contacts.filter(function(item){
+
+return String(item.uid) !==
+String(uid);
+
+});
+
+
+saveLocalContacts();
+
+renderContacts();
+
+
+}catch(error){
+
+console.error(
+"Delete contact error:",
+error
+);
+
+alert(
+"Contact ntiyashoboye gukurwaho."
+);
+
+}
+
+}
+
+
+/* =====================================================
+   FIREBASE AUTH
+===================================================== */
+
+onAuthStateChanged(
+auth,
+function(user){
+
+if(!user){
+
+firebaseCurrentUser = null;
+
+window.location.href =
+"login.html";
+
+return;
+
+}
+
+
+firebaseCurrentUser = user;
+
+loadContactsFromFirebase();
+
+}
+);
+
+</script>
+
+</body>
+</html>

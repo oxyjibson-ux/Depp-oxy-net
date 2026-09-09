@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="rn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Depp Net - Account</title>
+<style>
+*{box-sizing:border-box;font-family:Arial}
+body{margin:0;background:#f1f4f8;color:#222}
+header{height:58px;background:#1877f2;color:#fff;display:flex;align-items:center;padding:0 12px;gap:12px}
+header button{border:0;border-radius:20px;padding:8px 13px;background:#fff;color:#1877f2}
+header b{font-size:19px}
+main{max-width:600px;margin:auto;padding:12px}
+.card{background:#fff;border-radius:15px;margin:10px 0;padding:15px;box-shadow:0 2px 8px #ddd}
+.title{font-weight:bold;color:#1877f2;margin-bottom:12px}
+.row{padding:12px 0;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
+.name{font-weight:bold}
+.small{font-size:13px;color:#777}
+.danger{color:#e53935}
+.dark{background:#121212;color:#eee}
+.dark .card{background:#1e1e1e;box-shadow:none}
+.dark .row{border-color:#333}
+.dark .small{color:#aaa}
+</style>
+</head>
+<body>
+
+<header>
+<button onclick="history.back()">←</button>
+<b id="title">👤 Account</b>
+</header>
+
+<main>
+
+<div class="card">
+<div class="title" id="info">Account Information</div>
+
+<div class="row">
+<div>
+<div class="name" id="name">User</div>
+<div class="small" id="username">@user</div>
+</div>
+</div>
+
+<div class="row">
+<span id="emailTxt">Email</span>
+<span class="small" id="email">...</span>
+</div>
+
+</div>
+
+<div class="card">
+<div class="title" id="options">Account Options</div>
+
+<div class="row" onclick="editProfile()">
+<span>✏️ <span id="edit">Edit Profile</span></span>
+<span>›</span>
+</div>
+
+<div class="row" onclick="changeEmail()">
+<span>📧 <span id="change">Change Email</span></span>
+<span>›</span>
+</div>
+
+<div class="row" onclick="deleteAccount()" class="danger">
+<span class="danger">🗑️ <span id="del">Delete Account</span></span>
+<span class="danger">›</span>
+</div>
+
+</div>
+
+</main>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import{getAuth}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+const app=initializeApp({
+apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
+authDomain:"depp-net-apk.firebaseapp.com",
+projectId:"depp-net-apk",
+storageBucket:"depp-net-apk.firebasestorage.app",
+messagingSenderId:"664141462348",
+appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
+});
+
+const auth=getAuth(app);
+let lang=localStorage.lang||"rn";
+let u=auth.currentUser;
+
+const T={
+rn:{
+title:"👤 Konti",info:"Amakuru ya Konti",
+email:"Email",options:"Uburyo bwa Konti",
+edit:"Hindura Profile",change:"Hindura Email",
+del:"Siba Konti"
+},
+fr:{
+title:"👤 Compte",info:"Informations du compte",
+email:"Email",options:"Options du compte",
+edit:"Modifier le profil",change:"Changer l'email",
+del:"Supprimer le compte"
+},
+en:{
+title:"👤 Account",info:"Account Information",
+email:"Email",options:"Account Options",
+edit:"Edit Profile",change:"Change Email",
+del:"Delete Account"
+}};
+
+let t=T[lang]||T.rn;
+
+title.textContent=t.title;
+info.textContent=t.info;
+emailTxt.textContent=t.email;
+options.textContent=t.options;
+edit.textContent=t.edit;
+change.textContent=t.change;
+del.textContent=t.del;
+
+document.body.classList.toggle("dark",localStorage.dark==="1");
+
+if(u){
+let n=JSON.parse(localStorage.getItem("deppNetUser")||"{}");
+name.textContent=n.name||u.displayName||"User";
+username.textContent="@"+(n.username||u.email.split("@")[0]);
+email.textContent=u.email||"";
+}
+
+window.editProfile=()=>location.href="profile.html";
+
+window.changeEmail=()=>{
+alert(lang==="rn"?"Gufungura Settings za Email biraza.":lang==="fr"?"La modification de l'email sera ajoutée.":"Email change settings coming soon.");
+};
+
+window.deleteAccount=()=>{
+alert(lang==="rn"?"Gusiba konti bizoshirwa mu ntambwe ikurikira.":lang==="fr"?"La suppression du compte sera ajoutée à l'étape suivante.":"Account deletion will be added in the next step.");
+};
+</script>
+
+</body>
+</html>
