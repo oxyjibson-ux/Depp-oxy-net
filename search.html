@@ -1,86 +1,88 @@
-<!DOCTYPE html>
-<html lang="rn">
+<!DOCTYPE html><html lang="rn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Depp Net - Search</title>
-
 <style>
 *{box-sizing:border-box;font-family:Arial}
-body{margin:0;background:#f2f4f7}
-header{height:60px;background:#1877f2;color:white;display:flex;align-items:center;padding:8px}
-.back{width:40px;height:40px;border:0;border-radius:50%;font-size:22px}
-.logo{font-size:21px;font-weight:bold;margin-left:10px}
-.box{max-width:600px;margin:auto;padding:15px}
-.search{display:flex;gap:7px}
-.search input{flex:1;padding:13px;border:1px solid #ddd;border-radius:9px;font-size:15px}
-.search button{border:0;background:#1877f2;color:white;border-radius:9px;padding:12px 16px}
-.result{background:white;margin-top:10px;padding:13px;border-radius:10px;display:flex;align-items:center;gap:10px}
-.photo{width:55px;height:55px;border-radius:50%;object-fit:cover;background:#e8f0fe}
-.default{width:55px;height:55px;border-radius:50%;background:#e8f0fe;display:flex;align-items:center;justify-content:center;font-size:28px}
-.name{font-weight:bold}
-.user{color:#777;font-size:13px}
+body{margin:0;background:#f1f3f6;color:#222}
+header{height:62px;background:#1877f2;color:#fff;display:flex;align-items:center;padding:0 12px;position:sticky;top:0;z-index:5;box-shadow:0 2px 7px #bbb}
+.back{width:42px;height:42px;border:0;border-radius:50%;background:#fff;color:#1877f2;font-size:23px}
+.title{font-size:20px;font-weight:bold;margin-left:12px}
+main{max-width:650px;margin:auto;padding:15px}
+.searchbox{background:#fff;padding:12px;border-radius:15px;display:flex;gap:8px;box-shadow:0 2px 7px #ddd}
+.searchbox input{flex:1;border:0;background:#f0f2f5;border-radius:11px;padding:13px;font-size:15px;outline:none}
+.searchbox button{border:0;background:#1877f2;color:#fff;border-radius:11px;width:48px;font-size:19px}
+#message{text-align:center;color:#777;font-size:14px;padding:20px 5px}
+.card{background:#fff;border-radius:15px;padding:14px;margin-bottom:11px;box-shadow:0 2px 7px #ddd}
+.user{display:flex;align-items:center;gap:12px}
+.avatar{width:56px;height:56px;border-radius:50%;background:#e8f0fe;display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.info{flex:1}
+.name{font-size:16px;font-weight:bold}
+.username{color:#777;font-size:13px;margin-top:4px}
+.buttons{display:flex;gap:8px;margin-top:12px}
+.buttons button{flex:1;border:0;border-radius:9px;padding:10px;font-size:14px}
+.chat{background:#1877f2;color:#fff}
+.profile{background:#e9eaed;color:#222}
+.empty{background:#fff;border-radius:15px;padding:25px;text-align:center;color:#777;box-shadow:0 2px 7px #ddd}
+body.dark{background:#18191a;color:#eee}
+body.dark .searchbox,body.dark .card,body.dark .empty{background:#242526;box-shadow:none}
+body.dark .searchbox input{background:#18191a;color:#fff}
+body.dark .profile{background:#3a3b3c;color:#fff}
+body.dark .username{color:#aaa}
 </style>
-</head>
-
-<body>
-
-<header>
-<button class="back" onclick="history.back()">←</button>
-<div class="logo">🔎 Search</div>
-</header>
-
-<div class="box">
-
-<div class="search">
-<input id="q" placeholder="Rondera izina canke username...">
-<button onclick="search()">Search</button>
-</div>
-
-<div id="results"></div>
-
-</div>
-
-<script>
-
-if(localStorage.getItem("deppNetLoggedIn")!=="true")
+</head><body><header>
+<button class="back" onclick="location.href='home.html'">←</button>
+<div class="title">🔎 Search</div>
+</header><main><div class="searchbox">
+<input id="q" placeholder="Rondera umuntu...">
+<button onclick="searchUsers()">🔎</button>
+</div><div id="message">Andika izina canke username kugira urondere.</div>
+<div id="results"></div></main><script>
+if(localStorage.getItem("deppNetLoggedIn")!=="true"){
 location.href="login.html";
+}
 
-function users(){
-
+function getUsers(){
 try{
 let x=JSON.parse(localStorage.getItem("deppNetUsers")||"[]");
 return Array.isArray(x)?x:[];
-}catch(e){
-return [];
+}catch(e){return []}
 }
 
+function getMe(){
+try{
+return JSON.parse(localStorage.getItem("deppNetUser")||"null");
+}catch(e){return null}
 }
 
-function search(){
+function esc(x){
+let d=document.createElement("div");
+d.textContent=x||"";
+return d.innerHTML;
+}
 
+function searchUsers(){
 let q=document.getElementById("q").value.trim().toLowerCase();
+let results=document.getElementById("results");
+let message=document.getElementById("message");
 
 if(!q){
-results.innerHTML="<p>Andika ico ushaka kurondera.</p>";
+results.innerHTML="";
+message.textContent="Andika izina canke username kugira urondere.";
 return;
 }
 
-let me;
-
-try{
-me=JSON.parse(localStorage.getItem("deppNetUser")||"null");
-}catch(e){me=null}
-
-let list=users();
+let list=getUsers();
+let me=getMe();
 
 if(me){
-let exists=list.some(x=>
+let has=list.some(x=>
 String(x.username||"").toLowerCase()===
 String(me.username||"").toLowerCase()
 );
-
-if(!exists)list.push(me);
+if(!has)list.push(me);
 }
 
 let found=list.filter(x=>
@@ -89,40 +91,62 @@ String(x.username||"").toLowerCase().includes(q)
 );
 
 if(!found.length){
-results.innerHTML="<div class='result'>Nta muntu abonetse.</div>";
+message.textContent="";
+results.innerHTML="<div class='empty'>😔<br><br>Nta muntu abonetse.</div>";
 return;
 }
 
-results.innerHTML=found.map(x=>`
+message.textContent=found.length+" umuntu yabonetse.";
 
-<div class="result">
-${x.photo
-?`<img class="photo" src="${x.photo}">`
-:`<div class="default">👤</div>`}
+results.innerHTML=found.map(x=>{
+let photo=x.photo?
+`<img src="${esc(x.photo)}">`:"👤";
 
-<div>
+return`
+<div class="card">
+<div class="user">
+
+<div class="avatar">${photo}</div>
+
+<div class="info">
 <div class="name">${esc(x.name||"User")}</div>
-<div class="user">@${esc(x.username||"user")}</div>
-</div>
+<div class="username">@${esc(x.username||"user")}</div>
 </div>
 
-`).join("");
+</div>
 
+<div class="buttons">
+<button class="chat"
+onclick="openChat('${esc(x.username||"")}')">
+💬 Chat
+</button>
+
+<button class="profile"
+onclick="openProfile('${esc(x.username||"")}')">
+👤 Profile
+</button>
+</div>
+
+</div>`;
+}).join("");
 }
 
-function esc(x){
-
-let d=document.createElement("div");
-d.textContent=x||"";
-return d.innerHTML;
-
+function openChat(username){
+localStorage.setItem("deppChatUser",username);
+location.href="chat.html";
 }
 
-q.addEventListener("keydown",function(e){
-if(e.key==="Enter")search();
+function openProfile(username){
+localStorage.setItem("deppViewProfile",username);
+location.href="profile.html";
+}
+
+document.getElementById("q").addEventListener("keydown",function(e){
+if(e.key==="Enter")searchUsers();
 });
 
-</script>
-
-</body>
+if(localStorage.getItem("deppNetDarkMode")==="true"){
+document.body.classList.add("dark");
+}
+</script></body>
 </html>
