@@ -30,6 +30,8 @@ header b{font-size:20px}
 .controls button{font-size:20px;width:52px;height:52px;margin:4px}
 #incoming{z-index:30;color:#fff;text-align:center;padding-top:30vh}
 #incoming button{margin:8px}
+#timer{display:none;color:#e53935;font-weight:bold;font-size:12px}
+#cancel{display:none;background:#777;color:#fff;padding:8px}
 </style>
 </head>
 <body>
@@ -54,6 +56,8 @@ header b{font-size:20px}
 <div id="typing" class="typ"></div>
 <div class="send">
 <button class="rec" id="rec" onclick="record()">🎙️</button>
+<span id="timer">00:00</span>
+<button id="cancel" onclick="cancelRecord()">❌</button>
 <input id="txt" placeholder="Andika ubutumwa...">
 <button onclick="send()">➤</button>
 </div>
@@ -78,7 +82,7 @@ header b{font-size:20px}
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import{getAuth,onAuthStateChanged,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import{getFirestore,collection,doc,getDoc,setDoc,addDoc,onSnapshot,query,orderBy,serverTimestamp,updateDoc,arrayUnion,enableIndexedDbPersistence}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const app=initializeApp({
@@ -90,11 +94,13 @@ messagingSenderId:"664141462348",
 appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
 });
 const auth=getAuth(app),db=getFirestore(app);
+await setPersistence(auth,browserLocalPersistence);
 
 enableIndexedDbPersistence(db).catch(e=>{
 console.log("Offline cache:",e.code);
 });
 let me,to,chatId,pc,stream,callId,incoming,recorder,chunks=[];
+let recTimer=null,recSeconds=0,cancelled=false;
 const ice={iceServers:[{urls:"stun:stun.l.google.com:19302"}]};
 const $=id=>document.getElementById(id);
   function net(){
@@ -189,11 +195,23 @@ $("txt").value="";
 
 window.record=async()=>{
 if(recorder?.state==="recording"){recorder.stop();return}
+cancelled=false;
 try{
 let s=await navigator.mediaDevices.getUserMedia({audio:true});
 chunks=[];recorder=new MediaRecorder(s);
 recorder.ondataavailable=e=>chunks.push(e.data);
 recorder.onstop=()=>{
+clearInterval(recTimer);
+recTimer=null;
+$("timer").style.display="none";
+$("cancel").style.display="none";
+$("rec").textContent="🎙️";
+
+if(cancelled){
+ chunks=[];
+ cancelled=false;
+ return;
+}
 s.getTracks().forEach(t=>t.stop());
 let r=new FileReader();
 r.onload=async()=>{
@@ -205,7 +223,17 @@ uid:me.uid,toUid:to.uid,audio:r.result,createdAt:serverTimestamp()
 r.readAsDataURL(new Blob(chunks,{type:"audio/webm"}));
 $("rec").textContent="🎙️";
 };
-recorder.start();$("rec").textContent="⏹️";
+recorder.start();
+$("rec").textContent="⏹️";
+$("cancel").style.display="inline-block";
+$("timer").style.display="inline";
+recSeconds=0;
+$("timer").textContent="00:00";
+recTimer=setInterval(()=>{
+ recSeconds++;
+ let m=Math.floor(recSeconds/60),s=recSeconds%60;
+ $("timer").textContent=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+},1000);
 }catch(e){alert("Emera microphone muri browser.");}
 };
 
@@ -225,7 +253,7 @@ let o=await pc.createOffer();
 await pc.setLocalDescription(o);
 await updateDoc(ref,{offer:{type:o.type,sdp:o.sdp}});
 watchCall(ref,true);
-}catch(e){alert("Call ntishoboye gutangura. Emeza Camera/Microphone.");}
+}catch(e){alert("Cgutangura. Emeza Camera/Microphone.");}
 };
 
 function watchIncoming(){
@@ -285,7 +313,12 @@ let t=stream?.getAudioTracks()[0];if(t)t.enabled=!t.enabled;
 window.toggleCam=()=>{
 let t=stream?.getVideoTracks()[0];if(t)t.enabled=!t.enabled;
 };
-
+window.cancelRecord=()=>{
+if(!recorder||recorder.state!=="recording")return;
+cancelled=true;
+chunks=[];
+recorder.stop();
+};
 window.endCall=async local=>{
 if(local!==false&&callId)
 await updateDoc(doc(db,"calls",callId),{status:"ended"}).catch(()=>{});
