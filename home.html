@@ -1,21 +1,20 @@
-<!DOCTYPE html>
-<html lang="rn">
+<!DOCTYPE html><html lang="rn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Depp Net - Home</title>
 <style>
 *{box-sizing:border-box;font-family:Arial}
-  body{margin:0;background:#f2f4f7;color:#222;padding-bottom:60px;transition:.2s}
+body{margin:0;background:#f2f4f7;color:#222;padding-bottom:60px}
 .dark{background:#121212;color:#eee}
-.dark header,.dark .box,.dark .post,.dark .bottom{background:#1e1e1e;color:#eee}
-.dark .menu{background:#1e1e1e}
+.dark header,.dark .box,.dark .post,.dark .bottom,.dark .menu{background:#1e1e1e;color:#eee}
 .dark .menu button,.dark .hbtn,.dark .action{background:#333;color:#eee}
 .dark textarea,.dark .comment input{background:#222;color:#eee;border-color:#444}
 .dark .onecomment{background:#333}
 header{height:58px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 10px;position:sticky;top:0;z-index:5;border-bottom:1px solid #ddd}
 .logo{font-size:20px;font-weight:bold;color:#1877f2}
 .hbtn,.menu button{border:0;background:#eee;border-radius:8px;padding:9px 11px}
+.top{display:flex;gap:6px;align-items:center}
 .menu{display:none;position:absolute;right:8px;top:55px;background:#fff;padding:8px;border-radius:10px;box-shadow:0 2px 12px #bbb;z-index:9}
 .menu button{display:block;width:150px;margin:4px 0;text-align:left}
 main{max-width:650px;margin:auto;padding:10px}
@@ -24,14 +23,14 @@ main{max-width:650px;margin:auto;padding:10px}
 .default{width:45px;height:45px;border-radius:50%;background:#1877f2;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px}
 .pname{font-weight:bold}.puser,.time{font-size:12px;color:#777}
 textarea{width:100%;min-height:65px;border:1px solid #ddd;border-radius:10px;padding:10px;resize:none}
-.row{display:flex;gap:7px;align-items:center;margin-top:8px}
+.row{display:flex;gap:7px;align-items:center;margin-top:8px;flex-wrap:wrap}
 .row button,.send{border:0;border-radius:9px;padding:9px 12px}
 .send{background:#1877f2;color:#fff}
-input[type=file]{display:none}
 .media{max-width:100%;max-height:400px;border-radius:10px;margin-top:8px}
-.actions{display:flex;gap:8px;margin-top:8px}
+.actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
 .action{border:0;background:#eee;border-radius:8px;padding:8px 12px}
 .liked{background:#ffdede;color:red}
+.delete{background:#ffe1e1;color:#d00}
 .comment{display:flex;gap:5px;margin-top:8px}
 .comment input{flex:1;border:1px solid #ddd;border-radius:8px;padding:9px}
 .comments{margin-top:8px}
@@ -41,62 +40,50 @@ input[type=file]{display:none}
 .bottom button{border:0;background:none;font-size:20px;position:relative}
 .badge{position:absolute;top:-5px;right:-7px;background:red;color:#fff;border-radius:20px;font-size:10px;padding:3px 5px}
 .status{display:flex;justify-content:space-between;align-items:center}
+#uploadMsg{font-size:13px;color:#1877f2;margin-top:8px}
 </style>
 </head>
-
-<body>
-
-<header>
+<body><header>
 <button class="hbtn" onclick="go('profile.html')">👤</button>
-<div class="logo">Depp Net</div>
+<div class="logo">Depp Net</div><div class="top">
+<button class="hbtn" onclick="go('search.html')">🔎</button>
 <button class="hbtn" onclick="menu()">☰</button>
-<div id="m" class="menu">
+</div><div id="m" class="menu">
 <button onclick="go('chat.html')" id="tChat">💬 Chat</button>
 <button onclick="go('notify.html')" id="tNotify">🔔 Notifications</button>
 <button onclick="go('contacts.html')" id="tContacts">👥 Contacts</button>
-<button onclick="go('search.html')" id="tSearch">🔎 Search</button>
 <button onclick="go('settings.html')" id="tSettings">⚙️ Settings</button>
 <button onclick="logout()" id="tLogout">🚪 Logout</button>
 </div>
-</header>
-
-<main>
-
-<div class="box profile">
+</header><main><div class="box profile">
 <div class="default" id="avatar">D</div>
-<div><div class="pname" id="name">...</div><div class="puser" id="user">@...</div></div>
+<div>
+<div class="pname" id="name">...</div>
+<div class="puser" id="user">@...</div>
 </div>
-
-<div class="box status">
+</div><div class="box status">
 <b>📷 Status</b>
 <button onclick="go('status.html')">＋ Add</button>
-</div>
-<div class="box" id="streak" onclick="addStreak()" style="cursor:pointer">
-🔥 1 Day Streak
-</div>
-<div class="box">
-<textarea id="txt" placeholder="Andika ico ushaka gusangiza..."></textarea>
-<div class="row">
-<label><button type="button">📷 Photo</button><input id="photo" type="file" accept="image/*"></label>
-<label><button type="button">🎥 Video</button><input id="video" type="file" accept="video/*"></label>
+</div><div class="box" id="streak" onclick="addStreak()" style="cursor:pointer">🔥 1 Day Streak</div><div class="box">
+<textarea id="txt" placeholder="Andika ico ushaka gusangiza..."></textarea><div class="row">
+<button type="button" onclick="document.getElementById('photo').click()">📷 Photo</button>
+<input id="photo" type="file" accept="image/*" style="display:none"><button type="button" onclick="document.getElementById('video').click()">🎬 Video</button>
+<input id="video" type="file" accept="video/*" style="display:none">
+
 <button class="send" onclick="post()">📤 Sangiza</button>
-</div>
-<div id="preview"></div>
-</div>
 
-<div id="posts">Turiko turarondera Posts...</div>
-</main>
-
-<div class="bottom">
+</div><div id="preview"></div>
+<div id="uploadMsg"></div>
+</div><div id="posts">Turiko turarondera Posts...</div>
+</main><div class="bottom">
 <button onclick="go('chat.html')">💬</button>
 <button onclick="go('notify.html')">🔔<span id="badge" class="badge" style="display:none">0</span></button>
 <button onclick="go('contacts.html')">👥</button>
-</div>
+</div><script type="module">
 
-<script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js"
-import{getFirestore,collection,doc,addDoc,onSnapshot,query,orderBy,serverTimestamp,updateDoc,arrayUnion,arrayRemove,getDoc,setDoc}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import{getFirestore,collection,doc,addDoc,onSnapshot,query,orderBy,serverTimestamp,updateDoc,deleteDoc,arrayUnion,arrayRemove,getDoc,setDoc}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const app=initializeApp({
 apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
@@ -108,341 +95,402 @@ appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
 });
 
 const auth=getAuth(app),db=getFirestore(app);
-  document.body.classList.toggle("dark",localStorage.dark==="1");
-let me,posts=[],comments=[];
+const CLOUD="sdtggm0f",PRESET="yvgqax4x";
 
-  const lang=localStorage.lang||"rn";
-  const L={
-rn:{
-chat:"💬 Chat",notify:"🔔 Notifications",contacts:"👥 Contacts",
-search:"🔎 Search",settings:"⚙️ Settings",logout:"🚪 Logout",
-status:"📷 Status",add:"＋ Add",share:"📤 Sangiza",
-photo:"📷 Photo",video:"🎥 Video",comment:"💬 Comment",
-send:"Send"
-},
-fr:{
-chat:"💬 Discussion",notify:"🔔 Notifications",contacts:"👥 Contacts",
-search:"🔎 Rechercher",settings:"⚙️ Paramètres",logout:"🚪 Déconnexion",
-status:"📷 Statut",add:"＋ Ajouter",share:"📤 Partager",
-photo:"📷 Photo",video:"🎥 Vidéo",comment:"💬 Commenter",
-send:"Envoyer"
-},
-en:{
-chat:"💬 Chat",notify:"🔔 Notifications",contacts:"👥 Contacts",
-search:"🔎 Search",settings:"⚙️ Settings",logout:"🚪 Logout",
-status:"📷 Status",add:"＋ Add",share:"📤 Share",
-photo:"📷 Photo",video:"🎥 Video",comment:"💬 Comment",
-send:"Send"
-}};
+document.body.classList.toggle("dark",localStorage.dark==="1");
+
+let me,posts=[],comments=[];
+const lang=localStorage.lang||"rn";
+
+const L={
+rn:{chat:"💬 Chat",notify:"🔔 Notifications",contacts:"👥 Contacts",settings:"⚙️ Settings",logout:"🚪 Logout"},
+fr:{chat:"💬 Discussion",notify:"🔔 Notifications",contacts:"👥 Contacts",settings:"⚙️ Paramètres",logout:"🚪 Déconnexion"},
+en:{chat:"💬 Chat",notify:"🔔 Notifications",contacts:"👥 Contacts",settings:"⚙️ Settings",logout:"🚪 Logout"}
+};
+
 function applyLang(){
 let t=L[lang]||L.rn;
 tChat.textContent=t.chat;
 tNotify.textContent=t.notify;
 tContacts.textContent=t.contacts;
-tSearch.textContent=t.search;
 tSettings.textContent=t.settings;
 tLogout.textContent=t.logout;
 }
 applyLang();
-const T={
-rn:{
-chat:"Chat",notifications:"Notifications",contacts:"Contacts",
-search:"Rondera",settings:"Settings",logout:"Sohoka"
-},
-fr:{
-chat:"Chat",notifications:"Notifications",contacts:"Contacts",
-search:"Rechercher",settings:"Paramètres",logout:"Déconnexion"
-},
-en:{
-chat:"Chat",notifications:"Notifications",contacts:"Contacts",
-search:"Search",settings:"Settings",logout:"Logout"
-}};
 
-function applyLanguage(){
-let t=T[lang]||T.rn;
-document.querySelectorAll("[data-t]").forEach(x=>{
-let k=x.dataset.t;
-if(t[k])x.textContent=t[k];
-});
-}
-
-applyLanguage();
 window.go=x=>location.href=x;
-window.go=x=>location.href=x;
-window.menu=()=>m.style.display=m.style.display==="block"?"none":"block";
+window.menu=()=>{m.style.display=m.style.display==="block"?"none":"block"};
 
 onAuthStateChanged(auth,u=>{
- if(!u){location.href="login.html";return}
- me=u;
- loadMe();
- loadPosts();
- loadComments();
- loadNotify();
- loadStreak();
+if(!u){location.href="login.html";return}
+me=u;
+loadMe();
+loadPosts();
+loadComments();
+loadNotify();
+loadStreak();
 });
 
 async function loadMe(){
- try{
-  let n=JSON.parse(localStorage.getItem("deppNetUser")||"{}");
-  name.textContent=n.name||me.displayName||"User";
-  user.textContent="@"+(n.username||me.email.split("@")[0]);
-  avatar.textContent=(n.name||"D").charAt(0).toUpperCase();
- }catch(e){}
+try{
+let n=JSON.parse(localStorage.getItem("deppNetUser")||"{}");
+name.textContent=n.name||me.displayName||"User";
+user.textContent="@"+(n.username||me.email.split("@")[0]);
+avatar.textContent=(n.name||"D").charAt(0).toUpperCase();
+}catch(e){}
 }
 
 function loadPosts(){
- let q=query(collection(db,"posts"),orderBy("createdAt","desc"));
- onSnapshot(q,s=>{
-  posts=s.docs.map(d=>({id:d.id,...d.data()}));
-  showPosts();
- },e=>posts.innerHTML="<div class='box'>Posts ntizashoboye gufunguka.</div>");
+let q=query(collection(db,"posts"),orderBy("createdAt","desc"));
+onSnapshot(q,s=>{
+posts=s.docs.map(d=>({id:d.id,...d.data()}));
+showPosts();
+},e=>{
+posts=[];
+document.getElementById("posts").innerHTML="<div class='box'>Posts ntizashoboye gufunguka.</div>";
+});
 }
 
 function loadComments(){
- onSnapshot(collection(db,"comments"),s=>{
-  comments=s.docs.map(d=>({id:d.id,...d.data()}));
-  showPosts();
- });
+onSnapshot(collection(db,"comments"),s=>{
+comments=s.docs.map(d=>({id:d.id,...d.data()}));
+showPosts();
+});
 }
 
 function showPosts(){
- let box=document.getElementById("posts");
- if(!posts.length){box.innerHTML="<div class='box'>Nta Posts ziraboneka.</div>";return}
+let box=document.getElementById("posts");
+if(!posts.length){
+box.innerHTML="<div class='box'>Nta Posts ziraboneka.</div>";
+return;
+}
 
- box.innerHTML=posts.map(p=>{
-  let liked=(p.likes||[]).includes(me.uid);
-  let cs=comments.filter(c=>c.postId===p.id);
-  return `<div class="post">
-   <div class="profile">
-    <div class="default">${(p.name||"D").charAt(0).toUpperCase()}</div>
-    <div><div class="pname">${p.name||"User"}</div>
-    <div class="puser">@${p.username||""}</div></div>
-   </div>
+box.innerHTML=posts.map(p=>{
+let liked=(p.likes||[]).includes(me.uid);
+let cs=comments.filter(c=>c.postId===p.id);
+let mine=p.uid===me.uid;
 
-   <div style="margin-top:10px">${p.text||""}</div>
+return`<div class="post">
+<div class="profile">
+<div class="default">${(p.name||"D").charAt(0).toUpperCase()}</div>
+<div>
+<div class="pname">${p.name||"User"}</div>
+<div class="puser">@${p.username||""}</div>
+</div>
+</div>
 
-   ${p.image?`<img class="media" src="${p.image}">`:""}
-   ${p.video?`<video class="media" src="${p.video}" controls></video>`:""}
+<div style="margin-top:10px">${p.text||""}</div>
+${p.image?`<img class="media" src="${p.image}">`:""}
+${p.video?`<video class="media" src="${p.video}" controls></video>`:""}
 
-   <div class="actions">
-    <button class="action ${liked?"liked":""}" onclick="likePost('${p.id}',${liked})">
-    ❤️ ${(p.likes||[]).length}</button>
-    <button class="action" onclick="focusComment('${p.id}')">💬 ${cs.length} Comment</button>
-    <button class="action" onclick="sharePost('${p.id}')">↗ Share</button>
-   </div>
+<div class="actions">
+<button class="action ${liked?"liked":""}" onclick="likePost('${p.id}',${liked})">❤️ ${(p.likes||[]).length}</button>
+<button class="action" onclick="focusComment('${p.id}')">💬 ${cs.length} Comment</button>
+<button class="action" onclick="sharePost('${p.id}')">↗ Share</button>
+${mine?`<button class="action delete" onclick="deletePost('${p.id}')">🗑️ Delete</button>`:""}
+</div>
 
-   <div class="comments">
-   ${cs.map(c=>`
-    <div class="onecomment">
-     <b>${c.name||"User"}</b>
-     <small>@${c.username||""}</small><br>
-     ${c.text||""}
-    </div>`).join("")}
-   </div>
+<div class="comments">
+${cs.map(c=>`<div class="onecomment"><b>${c.name||"User"}</b> <small>@${c.username||""}</small><br>${c.text||""}</div>`).join("")}
+</div>
 
-   <div class="comment">
-    <input id="c${p.id}" placeholder="Andika comment...">
-    <button class="send" onclick="comment('${p.id}')">Send</button>
-   </div>
-  </div>`;
- }).join("");
+<div class="comment">
+<input id="c${p.id}" placeholder="Andika comment...">
+<button class="send" onclick="comment('${p.id}')">Send</button>
+</div>
+</div>`;
+}).join("");
+}
+
+async function uploadCloud(file){
+let type=file.type.startsWith("video")?"video":"image";
+let url=`https://api.cloudinary.com/v1_1/${CLOUD}/${type}/upload`;
+let form=new FormData();
+form.append("file",file);
+form.append("upload_preset",PRESET);
+let r=await fetch(url,{method:"POST",body:form});
+let data=await r.json();
+if(!r.ok)throw new Error(data.error?.message||"Cloudinary upload failed");
+return data.secure_url;
 }
 
 window.post=async()=>{
- let text=txt.value.trim();
- if(!text)return alert("Andika ico ushaka gusangiza.");
- try{
-  let n=JSON.parse(localStorage.getItem("deppNetUser")||"{}");
-  await addDoc(collection(db,"posts"),{
-   uid:me.uid,
-   name:n.name||me.displayName||"User",
-   username:n.username||me.email.split("@")[0],
-   text,likes:[],createdAt:serverTimestamp()
-  });
-  txt.value="";
-  preview.innerHTML="";
- }catch(e){alert("Post ntiyabitswe: "+e.message)}
-};
+let text=txt.value.trim(),pf=photo.files[0],vf=video.files[0];
 
-window.likePost=async(id,liked)=>{
- let p=posts.find(x=>x.id===id);
- if(!p)return;
- try{
-  await updateDoc(doc(db,"posts",id),{
-   likes:liked?arrayRemove(me.uid):arrayUnion(me.uid)
-  });
-
-  if(!liked&&p.uid!==me.uid){
-   let n=JSON.parse(localStorage.getItem("deppNetUser")||"{}");
-   await addDoc(collection(db,"notifications"),{
-    toUid:p.uid,
-    toUsername:p.username||"",
-    fromUid:me.uid,
-    fromUsername:n.username||me.email.split("@")[0],
-    name:n.name||me.displayName||"User",
-    type:"like",
-    postId:id,
-    read:false,
-    createdAt:serverTimestamp()
-   });
-  }
- }catch(e){alert("Like ntiyakoze: "+e.message)}
-};
-
-window.comment=async id=>{
- let inp=document.getElementById("c"+id);
- let text=inp.value.trim();
- if(!text)return;
-
- let p=posts.find(x=>x.id===id);
- if(!p)return;
-
- try{
-  let n=JSON.parse(localStorage.getItem("deppNetUser")||"{}");
-
-  await addDoc(collection(db,"comments"),{
-   postId:id,
-   postOwner:p.uid,
-   uid:me.uid,
-   name:n.name||me.displayName||"User",
-   username:n.username||me.email.split("@")[0],
-   text,
-   createdAt:serverTimestamp()
-  });
-
-  if(p.uid!==me.uid){
-   await addDoc(collection(db,"notifications"),{
-    toUid:p.uid,
-    toUsername:p.username||"",
-    fromUid:me.uid,
-    fromUsername:n.username||me.email.split("@")[0],
-    name:n.name||me.displayName||"User",
-    type:"comment",
-    postId:id,
-    read:false,
-    createdAt:serverTimestamp()
-   });
-  }
-
-  inp.value="";
- }catch(e){alert("Comment ntiyabitswe: "+e.message)}
-};
-
-window.focusComment=id=>{
- let x=document.getElementById("c"+id);
- if(x){x.focus();x.scrollIntoView({behavior:"smooth",block:"center"})}
-};
-
-window.sharePost=async id=>{
- let url=location.href+"#post-"+id;
- try{
-  if(navigator.share)
-   await navigator.share({title:"Depp Net",text:"Raba iyi Post",url});
-  else{
-   await navigator.clipboard.writeText(url);
-   alert("Link yagiye muri clipboard.");
-  }
- }catch(e){}
-};
-
-function loadNotify(){
- onSnapshot(collection(db,"notifications"),s=>{
-  let n=s.docs.filter(d=>{
-   let x=d.data();
-   return x.toUid===me.uid&&x.read!==true;
-  }).length;
-
-  badge.textContent=n;
-  badge.style.display=n?"block":"none";
- });
+if(!text&&!pf&&!vf){
+alert("Andika ico ushaka gusangiza canke hitamwo Photo/Video.");
+return;
+}
+if(pf&&vf){
+alert("Hitamwo Photo canke Video imwe gusa.");
+return;
+}
+if(pf&&pf.size>5*1024*1024){
+alert("Photo ntirenge 5MB.");
+return;
+}
+if(vf&&vf.size>20*1024*1024){
+alert("Video ntirenge 20MB.");
+return;
 }
 
+try{
+let n=JSON.parse(localStorage.getItem("deppNetUser")||"{}");
+let image=null,video=null;
+
+uploadMsg.textContent="⏳ Turiko turashira Media kuri Cloudinary...";
+if(pf)image=await uploadCloud(pf);
+if(vf)video=await uploadCloud(vf);
+
+uploadMsg.textContent="⏳ Turiko turabika Post...";
+
+await addDoc(collection(db,"posts"),{
+uid:me.uid,
+name:n.name||me.displayName||"User",
+username:n.username||me.email.split("@")[0],
+text:text,
+image:image,
+video:video,
+likes:[],
+createdAt:serverTimestamp()
+});
+
+txt.value="";
+photo.value="";
+video.value="";
+preview.innerHTML="";
+uploadMsg.textContent="✅ Post yashizwe kuri Depp Net.";
+setTimeout(()=>uploadMsg.textContent="",2500);
+
+}catch(e){
+console.log("UPLOAD ERROR:",e);
+uploadMsg.textContent="";
+alert("Post ntiyabitswe: "+e.message);
+}
+};
+
 photo.onchange=e=>{
- let f=e.target.files[0];
- if(!f)return;
- if(f.size>5*1024*1024)return alert("Photo ntirenge 5MB.");
- let r=new FileReader();
- r.onload=()=>preview.innerHTML=`<img class="media" src="${r.result}">`;
- r.readAsDataURL(f);
+let f=e.target.files[0];
+if(!f)return;
+video.value="";
+if(f.size>5*1024*1024){
+photo.value="";
+alert("Photo ntirenge 5MB.");
+return;
+}
+let r=new FileReader();
+r.onload=()=>preview.innerHTML=`<img class="media" src="${r.result}">`;
+r.readAsDataURL(f);
 };
 
 video.onchange=e=>{
- let f=e.target.files[0];
- if(!f)return;
- if(f.size>20*1024*1024)return alert("Video ntirenge 20MB.");
- preview.innerHTML=`<video class="media" src="${URL.createObjectURL(f)}" controls></video>`;
- alert("Video iraboneka nka preview gusa. Kuyibika muri Firebase bisaba Storage.");
+let f=e.target.files[0];
+if(!f)return;
+photo.value="";
+if(f.size>20*1024*1024){
+video.value="";
+alert("Video ntirenge 20MB.");
+return;
+}
+preview.innerHTML=`<video class="media" src="${URL.createObjectURL(f)}" controls></video>`;
 };
+
+window.deletePost=async id=>{
+let p=posts.find(x=>x.id===id);
+if(!p)return;
+if(p.uid!==me.uid){
+alert("Ntushobora gusiba Post y'uwundi muntu.");
+return;
+}
+if(!confirm("Urashaka gusiba iyi Post?"))return;
+try{
+await deleteDoc(doc(db,"posts",id));
+}catch(e){
+alert("Post ntiyashoboye gusibwa: "+e.message);
+}
+};
+
+window.likePost=async(id,liked)=>{
+let p=posts.find(x=>x.id===id);
+if(!p)return;
+
+try{
+await updateDoc(doc(db,"posts",id),{
+likes:liked?arrayRemove(me.uid):arrayUnion(me.uid)
+});
+
+if(!liked&&p.uid!==me.uid){
+let n=JSON.parse(localStorage.getItem("deppNetUser")||"{}");
+
+await addDoc(collection(db,"notifications"),{
+toUid:p.uid,
+toUsername:p.username||"",
+fromUid:me.uid,
+fromUsername:n.username||me.email.split("@")[0],
+name:n.name||me.displayName||"User",
+type:"like",
+postId:id,
+read:false,
+createdAt:serverTimestamp()
+});
+}
+}catch(e){
+alert("Like ntiyakoze: "+e.message);
+}
+};
+
+window.comment=async id=>{
+let inp=document.getElementById("c"+id);
+let text=inp.value.trim();
+if(!text)return;
+
+let p=posts.find(x=>x.id===id);
+if(!p)return;
+
+try{
+let n=JSON.parse(localStorage.getItem("deppNetUser")||"{}");
+
+await addDoc(collection(db,"comments"),{
+postId:id,
+postOwner:p.uid,
+uid:me.uid,
+name:n.name||me.displayName||"User",
+username:n.username||me.email.split("@")[0],
+text:text,
+createdAt:serverTimestamp()
+});
+
+if(p.uid!==me.uid){
+await addDoc(collection(db,"notifications"),{
+toUid:p.uid,
+toUsername:p.username||"",
+fromUid:me.uid,
+fromUsername:n.username||me.email.split("@")[0],
+name:n.name||me.displayName||"User",
+type:"comment",
+postId:id,
+read:false,
+createdAt:serverTimestamp()
+});
+}
+
+inp.value="";
+}catch(e){
+alert("Comment ntiyabitswe: "+e.message);
+}
+};
+
+window.focusComment=id=>{
+let x=document.getElementById("c"+id);
+if(x){
+x.focus();
+x.scrollIntoView({behavior:"smooth",block:"center"});
+}
+};
+
+window.sharePost=async id=>{
+let url=location.href+"#post-"+id;
+
+try{
+if(navigator.share){
+await navigator.share({
+title:"Depp Net",
+text:"Raba iyi Post",
+url:url
+});
+}else{
+await navigator.clipboard.writeText(url);
+alert("Link yagiye muri clipboard.");
+}
+}catch(e){}
+};
+
+function loadNotify(){
+onSnapshot(collection(db,"notifications"),s=>{
+let n=s.docs.filter(d=>{
+let x=d.data();
+return x.toUid===me.uid&&x.read!==true;
+}).length;
+
+badge.textContent=n;
+badge.style.display=n?"block":"none";
+});
+}
+
 async function loadStreak(){
- try{
-  let ref=doc(db,"streaks",me.uid);
-  let snap=await getDoc(ref);
+try{
+let ref=doc(db,"streaks",me.uid);
+let snap=await getDoc(ref);
 
-  let d=new Date();
-  let today=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+let d=new Date();
+let today=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 
-  let days=1;
+let days=1;
 
-  if(snap.exists()){
-   let old=snap.data();
+if(snap.exists()){
+let old=snap.data();
 
-   if(old.lastDate===today){
-    days=old.days||1;
-   }else{
-    let y=new Date();
-    y.setDate(y.getDate()-1);
-    let yesterday=y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0");
+if(old.lastDate===today){
+days=old.days||1;
+}else{
+let y=new Date();
+y.setDate(y.getDate()-1);
 
-    if(old.lastDate===yesterday){
-     days=(old.days||1)+1;
-    }else{
-     days=1;
-    }
-   }
-  }
+let yesterday=y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0");
 
-  await setDoc(ref,{
-   uid:me.uid,
-   days:days,
-   lastDate:today
-  });
+if(old.lastDate===yesterday){
+days=(old.days||1)+1;
+}else{
+days=1;
+}
+}
+}
 
-  document.getElementById("streak").textContent=
-   "🔥 "+days+" Day Streak";
+await setDoc(ref,{
+uid:me.uid,
+days:days,
+lastDate:today
+});
 
- }catch(e){
-  console.log("STREAK ERROR:",e);
- }
-              }
-  window.addStreak=async()=>{
- try{
-  let ref=doc(db,"streaks",me.uid);
-  let snap=await getDoc(ref);
-  let days=1;
+streak.textContent="🔥 "+days+" Day Streak";
 
-  if(snap.exists()){
-   days=(snap.data().days||0)+1;
-  }
+}catch(e){
+console.log("STREAK ERROR:",e);
+}
+}
 
-  await setDoc(ref,{
-   uid:me.uid,
-   days:days,
-   lastDate:new Date().toLocaleDateString()
-  });
+window.addStreak=async()=>{
+try{
+let ref=doc(db,"streaks",me.uid);
+let snap=await getDoc(ref);
+let days=1;
 
-  document.getElementById("streak").textContent=
-   "🔥 "+days+" Day Streak";
+if(snap.exists()){
+days=(snap.data().days||0)+1;
+}
 
- }catch(e){
-  alert("Streak ntiyakoze: "+e.message);
- }
+await setDoc(ref,{
+uid:me.uid,
+days:days,
+lastDate:new Date().toLocaleDateString()
+});
+
+streak.textContent="🔥 "+days+" Day Streak";
+
+}catch(e){
+alert("Streak ntiyakoze: "+e.message);
+}
 };
+
 window.logout=async()=>{
- try{await signOut(auth)}catch(e){}
- localStorage.removeItem("deppNetLoggedIn");
- localStorage.removeItem("deppNetUser");
- location.href="login.html";
+try{
+await signOut(auth);
+}catch(e){}
+
+localStorage.removeItem("deppNetLoggedIn");
+localStorage.removeItem("deppNetUser");
+location.href="login.html";
 };
-</script>
-</body>
-</html>
+
+</script></body>
+  </html>
