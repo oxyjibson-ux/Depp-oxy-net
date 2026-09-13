@@ -111,6 +111,7 @@ display:none;
 <div class="ava" id="audioAva">U</div>
 <h2 id="audioName">User</h2>
 <p>📞 Audio Call</p>
+<audio id="remoteAudio" autoplay></audio>
 <div class="audioBtns">
 <button onclick="toggleMic()">🎤</button>
 <button onclick="endCall()">📕</button>
@@ -512,20 +513,92 @@ $("incoming").style.display="block";
 }
 
 window.answer=async()=>{
+if(!incoming)return;
+
 $("incoming").style.display="none";
+
 to=await getUser(incoming.caller);
-stream=await navigator.mediaDevices.getUserMedia({audio:true,video:incoming.type==="video"});
-$("local").srcObject=stream;$("call").style.display="block";
+if(!to)return;
+
+chatId=[me.uid,to.uid].sort().join("_");
+
+try{
+
+let type=incoming.type;
+
+stream=await navigator.mediaDevices.getUserMedia({
+audio:true,
+video:type==="video"
+});
+
 pc=new RTCPeerConnection(ice);
-stream.getTracks().forEach(t=>pc.addTrack(t,stream));
-pc.ontrack=e=>$("remote").srcObject=e.streams[0];
-let ref=doc(db,"calls",callId),x=(await getDoc(ref)).data();
+
+stream.getTracks().forEach(t=>{
+pc.addTrack(t,stream);
+});
+
+pc.ontrack=e=>{
+if(type==="video"){
+$("remote").srcObject=e.streams[0];
+}else{
+$("remoteAudio").srcObject=e.streams[0];
+}
+};
+
+let ref=doc(db,"calls",callId);
+let x=(await getDoc(ref)).data();
+
 await pc.setRemoteDescription(x.offer);
+
+pc.onicecandidate=e=>{
+if(e.candidate){
+updateDoc(ref,{
+candidates:arrayUnion(
+JSON.stringify(e.candidate.toJSON())
+)
+}).catch(()=>{});
+}
+};
+
 let a=await pc.createAnswer();
+
 await pc.setLocalDescription(a);
-pc.onicecandidate=e=>e.candidate&&updateDoc(ref,{candidates:arrayUnion(JSON.stringify(e.candidate.toJSON()))});
-await updateDoc(ref,{answer:{type:a.type,sdp:a.sdp},status:"connected"});
+
+await updateDoc(ref,{
+answer:{
+type:a.type,
+sdp:a.sdp
+},
+status:"connected"
+});
+
+if(type==="audio"){
+
+$("audioAva").textContent=(to.name||"U")[0];
+$("audioName").textContent=to.name||"User";
+
+$("audioCall").style.display="block";
+$("call").style.display="none";
+
+}else{
+
+$("call").style.display="block";
+$("audioCall").style.display="none";
+
+$("local").srcObject=stream;
+}
+
 watchCall(ref,false);
+
+}catch(e){
+
+console.error(e);
+
+stream?.getTracks().forEach(t=>t.stop());
+
+alert("Call yanse. Emeza Camera na Microphone.");
+
+}
 };
 
 async function getUser(uid){
