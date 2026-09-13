@@ -409,22 +409,23 @@ window.makeCall=async type=>{
 if(!to)return;
 
 try{
+
 stream=await navigator.mediaDevices.getUserMedia({
 audio:true,
 video:type==="video"
 });
 
-$("local").srcObject=stream;
+callId=chatId+"_"+Date.now();
 
-if(type==="audio"){
-$("call").style.display="none";
-$("audioAva").textContent=(to.name||"U")[0];
-$("audioName").textContent=to.name||"User";
-$("audioCall").style.display="block";
-}else{
-$("audioCall").style.display="none";
-$("call").style.display="block";
-}
+let ref=doc(db,"calls",callId);
+
+await setDoc(ref,{
+caller:me.uid,
+receiver:to.uid,
+type:type,
+status:"calling",
+candidates:[]
+});
 
 pc=new RTCPeerConnection(ice);
 
@@ -435,12 +436,10 @@ pc.addTrack(t,stream);
 pc.ontrack=e=>{
 if(type==="video"){
 $("remote").srcObject=e.streams[0];
+}else{
+$("remoteAudio").srcObject=e.streams[0];
 }
 };
-
-callId=chatId+"_"+Date.now();
-
-let ref=doc(db,"calls",callId);
 
 pc.onicecandidate=e=>{
 if(e.candidate){
@@ -448,33 +447,54 @@ updateDoc(ref,{
 candidates:arrayUnion(
 JSON.stringify(e.candidate.toJSON())
 )
-});
+}).catch(()=>{});
 }
 };
 
-await setDoc(ref,{
-caller:me.uid,
-receiver:to.uid,
-type:type,
-status:"calling",
-candidates:[]
-});
+if(type==="audio"){
 
-let o=await pc.createOffer();
-await pc.setLocalDescription(o);
+$("audioAva").textContent=
+(to.name||"U")[0].toUpperCase();
+
+$("audioName").textContent=
+to.name||"User";
+
+$("audioCall").style.display="block";
+$("call").style.display="none";
+
+}else{
+
+$("audioCall").style.display="none";
+$("call").style.display="block";
+
+$("local").srcObject=stream;
+$("remote").srcObject=null;
+
+}
+
+let offer=await pc.createOffer();
+
+await pc.setLocalDescription(offer);
 
 await updateDoc(ref,{
 offer:{
-type:o.type,
-sdp:o.sdp
+type:offer.type,
+sdp:offer.sdp
 }
 });
 
 watchCall(ref,true);
 
 }catch(e){
+
 console.error(e);
-alert("Call ntishoboye gutangura. Emeza Camera/Microphone.");
+
+stream?.getTracks().forEach(t=>t.stop());
+
+alert(
+"Call ntishoboye gutangura. Emeza Microphone na Camera."
+);
+
 }
 };
 
