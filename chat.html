@@ -24,6 +24,51 @@ header b{font-size:20px}
 #txt{flex:1;border:1px solid #ddd;border-radius:22px;padding:10px;outline:0}
 .rec{background:#e53935;color:#fff}
 #call,#incoming{display:none;position:fixed;inset:0;z-index:20;background:#111}
+#audioCall{
+display:none;
+position:fixed;
+inset:0;
+z-index:25;
+background:#111;
+color:#fff;
+text-align:center;
+padding-top:25vh;
+}
+
+#audioCall .ava{
+width:90px;
+height:90px;
+border-radius:50%;
+background:#1877f2;
+display:grid;
+place-items:center;
+font-size:40px;
+margin:auto;
+}
+
+#audioCall h2{
+margin:15px 0 5px;
+}
+
+#audioCall p{
+color:#bbb;
+}
+
+.audioBtns{
+margin-top:35px;
+}
+
+.audioBtns button{
+width:58px;
+height:58px;
+margin:5px;
+font-size:22px;
+}
+
+#call.audioMode #remote,
+#call.audioMode #local{
+display:none;
+}
 #remote{width:100%;height:100%;object-fit:cover}
 #local{position:absolute;right:10px;top:65px;width:110px;height:155px;object-fit:cover;border:2px solid #fff;border-radius:12px}
 .controls{position:absolute;bottom:25px;width:100%;text-align:center}
@@ -62,7 +107,15 @@ header b{font-size:20px}
 <button onclick="send()">➤</button>
 </div>
 </div>
-
+<div id="audioCall">
+<div class="ava" id="audioAva">U</div>
+<h2 id="audioName">User</h2>
+<p>📞 Audio Call</p>
+<div class="audioBtns">
+<button onclick="toggleMic()">🎤</button>
+<button onclick="endCall()">📕</button>
+</div>
+</div>
 <div id="call">
 <video id="remote" autoplay playsinline></video>
 <video id="local" autoplay muted playsinline></video>
@@ -83,7 +136,7 @@ header b{font-size:20px}
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import{getFirestore,collection,doc,getDoc,setDoc,addDoc,onSnapshot,query,orderBy,serverTimestamp,updateDoc,arrayUnion,enableIndexedDbPersistence}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import{getFirestore,collection,doc,getDoc,setDoc,addDoc,onSnapshot,query,orderBy,serverTimestamp,updateDoc,arrayUnion,enableIndexedDbPersistence,deleteDoc}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const app=initializeApp({
 apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
@@ -158,15 +211,130 @@ watchTyping();
 function loadMessages(){
 onSnapshot(query(collection(db,"chats",chatId,"messages"),orderBy("createdAt")),s=>{
 $("msgs").innerHTML="";
+
+let selectedId=null;
+let selectedEl=null;
+
 s.forEach(d=>{
 let x=d.data(),m=document.createElement("div");
 m.className="m "+(x.uid===me.uid?"mine":"");
+
 if(x.audio){
-let a=document.createElement("audio");a.controls=true;a.src=x.audio;m.appendChild(a);
-}else m.textContent=x.text||"";
+let a=document.createElement("audio");
+a.controls=true;
+a.src=x.audio;
+m.appendChild(a);
+}else{
+m.textContent=x.text||"";
+}
+
+/* LONG PRESS KURI MESSAGE YOSE */
+let timer=null;
+
+m.addEventListener("touchstart",()=>{
+timer=setTimeout(()=>{
+selectedId=d.id;
+selectedEl=m;
+
+m.style.outline="3px solid #1877f2";
+m.style.background="#dbeafe";
+
+showDeleteBar();
+},700);
+},{passive:true});
+
+m.addEventListener("touchend",()=>{
+clearTimeout(timer);
+});
+
+m.addEventListener("touchcancel",()=>{
+clearTimeout(timer);
+});
+
+/* KURI BROWSER */
+m.addEventListener("contextmenu",e=>{
+e.preventDefault();
+
+selectedId=d.id;
+selectedEl=m;
+
+m.style.outline="3px solid #1877f2";
+m.style.background="#dbeafe";
+
+showDeleteBar();
+});
+
 $("msgs").appendChild(m);
 });
+
 $("msgs").scrollTop=$("msgs").scrollHeight;
+
+/* BAR YO HEJURU */
+function showDeleteBar(){
+
+let old=document.getElementById("selectBar");
+if(old)old.remove();
+
+let bar=document.createElement("div");
+bar.id="selectBar";
+bar.style.cssText=
+"position:fixed;top:0;left:0;right:0;height:56px;background:#1877f2;color:white;z-index:9999;display:flex;align-items:center;padding:0 10px;gap:10px;box-shadow:0 2px 6px #999";
+
+let title=document.createElement("b");
+title.textContent="✓ 1 message selected";
+title.style.flex="1";
+
+let del=document.createElement("button");
+del.textContent="🗑️ Delete";
+del.style.cssText=
+"background:#e53935;color:white;font-size:15px";
+
+let cancel=document.createElement("button");
+cancel.textContent="✕";
+cancel.style.cssText=
+"background:white;color:#1877f2;font-size:18px";
+
+bar.appendChild(title);
+bar.appendChild(del);
+bar.appendChild(cancel);
+document.body.appendChild(bar);
+
+/* DELETE MESSAGE */
+del.onclick=async()=>{
+if(!selectedId)return;
+
+del.disabled=true;
+del.textContent="⏳";
+
+try{
+await deleteDoc(
+doc(db,"chats",chatId,"messages",selectedId)
+);
+
+selectedId=null;
+selectedEl=null;
+bar.remove();
+
+}catch(e){
+console.error("DELETE ERROR:",e);
+del.disabled=false;
+del.textContent="🗑️ Delete";
+alert("Delete yanse: "+(e.code||e.message));
+}
+};
+
+/* CANCEL */
+cancel.onclick=()=>{
+if(selectedEl){
+selectedEl.style.outline="";
+selectedEl.style.background="";
+}
+
+selectedId=null;
+selectedEl=null;
+bar.remove();
+};
+}
 });
 }
 
@@ -239,21 +407,75 @@ recTimer=setInterval(()=>{
 
 window.makeCall=async type=>{
 if(!to)return;
+
 try{
-stream=await navigator.mediaDevices.getUserMedia({audio:true,video:type==="video"});
-$("local").srcObject=stream;$("call").style.display="block";
+stream=await navigator.mediaDevices.getUserMedia({
+audio:true,
+video:type==="video"
+});
+
+$("local").srcObject=stream;
+
+if(type==="audio"){
+$("call").style.display="none";
+$("audioAva").textContent=(to.name||"U")[0];
+$("audioName").textContent=to.name||"User";
+$("audioCall").style.display="block";
+}else{
+$("audioCall").style.display="none";
+$("call").style.display="block";
+}
+
 pc=new RTCPeerConnection(ice);
-stream.getTracks().forEach(t=>pc.addTrack(t,stream));
-pc.ontrack=e=>$("remote").srcObject=e.streams[0];
+
+stream.getTracks().forEach(t=>{
+pc.addTrack(t,stream);
+});
+
+pc.ontrack=e=>{
+if(type==="video"){
+$("remote").srcObject=e.streams[0];
+}
+};
+
 callId=chatId+"_"+Date.now();
+
 let ref=doc(db,"calls",callId);
-pc.onicecandidate=e=>e.candidate&&updateDoc(ref,{candidates:arrayUnion(JSON.stringify(e.candidate.toJSON()))});
-await setDoc(ref,{caller:me.uid,receiver:to.uid,type,status:"calling",candidates:[]});
+
+pc.onicecandidate=e=>{
+if(e.candidate){
+updateDoc(ref,{
+candidates:arrayUnion(
+JSON.stringify(e.candidate.toJSON())
+)
+});
+}
+};
+
+await setDoc(ref,{
+caller:me.uid,
+receiver:to.uid,
+type:type,
+status:"calling",
+candidates:[]
+});
+
 let o=await pc.createOffer();
 await pc.setLocalDescription(o);
-await updateDoc(ref,{offer:{type:o.type,sdp:o.sdp}});
+
+await updateDoc(ref,{
+offer:{
+type:o.type,
+sdp:o.sdp
+}
+});
+
 watchCall(ref,true);
-}catch(e){alert("Cgutangura. Emeza Camera/Microphone.");}
+
+}catch(e){
+console.error(e);
+alert("Call ntishoboye gutangura. Emeza Camera/Microphone.");
+}
 };
 
 function watchIncoming(){
