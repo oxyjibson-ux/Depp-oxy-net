@@ -1,173 +1,107 @@
 <!DOCTYPE html>
 <html lang="rn">
 <head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Depp Net</title>
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background: #f2f4f7;
-            color: #222;
-        }
-
-        .app {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        header {
-            height: 60px;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 18px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        header h1 {
-            font-size: 24px;
-        }
-
-        #menuBtn {
-            border: none;
-            background: none;
-            font-size: 28px;
-            cursor: pointer;
-        }
-
-        main {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .welcome {
-            width: 100%;
-            max-width: 450px;
-            background: white;
-            padding: 30px 20px;
-            border-radius: 18px;
-            text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-        }
-
-        .welcome h2 {
-            font-size: 23px;
-            margin-bottom: 15px;
-        }
-
-        .welcome p {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 25px;
-        }
-
-        #startBtn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            background: #1877f2;
-            color: white;
-            font-size: 17px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        #startBtn:active {
-            transform: scale(0.98);
-        }
-
-        footer {
-            text-align: center;
-            padding: 18px;
-            color: #777;
-            font-size: 14px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Depp Net</title>
+<style>
+*{box-sizing:border-box;font-family:Arial}
+body{margin:0;background:#f2f4f7;min-height:100vh;
+display:flex;align-items:center;justify-content:center}
+.box{width:90%;max-width:380px;background:#fff;padding:30px 22px;
+border-radius:22px;text-align:center;box-shadow:0 5px 25px #0002}
+.logo{font-size:38px;font-weight:bold;color:#1877f2}
+p{color:#666;margin:10px 0 28px}
+button{width:100%;padding:15px;margin:8px 0;border:0;
+border-radius:12px;font-size:16px;font-weight:bold}
+.signup{background:#1877f2;color:white}
+.google{background:white;border:1px solid #ccc}
+</style>
 </head>
-
 <body>
 
-    <div class="app">
+<div class="box">
+<div class="logo">Depp Net</div>
+<p>Murakaza neza kuri Depp Net</p>
 
-        <header>
-            <h1>Depp Net</h1>
+<button class="signup" onclick="location.href='register.html'">
+📝 Sign up
+</button>
 
-            <button id="menuBtn">
-                ☰
-            </button>
-        </header>
+<button class="google" onclick="googleLogin()">
+🔵 Continue with Google
+</button>
+</div>
 
-        <main>
+<script type="module">
+import{initializeApp}from
+"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import{getAuth,GoogleAuthProvider,signInWithRedirect,
+getRedirectResult,browserLocalPersistence,setPersistence}
+from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import{getFirestore,doc,setDoc,getDoc,serverTimestamp}
+from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-            <div class="welcome">
+const firebaseConfig={
+apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
+authDomain:"depp-net-apk.firebaseapp.com",
+databaseURL:"https://depp-net-apk-default-rtdb.firebaseio.com",
+projectId:"depp-net-apk",
+storageBucket:"depp-net-apk.firebasestorage.app",
+messagingSenderId:"664141462348",
+appId:"1:664141462348:web:8202143fef6fcdaf9cede9",
+measurementId:"G-DMBZT3C6MK"
+};
 
-                <h2>
-                    Murakaza neza kuri Depp Net 👋
-                </h2>
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+const provider=new GoogleAuthProvider();
 
-                <p>
-                    Depp Net ni application
-                    yo gusangira, kuganira
-                    no guhurira hamwe n'abandi.
-                </p>
+await setPersistence(auth,browserLocalPersistence);
 
-                <button id="startBtn">
-                    Tangura
-                </button>
+window.googleLogin=async()=>{
+try{
+await signInWithRedirect(auth,provider);
+}catch(e){
+alert("Google yanse: "+e.message);
+}
+};
 
-            </div>
+try{
+const r=await getRedirectResult(auth);
 
-        </main>
+if(r&&r.user){
+const u=r.user;
+const ref=doc(db,"users",u.uid);
+const old=await getDoc(ref);
 
-        <footer>
-            © 2026 Depp Net
-        </footer>
-
-    </div>
-
-
-    <script>
-
-        const startBtn =
-            document.getElementById("startBtn");
-
-        const menuBtn =
-            document.getElementById("menuBtn");
-
-
-        startBtn.addEventListener("click", function () {
-    window.location.href = "login.html";
+if(!old.exists()){
+await setDoc(ref,{
+uid:u.uid,
+name:u.displayName||"User",
+username:(u.email||"user").split("@")[0],
+email:u.email||"",
+photo:u.photoURL||"",
+createdAt:serverTimestamp()
 });
+}
 
+localStorage.setItem("deppNetUser",JSON.stringify({
+uid:u.uid,
+name:u.displayName||"User",
+username:(u.email||"user").split("@")[0],
+email:u.email||"",
+photo:u.photoURL||""
+}));
 
-        menuBtn.addEventListener("click", function () {
-
-            alert(
-                "Menu ya Depp Net iriko irategurwa..."
-            );
-
-        });
-
-    </script>
+localStorage.setItem("deppNetLoggedIn","true");
+location.href="home.html";
+}
+}catch(e){
+alert("Google yanse: "+e.message);
+}
+</script>
 
 </body>
 </html>
