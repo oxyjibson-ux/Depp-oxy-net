@@ -1,41 +1,38 @@
-<!DOCTYPE html>
-<html lang="rn">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Depp Net Chat</title>
-<style>
-*{box-sizing:border-box;font-family:Arial}
-body{margin:0;background:#eef2f7}
-header{height:56px;background:#1877f2;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 10px}
-button{border:0;border-radius:20px;padding:9px 12px}
-header b{font-size:20px}
-#users{padding:10px}
-.user{background:#fff;margin:8px 0;padding:11px;border-radius:15px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 7px #ddd}
-.av{width:44px;height:44px;border-radius:50%;background:#1877f2;color:#fff;display:grid;place-items:center;font-weight:bold}
-.info{flex:1}.on{color:#16a34a;font-size:12px}.off{color:#888;font-size:12px}
-#chat{display:none;height:calc(100vh - 56px);background:#eef2f7}
-.top{height:58px;background:#fff;display:flex;align-items:center;gap:8px;padding:7px;border-bottom:1px solid #ddd}
-#msgs{height:calc(100% - 125px);overflow:auto;padding:10px}
-.m{max-width:78%;width:max-content;padding:9px 12px;margin:6px 0;background:#fff;border-radius:16px;box-shadow:0 1px 3px #ddd}
-.mine{margin-left:auto;background:#1877f2;color:#fff}
-.typ{height:20px;padding-left:12px;color:#777;font-size:12px}
-.send{height:67px;background:#fff;display:flex;gap:5px;padding:8px}
-#txt{flex:1;border:1px solid #ddd;border-radius:22px;padding:10px;outline:0}
-.rec{background:#e53935;color:#fff}
-#call,#incoming{display:none;position:fixed;inset:0;z-index:20;background:#111}
-#audioCall{
-display:none;
-position:fixed;
-inset:0;
-z-index:25;
-background:#111;
-color:#fff;
-text-align:center;
-padding-top:25vh;
-}
-
-#audioCall .ava{
+<!DOCTYPE html>  <html lang="rn">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width,initial-scale=1">  
+<title>Depp Net Chat</title>  
+<style>  
+*{box-sizing:border-box;font-family:Arial}  
+body{margin:0;background:#eef2f7}  
+header{height:56px;background:#1877f2;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 10px}  
+button{border:0;border-radius:20px;padding:9px 12px}  
+header b{font-size:20px}  
+#users{padding:10px}  
+.user{background:#fff;margin:8px 0;padding:11px;border-radius:15px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 7px #ddd}  
+.av{width:44px;height:44px;border-radius:50%;background:#1877f2;color:#fff;display:grid;place-items:center;font-weight:bold}  
+.info{flex:1}.on{color:#16a34a;font-size:12px}.off{color:#888;font-size:12px}  
+#chat{display:none;height:calc(100vh - 56px);background:#eef2f7}  
+.top{height:58px;background:#fff;display:flex;align-items:center;gap:8px;padding:7px;border-bottom:1px solid #ddd}  
+#msgs{height:calc(100% - 125px);overflow:auto;padding:10px}  
+.m{max-width:78%;width:max-content;padding:9px 12px;margin:6px 0;background:#fff;border-radius:16px;box-shadow:0 1px 3px #ddd}  
+.mine{margin-left:auto;background:#1877f2;color:#fff}  
+.typ{height:20px;padding-left:12px;color:#777;font-size:12px}  
+.send{height:67px;background:#fff;display:flex;gap:5px;padding:8px}  
+#txt{flex:1;border:1px solid #ddd;border-radius:22px;padding:10px;outline:0}  
+.rec{background:#e53935;color:#fff}  
+#call,#incoming{display:none;position:fixed;inset:0;z-index:20;background:#111}  
+#audioCall{  
+display:none;  
+position:fixed;  
+inset:0;  
+z-index:25;  
+background:#111;  
+color:#fff;  
+text-align:center;  
+padding-top:25vh;  
+}  #audioCall .ava{
 width:90px;
 height:90px;
 border-radius:50%;
@@ -78,577 +75,645 @@ display:none;
 #timer{display:none;color:#e53935;font-weight:bold;font-size:12px}
 #cancel{display:none;background:#777;color:#fff;padding:8px}
 </style>
-</head>
-<body>
 
-<header>
-<button onclick="back()">←</button><b>Depp Net</b>
-<button onclick="location.href='home.html'">⌂</button>
-</header>
-
-<div id="users">Turiko turarondera...</div>
-<div id="net" style="display:none;text-align:center;padding:7px;font-size:13px"></div>
-
-<div id="chat">
-<div class="top">
-<button onclick="back()">←</button>
-<div class="av" id="av">U</div>
-<div class="info"><b id="name">User</b><br><small id="status">Offline</small></div>
-<button onclick="makeCall('audio')">📞</button>
-<button onclick="makeCall('video')">📹</button>
-</div>
-<div id="msgs"></div>
-<div id="typing" class="typ"></div>
+</head>  
+<body>  <header>  
+<button onclick="back()">←</button><b>Depp Net</b>  
+<button onclick="location.href='home.html'">⌂</button>  
+</header>  <div id="users">Turiko turarondera...</div>  
+<div id="net" style="display:none;text-align:center;padding:7px;font-size:13px"></div>  <div id="chat">  
+<div class="top">  
+<button onclick="back()">←</button>  
+<div class="av" id="av">U</div>  
+<div class="info"><b id="name">User</b><br><small id="status">Offline</small></div>  
+<button onclick="makeCall('audio')">📞</button>  
+<button onclick="makeCall('video')">📹</button>  
+</div>  
+<div id="msgs"></div>  
+<div id="typing" class="typ"></div>  
 <div class="send">
 <button class="rec" id="rec" onclick="record()">🎙️</button>
+<button onclick="document.getElementById('photo').click()">📷</button>
+<button onclick="document.getElementById('video').click()">🎥</button>
 <span id="timer">00:00</span>
 <button id="cancel" onclick="cancelRecord()">❌</button>
 <input id="txt" placeholder="Andika ubutumwa...">
 <button onclick="send()">➤</button>
+
+<input id="photo" type="file" accept="image/*" style="display:none" onchange="sendMedia('image')">
+<input id="video" type="file" accept="video/*" style="display:none" onchange="sendMedia('video')">
 </div>
-</div>
-<div id="audioCall">
-<div class="ava" id="audioAva">U</div>
-<h2 id="audioName">User</h2>
-<p>📞 Audio Call</p>
-<audio id="remoteAudio" autoplay></audio>
-<div class="audioBtns">
-<button onclick="toggleMic()">🎤</button>
-<button onclick="endCall()">📕</button>
-</div>
-</div>
-<div id="call">
-<video id="remote" autoplay playsinline></video>
-<video id="local" autoplay muted playsinline></video>
-<div class="controls">
-<button onclick="toggleMic()">🎤</button>
-<button onclick="toggleCam()">📷</button>
-<button onclick="endCall()">📕</button>
-</div>
-</div>
-
-<div id="incoming">
-<h2>📞 Call iraje</h2>
-<p id="ctype"></p>
-<button onclick="answer()">✅ Kwakira</button>
-<button onclick="reject()">❌ Kwanka</button>
-</div>
-
-<script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import{getAuth,onAuthStateChanged,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import{getFirestore,collection,doc,getDoc,setDoc,addDoc,onSnapshot,query,orderBy,serverTimestamp,updateDoc,arrayUnion,enableIndexedDbPersistence,deleteDoc}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
-const app=initializeApp({
-apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
-authDomain:"depp-net-apk.firebaseapp.com",
-projectId:"depp-net-apk",
-storageBucket:"depp-net-apk.firebasestorage.app",
-messagingSenderId:"664141462348",
-appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
-});
-const auth=getAuth(app),db=getFirestore(app);
-await setPersistence(auth,browserLocalPersistence);
-
-enableIndexedDbPersistence(db).catch(e=>{
-console.log("Offline cache:",e.code);
-});
-let me,to,chatId,pc,stream,callId,incoming,recorder,chunks=[];
-let recTimer=null,recSeconds=0,cancelled=false;
-const ice={iceServers:[{urls:"stun:stun.l.google.com:19302"}]};
-const $=id=>document.getElementById(id);
-  function net(){
-let n=document.getElementById("net");
-if(!n)return;
-n.textContent=navigator.onLine?
-"🟢 Online":"📴 Offline — ubutumwa burabikwa kuri telefone";
-n.style.display="block";
-n.style.background=navigator.onLine?"#d1fae5":"#fff3cd";
-}
-addEventListener("online",net);
-addEventListener("offline",net);
-net();
-
-onAuthStateChanged(auth,u=>{
-if(!u)return location.href="login.html";
-me=u;setPresence(true);loadUsers();watchIncoming();
-});
-
-async function setPresence(x){
-await setDoc(doc(db,"presence",me.uid),{online:x,lastSeen:serverTimestamp()},{merge:true});
-}
-
-function loadUsers(){
-onSnapshot(collection(db,"users"),snap=>{
-$("users").innerHTML="";
-snap.forEach(d=>{
-if(d.id===me.uid)return;
-let u={uid:d.id,...d.data()},box=document.createElement("div");
-box.className="user";
-box.innerHTML=`<div class="av">${(u.name||"U")[0]}</div>
-<div class="info"><b>${u.name||"User"}</b><br><small>@${u.username||""}</small></div>
-<span id="p${u.uid}" class="off">● Offline</span>`;
-box.onclick=()=>openChat(u);
-$("users").appendChild(box);
-onSnapshot(doc(db,"presence",u.uid),p=>{
-let x=p.data()||{},e=$("p"+u.uid);
-if(e){e.className=x.online?"on":"off";e.textContent=x.online?"● Online":"● Offline"}
-});
-});
-});
-}
-
-async function openChat(u){
-to=u;
-chatId=[me.uid,to.uid].sort().join("_");
-$("users").style.display="none";
-$("chat").style.display="block";
-$("name").textContent=to.name||"User";
-$("av").textContent=(to.name||"U")[0];
-loadMessages();
-watchTyping();
-}
-
-function loadMessages(){
-onSnapshot(query(collection(db,"chats",chatId,"messages"),orderBy("createdAt")),s=>{
-$("msgs").innerHTML="";
-
-let selectedId=null;
-let selectedEl=null;
-
-s.forEach(d=>{
-let x=d.data(),m=document.createElement("div");
-m.className="m "+(x.uid===me.uid?"mine":"");
-
+</div>  
+<div id="audioCall">  
+<div class="ava" id="audioAva">U</div>  
+<h2 id="audioName">User</h2>  
+<p>📞 Audio Call</p>  
+<audio id="remoteAudio" autoplay></audio>  
+<div class="audioBtns">  
+<button onclick="toggleMic()">🎤</button>  
+<button onclick="endCall()">📕</button>  
+</div>  
+</div>  
+<div id="call">  
+<video id="remote" autoplay playsinline></video>  
+<video id="local" autoplay muted playsinline></video>  
+<div class="controls">  
+<button onclick="toggleMic()">🎤</button>  
+<button onclick="toggleCam()">📷</button>  
+<button onclick="endCall()">📕</button>  
+</div>  
+</div>  <div id="incoming">  
+<h2>📞 Call iraje</h2>  
+<p id="ctype"></p>  
+<button onclick="answer()">✅ Kwakira</button>  
+<button onclick="reject()">❌ Kwanka</button>  
+</div>  <script type="module">  
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";  
+import{getAuth,onAuthStateChanged,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";  
+import{getFirestore,collection,doc,getDoc,setDoc,addDoc,onSnapshot,query,orderBy,serverTimestamp,updateDoc,arrayUnion,enableIndexedDbPersistence,deleteDoc}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";  
+  
+const app=initializeApp({  
+apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",  
+authDomain:"depp-net-apk.firebaseapp.com",  
+projectId:"depp-net-apk",  
+storageBucket:"depp-net-apk.firebasestorage.app",  
+messagingSenderId:"664141462348",  
+appId:"1:664141462348:web:8202143fef6fcdaf9cede9"  
+});  
+const auth=getAuth(app),db=getFirestore(app);  
+await setPersistence(auth,browserLocalPersistence);  
+  
+enableIndexedDbPersistence(db).catch(e=>{  
+console.log("Offline cache:",e.code);  
+});  
+  
+let me,to,chatId,pc,stream,callId,incoming,recorder,chunks=[];  
+let authStarted=false;  
+let recTimer=null,recSeconds=0,cancelled=false;  
+const ice={iceServers:[{urls:"stun:stun.l.google.com:19302"}]};  
+const $=id=>document.getElementById(id);  
+  function net(){  
+let n=document.getElementById("net");  
+if(!n)return;  
+n.textContent=navigator.onLine?  
+"🟢 Online":"📴 Offline — ubutumwa burabikwa kuri telefone";  
+n.style.display="block";  
+n.style.background=navigator.onLine?"#d1fae5":"#fff3cd";  
+}  
+addEventListener("online",net);  
+addEventListener("offline",net);  
+net();  
+  
+onAuthStateChanged(auth,u=>{  
+authStarted=true;  
+  
+if(u){  
+me=u;  
+setPresence(true);  
+loadUsers();  
+watchIncoming();  
+}else{  
+setTimeout(()=>{  
+if(!me) location.href="login.html";  
+},1500);  
+}  
+});  
+  
+async function setPresence(x){  
+await setDoc(doc(db,"presence",me.uid),{online:x,lastSeen:serverTimestamp()},{merge:true});  
+}  
+  
+function loadUsers(){  
+onSnapshot(collection(db,"users"),snap=>{  
+$("users").innerHTML="";  
+snap.forEach(d=>{  
+if(d.id===me.uid)return;  
+let u={uid:d.id,...d.data()},box=document.createElement("div");  
+box.className="user";  
+box.innerHTML=`<div class="av">${(u.name||"U")[0]}</div>  
+<div class="info"><b>${u.name||"User"}</b><br><small>@${u.username||""}</small></div>  
+<span id="p${u.uid}" class="off">● Offline</span>`;  
+box.onclick=()=>openChat(u);  
+$("users").appendChild(box);  
+onSnapshot(doc(db,"presence",u.uid),p=>{  
+let x=p.data()||{},e=$("p"+u.uid);  
+if(e){e.className=x.online?"on":"off";e.textContent=x.online?"● Online":"● Offline"}  
+});  
+});  
+});  
+}  
+  
+async function openChat(u){  
+to=u;  
+chatId=[me.uid,to.uid].sort().join("_");  
+$("users").style.display="none";  
+$("chat").style.display="block";  
+$("name").textContent=to.name||"User";  
+$("av").textContent=(to.name||"U")[0];  
+loadMessages();  
+watchTyping();  
+}  
+  
+function loadMessages(){  
+onSnapshot(query(collection(db,"chats",chatId,"messages"),orderBy("createdAt")),s=>{  
+$("msgs").innerHTML="";  
+  
+let selectedId=null;  
+let selectedEl=null;  
+  
+s.forEach(d=>{  
+let x=d.data(),m=document.createElement("div");  
+m.className="m "+(x.uid===me.uid?"mine":"");  
+  
 if(x.audio){
 let a=document.createElement("audio");
 a.controls=true;
 a.src=x.audio;
 m.appendChild(a);
+
+}else if(x.mediaType==="image"){
+let img=document.createElement("img");
+img.src=x.media;
+img.style.cssText="max-width:240px;border-radius:12px;display:block";
+m.appendChild(img);
+
+}else if(x.mediaType==="video"){
+let v=document.createElement("video");
+v.src=x.media;
+v.controls=true;
+v.playsInline=true;
+v.style.cssText="max-width:240px;border-radius:12px;display:block";
+m.appendChild(v);
+
 }else{
 m.textContent=x.text||"";
+  }
+  
+/* LONG PRESS KURI MESSAGE YOSE */  
+let timer=null;  
+  
+m.addEventListener("touchstart",()=>{  
+timer=setTimeout(()=>{  
+selectedId=d.id;  
+selectedEl=m;  
+  
+m.style.outline="3px solid #1877f2";  
+m.style.background="#dbeafe";  
+  
+showDeleteBar();  
+},700);  
+},{passive:true});  
+  
+m.addEventListener("touchend",()=>{  
+clearTimeout(timer);  
+});  
+  
+m.addEventListener("touchcancel",()=>{  
+clearTimeout(timer);  
+});  
+  
+/* KURI BROWSER */  
+m.addEventListener("contextmenu",e=>{  
+e.preventDefault();  
+  
+selectedId=d.id;  
+selectedEl=m;  
+  
+m.style.outline="3px solid #1877f2";  
+m.style.background="#dbeafe";  
+  
+showDeleteBar();  
+});  
+  
+$("msgs").appendChild(m);  
+});  
+  
+$("msgs").scrollTop=$("msgs").scrollHeight;  
+  
+/* BAR YO HEJURU */  
+function showDeleteBar(){  
+  
+let old=document.getElementById("selectBar");  
+if(old)old.remove();  
+  
+let bar=document.createElement("div");  
+bar.id="selectBar";  
+bar.style.cssText=  
+"position:fixed;top:0;left:0;right:0;height:56px;background:#1877f2;color:white;z-index:9999;display:flex;align-items:center;padding:0 10px;gap:10px;box-shadow:0 2px 6px #999";  
+  
+let title=document.createElement("b");  
+title.textContent="✓ 1 message selected";  
+title.style.flex="1";  
+  
+let del=document.createElement("button");  
+del.textContent="🗑️ Delete";  
+del.style.cssText=  
+"background:#e53935;color:white;font-size:15px";  
+  
+let cancel=document.createElement("button");  
+cancel.textContent="✕";  
+cancel.style.cssText=  
+"background:white;color:#1877f2;font-size:18px";  
+  
+bar.appendChild(title);  
+bar.appendChild(del);  
+bar.appendChild(cancel);  
+document.body.appendChild(bar);  
+  
+/* DELETE MESSAGE */  
+del.onclick=async()=>{  
+if(!selectedId)return;  
+  
+del.disabled=true;  
+del.textContent="⏳";  
+  
+try{  
+await deleteDoc(  
+doc(db,"chats",chatId,"messages",selectedId)  
+);  
+  
+selectedId=null;  
+selectedEl=null;  
+bar.remove();  
+  
+}catch(e){  
+console.error("DELETE ERROR:",e);  
+del.disabled=false;  
+del.textContent="🗑️ Delete";  
+alert("Delete yanse: "+(e.code||e.message));  
+}  
+};  
+  
+/* CANCEL */  
+cancel.onclick=()=>{  
+if(selectedEl){  
+selectedEl.style.outline="";  
+selectedEl.style.background="";  
+}  
+  
+selectedId=null;  
+selectedEl=null;  
+bar.remove();  
+};  
+}  
+});  
+}  
+  
+function watchTyping(){  
+onSnapshot(doc(db,"typing",chatId),s=>{  
+let x=s.data()||{};  
+$("typing").textContent=x.uid===to.uid&&x.on?"Ariko arandika...":"";  
+});  
+}  
+  
+$("txt").oninput=async()=>{  
+if(!to)return;  
+await setDoc(doc(db,"typing",chatId),{uid:me.uid,on:true},{merge:true});  
+clearTimeout(window.t);  
+window.t=setTimeout(()=>setDoc(doc(db,"typing",chatId),{uid:me.uid,on:false},{merge:true}),900);  
+};  
+  
+window.send=async()=>{  
+let t=$("txt").value.trim();  
+if(!t||!to)return;  
+await addDoc(collection(db,"chats",chatId,"messages"),{  
+uid:me.uid,toUid:to.uid,text:t,createdAt:serverTimestamp()  
+});  
+$("txt").value="";  
+};  
+const CLOUD="sdtggm0f",PRESET="yvgqax4x";
+
+window.sendMedia=async type=>{
+if(!to)return;
+
+let input=$(type==="image"?"photo":"video");
+let file=input.files[0];
+if(!file)return;
+
+let max=type==="image"?5*1024*1024:20*1024*1024;
+
+if(file.size>max){
+alert(type==="image"?"Photo irarenze 5 MB":"Video irarenze 20 MB");
+input.value="";
+return;
 }
 
-/* LONG PRESS KURI MESSAGE YOSE */
-let timer=null;
-
-m.addEventListener("touchstart",()=>{
-timer=setTimeout(()=>{
-selectedId=d.id;
-selectedEl=m;
-
-m.style.outline="3px solid #1877f2";
-m.style.background="#dbeafe";
-
-showDeleteBar();
-},700);
-},{passive:true});
-
-m.addEventListener("touchend",()=>{
-clearTimeout(timer);
-});
-
-m.addEventListener("touchcancel",()=>{
-clearTimeout(timer);
-});
-
-/* KURI BROWSER */
-m.addEventListener("contextmenu",e=>{
-e.preventDefault();
-
-selectedId=d.id;
-selectedEl=m;
-
-m.style.outline="3px solid #1877f2";
-m.style.background="#dbeafe";
-
-showDeleteBar();
-});
-
-$("msgs").appendChild(m);
-});
-
-$("msgs").scrollTop=$("msgs").scrollHeight;
-
-/* BAR YO HEJURU */
-function showDeleteBar(){
-
-let old=document.getElementById("selectBar");
-if(old)old.remove();
-
-let bar=document.createElement("div");
-bar.id="selectBar";
-bar.style.cssText=
-"position:fixed;top:0;left:0;right:0;height:56px;background:#1877f2;color:white;z-index:9999;display:flex;align-items:center;padding:0 10px;gap:10px;box-shadow:0 2px 6px #999";
-
-let title=document.createElement("b");
-title.textContent="✓ 1 message selected";
-title.style.flex="1";
-
-let del=document.createElement("button");
-del.textContent="🗑️ Delete";
-del.style.cssText=
-"background:#e53935;color:white;font-size:15px";
-
-let cancel=document.createElement("button");
-cancel.textContent="✕";
-cancel.style.cssText=
-"background:white;color:#1877f2;font-size:18px";
-
-bar.appendChild(title);
-bar.appendChild(del);
-bar.appendChild(cancel);
-document.body.appendChild(bar);
-
-/* DELETE MESSAGE */
-del.onclick=async()=>{
-if(!selectedId)return;
-
-del.disabled=true;
-del.textContent="⏳";
-
 try{
-await deleteDoc(
-doc(db,"chats",chatId,"messages",selectedId)
+let fd=new FormData();
+fd.append("file",file);
+fd.append("upload_preset",PRESET);
+
+let r=await fetch(
+`https://api.cloudinary.com/v1_1/${CLOUD}/${type}/upload`,
+{method:"POST",body:fd}
 );
 
-selectedId=null;
-selectedEl=null;
-bar.remove();
+let x=await r.json();
 
+if(!x.secure_url)throw Error("Upload yanse");
+
+await addDoc(
+collection(db,"chats",chatId,"messages"),
+{
+uid:me.uid,
+toUid:to.uid,
+media:x.secure_url,
+mediaType:type,
+createdAt:serverTimestamp()
+});
+
+input.value="";
 }catch(e){
-console.error("DELETE ERROR:",e);
-del.disabled=false;
-del.textContent="🗑️ Delete";
-alert("Delete yanse: "+(e.code||e.message));
-}
-};
-
-/* CANCEL */
-cancel.onclick=()=>{
-if(selectedEl){
-selectedEl.style.outline="";
-selectedEl.style.background="";
-}
-
-selectedId=null;
-selectedEl=null;
-bar.remove();
-};
-}
-});
-}
-
-function watchTyping(){
-onSnapshot(doc(db,"typing",chatId),s=>{
-let x=s.data()||{};
-$("typing").textContent=x.uid===to.uid&&x.on?"Ariko arandika...":"";
-});
-}
-
-$("txt").oninput=async()=>{
-if(!to)return;
-await setDoc(doc(db,"typing",chatId),{uid:me.uid,on:true},{merge:true});
-clearTimeout(window.t);
-window.t=setTimeout(()=>setDoc(doc(db,"typing",chatId),{uid:me.uid,on:false},{merge:true}),900);
-};
-
-window.send=async()=>{
-let t=$("txt").value.trim();
-if(!t||!to)return;
-await addDoc(collection(db,"chats",chatId,"messages"),{
-uid:me.uid,toUid:to.uid,text:t,createdAt:serverTimestamp()
-});
-$("txt").value="";
-};
-
-window.record=async()=>{
-if(recorder?.state==="recording"){recorder.stop();return}
-cancelled=false;
-try{
-let s=await navigator.mediaDevices.getUserMedia({audio:true});
-chunks=[];recorder=new MediaRecorder(s);
-recorder.ondataavailable=e=>chunks.push(e.data);
-recorder.onstop=()=>{
-clearInterval(recTimer);
-recTimer=null;
-$("timer").style.display="none";
-$("cancel").style.display="none";
-$("rec").textContent="🎙️";
-
-if(cancelled){
- chunks=[];
- cancelled=false;
- return;
-}
-s.getTracks().forEach(t=>t.stop());
-let r=new FileReader();
-r.onload=async()=>{
-if(r.result.length>900000)return alert("Ijwi ni rirerire.");
-await addDoc(collection(db,"chats",chatId,"messages"),{
-uid:me.uid,toUid:to.uid,audio:r.result,createdAt:serverTimestamp()
-});
-};
-r.readAsDataURL(new Blob(chunks,{type:"audio/webm"}));
-$("rec").textContent="🎙️";
-};
-recorder.start();
-$("rec").textContent="⏹️";
-$("cancel").style.display="inline-block";
-$("timer").style.display="inline";
-recSeconds=0;
-$("timer").textContent="00:00";
-recTimer=setInterval(()=>{
- recSeconds++;
- let m=Math.floor(recSeconds/60),s=recSeconds%60;
- $("timer").textContent=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
-},1000);
-}catch(e){alert("Emera microphone muri browser.");}
-};
-
-window.makeCall=async type=>{
-if(!to)return;
-
-try{
-
-stream=await navigator.mediaDevices.getUserMedia({
-audio:true,
-video:type==="video"
-});
-
-callId=chatId+"_"+Date.now();
-
-let ref=doc(db,"calls",callId);
-
-await setDoc(ref,{
-caller:me.uid,
-receiver:to.uid,
-type:type,
-status:"calling",
-candidates:[]
-});
-
-pc=new RTCPeerConnection(ice);
-
-stream.getTracks().forEach(t=>{
-pc.addTrack(t,stream);
-});
-
-pc.ontrack=e=>{
-if(type==="video"){
-$("remote").srcObject=e.streams[0];
-}else{
-$("remoteAudio").srcObject=e.streams[0];
-}
-};
-
-pc.onicecandidate=e=>{
-if(e.candidate){
-updateDoc(ref,{
-candidates:arrayUnion(
-JSON.stringify(e.candidate.toJSON())
-)
-}).catch(()=>{});
-}
-};
-
-if(type==="audio"){
-
-$("audioAva").textContent=
-(to.name||"U")[0].toUpperCase();
-
-$("audioName").textContent=
-to.name||"User";
-
-$("audioCall").style.display="block";
-$("call").style.display="none";
-
-}else{
-
-$("audioCall").style.display="none";
-$("call").style.display="block";
-
-$("local").srcObject=stream;
-$("remote").srcObject=null;
-
-}
-
-let offer=await pc.createOffer();
-
-await pc.setLocalDescription(offer);
-
-await updateDoc(ref,{
-offer:{
-type:offer.type,
-sdp:offer.sdp
-}
-});
-
-watchCall(ref,true);
-
-}catch(e){
-
 console.error(e);
-
-stream?.getTracks().forEach(t=>t.stop());
-
-alert(
-"Call ntishoboye gutangura. Emeza Microphone na Camera."
-);
-
+alert("Ntivyashoboye kurungika.");
 }
-};
-
-function watchIncoming(){
-onSnapshot(collection(db,"calls"),s=>{
-s.docChanges().forEach(c=>{
-let x=c.doc.data();
-if(x.receiver===me.uid&&x.status==="calling"){
-callId=c.doc.id;incoming=x;
-$("ctype").textContent=x.type==="video"?"📹 Video Call":"📞 Audio Call";
-$("incoming").style.display="block";
-}
-});
-});
-}
-
-window.answer=async()=>{
-if(!incoming)return;
-
-$("incoming").style.display="none";
-
-to=await getUser(incoming.caller);
-if(!to)return;
-
-chatId=[me.uid,to.uid].sort().join("_");
-
-try{
-
-let type=incoming.type;
-
-stream=await navigator.mediaDevices.getUserMedia({
-audio:true,
-video:type==="video"
-});
-
-pc=new RTCPeerConnection(ice);
-
-stream.getTracks().forEach(t=>{
-pc.addTrack(t,stream);
-});
-
-pc.ontrack=e=>{
-if(type==="video"){
-$("remote").srcObject=e.streams[0];
-}else{
-$("remoteAudio").srcObject=e.streams[0];
-}
-};
-
-let ref=doc(db,"calls",callId);
-let x=(await getDoc(ref)).data();
-
-await pc.setRemoteDescription(x.offer);
-
-pc.onicecandidate=e=>{
-if(e.candidate){
-updateDoc(ref,{
-candidates:arrayUnion(
-JSON.stringify(e.candidate.toJSON())
-)
-}).catch(()=>{});
-}
-};
-
-let a=await pc.createAnswer();
-
-await pc.setLocalDescription(a);
-
-await updateDoc(ref,{
-answer:{
-type:a.type,
-sdp:a.sdp
-},
-status:"connected"
-});
-
-if(type==="audio"){
-
-$("audioAva").textContent=(to.name||"U")[0];
-$("audioName").textContent=to.name||"User";
-
-$("audioCall").style.display="block";
-$("call").style.display="none";
-
-}else{
-
-$("call").style.display="block";
-$("audioCall").style.display="none";
-
-$("local").srcObject=stream;
-}
-
-watchCall(ref,false);
-
-}catch(e){
-
-console.error(e);
-
-stream?.getTracks().forEach(t=>t.stop());
-
-alert("Call yanse. Emeza Camera na Microphone.");
-
-}
-};
-
-async function getUser(uid){
-let d=await getDoc(doc(db,"users",uid));
-return d.exists()?{uid,...d.data()}:null;
-}
-
-function watchCall(ref,caller){
-onSnapshot(ref,async s=>{
-let x=s.data();if(!x||!pc)return;
-if(caller&&x.answer&&!pc.currentRemoteDescription)
-await pc.setRemoteDescription(x.answer);
-if(x.status==="ended")endCall(false);
-if(x.candidates&&pc.remoteDescription)
-for(let z of x.candidates)try{await pc.addIceCandidate(JSON.parse(z))}catch(e){}
-});
-}
-
-window.reject=async()=>{
-await updateDoc(doc(db,"calls",callId),{status:"ended"});
-$("incoming").style.display="none";
-};
-
-window.toggleMic=()=>{
-let t=stream?.getAudioTracks()[0];if(t)t.enabled=!t.enabled;
-};
-window.toggleCam=()=>{
-let t=stream?.getVideoTracks()[0];if(t)t.enabled=!t.enabled;
-};
-window.cancelRecord=()=>{
-if(!recorder||recorder.state!=="recording")return;
-cancelled=true;
-chunks=[];
-recorder.stop();
-};
-window.endCall=async local=>{
-if(local!==false&&callId)
-await updateDoc(doc(db,"calls",callId),{status:"ended"}).catch(()=>{});
-stream?.getTracks().forEach(t=>t.stop());
-pc?.close();stream=null;pc=null;
-$("call").style.display="none";
-};
-
-window.back=()=>{
-if($("chat").style.display==="block"){
-$("chat").style.display="none";$("users").style.display="block";
-}else location.href="home.html";
-};
-
-addEventListener("beforeunload",()=>me&&setPresence(false));
-</script>
-</body>
-</html>
+};  
+window.record=async()=>{  
+if(recorder?.state==="recording"){recorder.stop();return}  
+cancelled=false;  
+try{  
+let s=await navigator.mediaDevices.getUserMedia({audio:true});  
+chunks=[];recorder=new MediaRecorder(s);  
+recorder.ondataavailable=e=>chunks.push(e.data);  
+recorder.onstop=()=>{  
+clearInterval(recTimer);  
+recTimer=null;  
+$("timer").style.display="none";  
+$("cancel").style.display="none";  
+$("rec").textContent="🎙️";  
+  
+if(cancelled){  
+ chunks=[];  
+ cancelled=false;  
+ return;  
+}  
+s.getTracks().forEach(t=>t.stop());  
+let r=new FileReader();  
+r.onload=async()=>{  
+if(r.result.length>900000)return alert("Ijwi ni rirerire.");  
+await addDoc(collection(db,"chats",chatId,"messages"),{  
+uid:me.uid,toUid:to.uid,audio:r.result,createdAt:serverTimestamp()  
+});  
+};  
+r.readAsDataURL(new Blob(chunks,{type:"audio/webm"}));  
+$("rec").textContent="🎙️";  
+};  
+recorder.start();  
+$("rec").textContent="⏹️";  
+$("cancel").style.display="inline-block";  
+$("timer").style.display="inline";  
+recSeconds=0;  
+$("timer").textContent="00:00";  
+recTimer=setInterval(()=>{  
+ recSeconds++;  
+ let m=Math.floor(recSeconds/60),s=recSeconds%60;  
+ $("timer").textContent=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");  
+},1000);  
+}catch(e){alert("Emera microphone muri browser.");}  
+};  
+  
+window.makeCall=async type=>{  
+if(!to)return;  
+  
+try{  
+  
+stream=await navigator.mediaDevices.getUserMedia({  
+audio:true,  
+video:type==="video"  
+});  
+  
+callId=chatId+"_"+Date.now();  
+  
+let ref=doc(db,"calls",callId);  
+  
+await setDoc(ref,{  
+caller:me.uid,  
+receiver:to.uid,  
+type:type,  
+status:"calling",  
+candidates:[]  
+});  
+  
+pc=new RTCPeerConnection(ice);  
+  
+stream.getTracks().forEach(t=>{  
+pc.addTrack(t,stream);  
+});  
+  
+pc.ontrack=e=>{  
+if(type==="video"){  
+$("remote").srcObject=e.streams[0];  
+}else{  
+$("remoteAudio").srcObject=e.streams[0];  
+}  
+};  
+  
+pc.onicecandidate=e=>{  
+if(e.candidate){  
+updateDoc(ref,{  
+candidates:arrayUnion(  
+JSON.stringify(e.candidate.toJSON())  
+)  
+}).catch(()=>{});  
+}  
+};  
+  
+if(type==="audio"){  
+  
+$("audioAva").textContent=  
+(to.name||"U")[0].toUpperCase();  
+  
+$("audioName").textContent=  
+to.name||"User";  
+  
+$("audioCall").style.display="block";  
+$("call").style.display="none";  
+  
+}else{  
+  
+$("audioCall").style.display="none";  
+$("call").style.display="block";  
+  
+$("local").srcObject=stream;  
+$("remote").srcObject=null;  
+  
+}  
+  
+let offer=await pc.createOffer();  
+  
+await pc.setLocalDescription(offer);  
+  
+await updateDoc(ref,{  
+offer:{  
+type:offer.type,  
+sdp:offer.sdp  
+}  
+});  
+  
+watchCall(ref,true);  
+  
+}catch(e){  
+  
+console.error(e);  
+  
+stream?.getTracks().forEach(t=>t.stop());  
+  
+alert(  
+"Call ntishoboye gutangura. Emeza Microphone na Camera."  
+);  
+  
+}  
+};  
+  
+function watchIncoming(){  
+onSnapshot(collection(db,"calls"),s=>{  
+s.docChanges().forEach(c=>{  
+let x=c.doc.data();  
+if(x.receiver===me.uid&&x.status==="calling"){  
+callId=c.doc.id;incoming=x;  
+$("ctype").textContent=x.type==="video"?"📹 Video Call":"📞 Audio Call";  
+$("incoming").style.display="block";  
+}  
+});  
+});  
+}  
+  
+window.answer=async()=>{  
+if(!incoming)return;  
+  
+$("incoming").style.display="none";  
+  
+to=await getUser(incoming.caller);  
+if(!to)return;  
+  
+chatId=[me.uid,to.uid].sort().join("_");  
+  
+try{  
+  
+let type=incoming.type;  
+  
+stream=await navigator.mediaDevices.getUserMedia({  
+audio:true,  
+video:type==="video"  
+});  
+  
+pc=new RTCPeerConnection(ice);  
+  
+stream.getTracks().forEach(t=>{  
+pc.addTrack(t,stream);  
+});  
+  
+pc.ontrack=e=>{  
+if(type==="video"){  
+$("remote").srcObject=e.streams[0];  
+}else{  
+$("remoteAudio").srcObject=e.streams[0];  
+}  
+};  
+  
+let ref=doc(db,"calls",callId);  
+let x=(await getDoc(ref)).data();  
+  
+await pc.setRemoteDescription(x.offer);  
+  
+pc.onicecandidate=e=>{  
+if(e.candidate){  
+updateDoc(ref,{  
+candidates:arrayUnion(  
+JSON.stringify(e.candidate.toJSON())  
+)  
+}).catch(()=>{});  
+}  
+};  
+  
+let a=await pc.createAnswer();  
+  
+await pc.setLocalDescription(a);  
+  
+await updateDoc(ref,{  
+answer:{  
+type:a.type,  
+sdp:a.sdp  
+},  
+status:"connected"  
+});  
+  
+if(type==="audio"){  
+  
+$("audioAva").textContent=(to.name||"U")[0];  
+$("audioName").textContent=to.name||"User";  
+  
+$("audioCall").style.display="block";  
+$("call").style.display="none";  
+  
+}else{  
+  
+$("call").style.display="block";  
+$("audioCall").style.display="none";  
+  
+$("local").srcObject=stream;  
+}  
+  
+watchCall(ref,false);  
+  
+}catch(e){  
+  
+console.error(e);  
+  
+stream?.getTracks().forEach(t=>t.stop());  
+  
+alert("Call yanse. Emeza Camera na Microphone.");  
+  
+}  
+};  
+  
+async function getUser(uid){  
+let d=await getDoc(doc(db,"users",uid));  
+return d.exists()?{uid,...d.data()}:null;  
+}  
+  
+function watchCall(ref,caller){  
+onSnapshot(ref,async s=>{  
+let x=s.data();if(!x||!pc)return;  
+if(caller&&x.answer&&!pc.currentRemoteDescription)  
+await pc.setRemoteDescription(x.answer);  
+if(x.status==="ended")endCall(false);  
+if(x.candidates&&pc.remoteDescription)  
+for(let z of x.candidates)try{await pc.addIceCandidate(JSON.parse(z))}catch(e){}  
+});  
+}  
+  
+window.reject=async()=>{  
+await updateDoc(doc(db,"calls",callId),{status:"ended"});  
+$("incoming").style.display="none";  
+};  
+  
+window.toggleMic=()=>{  
+let t=stream?.getAudioTracks()[0];if(t)t.enabled=!t.enabled;  
+};  
+window.toggleCam=()=>{  
+let t=stream?.getVideoTracks()[0];if(t)t.enabled=!t.enabled;  
+};  
+window.cancelRecord=()=>{  
+if(!recorder||recorder.state!=="recording")return;  
+cancelled=true;  
+chunks=[];  
+recorder.stop();  
+};  
+window.endCall=async local=>{  
+if(local!==false&&callId)  
+await updateDoc(doc(db,"calls",callId),{status:"ended"}).catch(()=>{});  
+stream?.getTracks().forEach(t=>t.stop());  
+pc?.close();stream=null;pc=null;  
+$("call").style.display="none";  
+};  
+  
+window.back=()=>{  
+if($("chat").style.display==="block"){  
+$("chat").style.display="none";$("users").style.display="block";  
+}else location.href="home.html";  
+};  
+  
+addEventListener("beforeunload",()=>me&&setPresence(false));  
+</script>  </body>  
+  </html>
