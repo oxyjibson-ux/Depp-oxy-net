@@ -43,44 +43,74 @@ textarea{width:100%;min-height:65px;border:1px solid #ddd;border-radius:10px;pad
 #uploadMsg{font-size:13px;color:#1877f2;margin-top:8px}
 </style>
 </head>
-<body><header>
+<body>
+
+<header>
 <button class="hbtn" onclick="go('profile.html')">👤</button>
-<div class="logo">Depp Net</div><div class="top">
+<div class="logo">Depp Net</div>
+
+<div class="top">
 <button class="hbtn" onclick="go('search.html')">🔎</button>
 <button class="hbtn" onclick="menu()">☰</button>
-</div><div id="m" class="menu">
+</div>
+
+<div id="m" class="menu">
+<button onclick="go('login.html')">🔐 Login</button>
+<button onclick="go('register.html')">📝 Register</button>
 <button onclick="go('chat.html')" id="tChat">💬 Chat</button>
 <button onclick="go('notify.html')" id="tNotify">🔔 Notifications</button>
 <button onclick="go('contacts.html')" id="tContacts">👥 Contacts</button>
 <button onclick="go('settings.html')" id="tSettings">⚙️ Settings</button>
 <button onclick="logout()" id="tLogout">🚪 Logout</button>
 </div>
-</header><main><div class="box profile">
+</header>
+
+<main>
+
+<div class="box profile">
 <div class="default" id="avatar">D</div>
 <div>
 <div class="pname" id="name">...</div>
 <div class="puser" id="user">@...</div>
 </div>
-</div><div class="box status">
+</div>
+
+<div class="box status">
 <b>📷 Status</b>
 <button onclick="go('status.html')">＋ Add</button>
-</div><div class="box" id="streak" onclick="addStreak()" style="cursor:pointer">🔥 1 Day Streak</div><div class="box">
-<textarea id="txt" placeholder="Andika ico ushaka gusangiza..."></textarea><div class="row">
+</div>
+
+<div class="box" id="streak" onclick="addStreak()" style="cursor:pointer">
+🔥 1 Day Streak
+</div>
+
+<div class="box">
+<textarea id="txt" placeholder="Andika ico ushaka gusangiza..."></textarea>
+
+<div class="row">
 <button type="button" onclick="document.getElementById('photo').click()">📷 Photo</button>
-<input id="photo" type="file" accept="image/*" style="display:none"><button type="button" onclick="document.getElementById('video').click()">🎬 Video</button>
+<input id="photo" type="file" accept="image/*" style="display:none">
+
+<button type="button" onclick="document.getElementById('video').click()">🎬 Video</button>
 <input id="video" type="file" accept="video/*" style="display:none">
 
 <button class="send" onclick="post()">📤 Sangiza</button>
+</div>
 
-</div><div id="preview"></div>
+<div id="preview"></div>
 <div id="uploadMsg"></div>
-</div><div id="posts">Turiko turarondera Posts...</div>
-</main><div class="bottom">
+</div>
+
+<div id="posts">Turiko turarondera Posts...</div>
+</main>
+
+<div class="bottom">
 <button onclick="go('chat.html')">💬</button>
 <button onclick="go('notify.html')">🔔<span id="badge" class="badge" style="display:none">0</span></button>
 <button onclick="go('contacts.html')">👥</button>
-</div><script type="module">
+</div>
 
+<script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import{getFirestore,collection,doc,addDoc,onSnapshot,query,orderBy,serverTimestamp,updateDoc,deleteDoc,arrayUnion,arrayRemove,getDoc,setDoc}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
@@ -492,5 +522,6 @@ localStorage.removeItem("deppNetUser");
 location.href="login.html";
 };
 
-</script></body>
-  </html>
+</script>
+</body>
+</html>
