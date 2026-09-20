@@ -6,14 +6,11 @@
 <title>Depp Net</title>
 <style>
 *{box-sizing:border-box;font-family:Arial}
-body{margin:0;background:#f2f4f7;min-height:100vh;
-display:flex;align-items:center;justify-content:center}
-.box{width:90%;max-width:380px;background:#fff;padding:30px 22px;
-border-radius:22px;text-align:center;box-shadow:0 5px 25px #0002}
+body{margin:0;background:#f2f4f7;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.box{width:90%;max-width:380px;background:#fff;padding:30px 22px;border-radius:22px;text-align:center;box-shadow:0 5px 25px #0002}
 .logo{font-size:38px;font-weight:bold;color:#1877f2}
 p{color:#666;margin:10px 0 28px}
-button{width:100%;padding:15px;margin:8px 0;border:0;
-border-radius:12px;font-size:16px;font-weight:bold}
+button{width:100%;padding:15px;margin:8px 0;border:0;border-radius:12px;font-size:16px;font-weight:bold}
 .signup{background:#1877f2;color:white}
 .google{background:white;border:1px solid #ccc}
 </style>
@@ -34,16 +31,12 @@ border-radius:12px;font-size:16px;font-weight:bold}
 </div>
 
 <script type="module">
-import{initializeApp}from
-"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import{getAuth,GoogleAuthProvider,signInWithRedirect,
-getRedirectResult,browserLocalPersistence,setPersistence}
-from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import{getFirestore,doc,setDoc,getDoc,serverTimestamp}
-from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import{getAuth,GoogleAuthProvider,signInWithPopup,browserLocalPersistence,setPersistence}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import{getFirestore,doc,setDoc,getDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const firebaseConfig={
-apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
+apiKey:"AIzaSyAddn7bUZfDupIqFsvBbXRpxarFAsV2lYs",
 authDomain:"depp-net-apk.firebaseapp.com",
 databaseURL:"https://depp-net-apk-default-rtdb.firebaseio.com",
 projectId:"depp-net-apk",
@@ -62,17 +55,9 @@ await setPersistence(auth,browserLocalPersistence);
 
 window.googleLogin=async()=>{
 try{
-await signInWithRedirect(auth,provider);
-}catch(e){
-alert("Google yanse: "+e.message);
-}
-};
-
-try{
-const r=await getRedirectResult(auth);
-
-if(r&&r.user){
+const r=await signInWithPopup(auth,provider);
 const u=r.user;
+
 const ref=doc(db,"users",u.uid);
 const old=await getDoc(ref);
 
@@ -97,10 +82,11 @@ photo:u.photoURL||""
 
 localStorage.setItem("deppNetLoggedIn","true");
 location.href="home.html";
-}
+
 }catch(e){
 alert("Google yanse: "+e.message);
 }
+};
 </script>
 
 </body>
