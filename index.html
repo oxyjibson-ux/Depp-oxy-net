@@ -32,58 +32,61 @@ button{width:100%;padding:15px;margin:8px 0;border:0;border-radius:12px;font-siz
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import{getAuth,GoogleAuthProvider,signInWithPopup,browserLocalPersistence,setPersistence}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import{getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,browserLocalPersistence,setPersistence}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import{getFirestore,doc,setDoc,getDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-const firebaseConfig={
+const config={
 apiKey:"AIzaSyAddn7bUZfDupIqFsvBbXRpxarFAsV2lYs",
 authDomain:"depp-net-apk.firebaseapp.com",
-databaseURL:"https://depp-net-apk-default-rtdb.firebaseio.com",
 projectId:"depp-net-apk",
 storageBucket:"depp-net-apk.firebasestorage.app",
 messagingSenderId:"664141462348",
-appId:"1:664141462348:web:8202143fef6fcdaf9cede9",
-measurementId:"G-DMBZT3C6MK"
+appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
 };
 
-const app=initializeApp(firebaseConfig);
+const app=initializeApp(config);
 const auth=getAuth(app);
 const db=getFirestore(app);
 const provider=new GoogleAuthProvider();
 
 await setPersistence(auth,browserLocalPersistence);
 
-window.googleLogin=async()=>{
-try{
-const r=await signInWithPopup(auth,provider);
-const u=r.user;
+let going=false;
 
-const ref=doc(db,"users",u.uid);
-const old=await getDoc(ref);
+onAuthStateChanged(auth,async u=>{
+if(!u||going)return;
+going=true;
 
-if(!old.exists()){
-await setDoc(ref,{
-uid:u.uid,
-name:u.displayName||"User",
-username:(u.email||"user").split("@")[0],
-email:u.email||"",
-photo:u.photoURL||"",
-createdAt:serverTimestamp()
-});
-}
-
-localStorage.setItem("deppNetUser",JSON.stringify({
+const data={
 uid:u.uid,
 name:u.displayName||"User",
 username:(u.email||"user").split("@")[0],
 email:u.email||"",
 photo:u.photoURL||""
-}));
+};
 
+localStorage.setItem("deppNetUser",JSON.stringify(data));
 localStorage.setItem("deppNetLoggedIn","true");
-location.href="home.html";
 
+try{
+const ref=doc(db,"users",u.uid);
+const old=await getDoc(ref);
+
+if(!old.exists()){
+await setDoc(ref,{...data,createdAt:serverTimestamp()});
+}
 }catch(e){
+console.log("User save:",e.message);
+}
+
+location.href="home.html";
+});
+
+window.googleLogin=async()=>{
+try{
+await signInWithPopup(auth,provider);
+}catch(e){
+console.log(e);
 alert("Google yanse: "+e.message);
 }
 };
