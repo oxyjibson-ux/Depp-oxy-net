@@ -21,7 +21,6 @@ button{width:100%;padding:13px;margin-top:9px;border:0;border-radius:10px;backgr
 .ok{background:#e5ffe9;color:#087a1d}
 </style>
 </head>
-
 <body>
 
 <header>Depp Net</header>
@@ -35,7 +34,6 @@ button{width:100%;padding:13px;margin-top:9px;border:0;border-radius:10px;backgr
 <input id="password" type="password" placeholder="Mot de passe">
 
 <button id="loginBtn" onclick="login()">Injira</button>
-
 <button class="google" onclick="googleLogin()">🔵 Injira na Google</button>
 
 <div id="error" class="msg err"></div>
@@ -60,7 +58,8 @@ setPersistence,
 browserLocalPersistence,
 signInWithEmailAndPassword,
 GoogleAuthProvider,
-signInWithRedirect
+signInWithRedirect,
+getRedirectResult
 }from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 import{
@@ -94,9 +93,6 @@ let email=document.getElementById("email").value.trim().toLowerCase();
 let pass=document.getElementById("password").value;
 let btn=document.getElementById("loginBtn");
 
-document.getElementById("error").style.display="none";
-document.getElementById("ok").style.display="none";
-
 if(!email||!pass){
 msg("error","Shiramwo email na mot de passe.");
 return;
@@ -106,7 +102,6 @@ btn.disabled=true;
 btn.textContent="Turiko turinjiza...";
 
 try{
-
 await setPersistence(auth,browserLocalPersistence);
 
 let r=await signInWithEmailAndPassword(auth,email,pass);
@@ -121,20 +116,18 @@ uid:u.uid,
 name:d.name||u.displayName||u.email,
 username:d.username||u.email.split("@")[0],
 email:u.email,
-phone:d.phone||""
+phone:d.phone||"",
+photo:d.photo||""
 };
 
 localStorage.setItem("deppNetUser",JSON.stringify(user));
 localStorage.setItem("deppNetLoggedIn","true");
 
-msg("ok","Murakaza neza "+user.name+"!");
-
-setTimeout(()=>location.href="home.html",500);
+location.href="home.html";
 
 }catch(e){
 
 let t="Habaye ikibazo mu kwinjira.";
-
 if(e.code==="auth/invalid-credential")t="Email canke mot de passe si vyo.";
 if(e.code==="auth/invalid-email")t="Email siyo.";
 if(e.code==="auth/too-many-requests")t="Rindira gatoyi hanyuma wongere ugerageze.";
@@ -147,20 +140,56 @@ btn.textContent="Injira";
 };
 
 window.googleLogin=async()=>{
+try{
+await setPersistence(auth,browserLocalPersistence);
+let provider=new GoogleAuthProvider();
+await signInWithRedirect(auth,provider);
+}catch(e){
+msg("error","Google login ntiyakoze: "+e.message);
+}
+};
 
 try{
+const r=await getRedirectResult(auth);
 
-await setPersistence(auth,browserLocalPersistence);
+if(r&&r.user){
 
-let provider=new GoogleAuthProvider();
+const u=r.user;
 
-await signInWithRedirect(auth,provider);
+const ref=doc(db,"users",u.uid);
+const s=await getDoc(ref);
+const d=s.exists()?s.data():{};
 
-}catch(e){
-msg("error","Google login ntiyakoze. Suzuma Firebase Google Sign-in.");
+if(!s.exists()){
+await setDoc(ref,{
+uid:u.uid,
+name:u.displayName||"User",
+username:(u.email||"user").split("@")[0],
+email:u.email||"",
+phone:"",
+photo:u.photoURL||""
+});
 }
 
+const user={
+id:u.uid,
+uid:u.uid,
+name:d.name||u.displayName||"User",
+username:d.username||(u.email||"user").split("@")[0],
+email:u.email||"",
+phone:d.phone||"",
+photo:d.photo||u.photoURL||""
 };
+
+localStorage.setItem("deppNetUser",JSON.stringify(user));
+localStorage.setItem("deppNetLoggedIn","true");
+
+location.href="home.html";
+}
+
+}catch(e){
+msg("error","Google yanse: "+e.message);
+}
 
 </script>
 </body>
