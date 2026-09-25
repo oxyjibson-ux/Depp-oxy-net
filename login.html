@@ -25,8 +25,7 @@ button{width:100%;padding:13px;margin-top:9px;border:0;border-radius:10px;backgr
 
 <header>Depp Net</header>
 
-<div class="box">
-<div class="card">
+<div class="box"><div class="card">
 
 <h2>Injira muri Depp Net</h2>
 
@@ -45,8 +44,7 @@ button{width:100%;padding:13px;margin-top:9px;border:0;border-radius:10px;backgr
 <a href="index.html">⬅️ Subira inyuma</a>
 </div>
 
-</div>
-</div>
+</div></div>
 
 <script type="module">
 
@@ -58,8 +56,7 @@ setPersistence,
 browserLocalPersistence,
 signInWithEmailAndPassword,
 GoogleAuthProvider,
-signInWithRedirect,
-getRedirectResult
+signInWithPopup
 }from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 import{
@@ -103,36 +100,28 @@ btn.textContent="Turiko turinjiza...";
 
 try{
 await setPersistence(auth,browserLocalPersistence);
-
 let r=await signInWithEmailAndPassword(auth,email,pass);
 let u=r.user;
-
 let s=await getDoc(doc(db,"users",u.uid));
 let d=s.exists()?s.data():{};
 
 let user={
-id:u.uid,
-uid:u.uid,
+id:u.uid,uid:u.uid,
 name:d.name||u.displayName||u.email,
 username:d.username||u.email.split("@")[0],
-email:u.email,
-phone:d.phone||"",
-photo:d.photo||""
+email:u.email,phone:d.phone||"",photo:d.photo||""
 };
 
 localStorage.setItem("deppNetUser",JSON.stringify(user));
 localStorage.setItem("deppNetLoggedIn","true");
-
 location.href="home.html";
 
 }catch(e){
-
 let t="Habaye ikibazo mu kwinjira.";
 if(e.code==="auth/invalid-credential")t="Email canke mot de passe si vyo.";
 if(e.code==="auth/invalid-email")t="Email siyo.";
 if(e.code==="auth/too-many-requests")t="Rindira gatoyi hanyuma wongere ugerageze.";
 if(e.code==="auth/network-request-failed")t="Internet ntiyabonetse.";
-
 msg("error",t);
 btn.disabled=false;
 btn.textContent="Injira";
@@ -141,19 +130,11 @@ btn.textContent="Injira";
 
 window.googleLogin=async()=>{
 try{
+
 await setPersistence(auth,browserLocalPersistence);
-let provider=new GoogleAuthProvider();
-await signInWithRedirect(auth,provider);
-}catch(e){
-msg("error","Google login ntiyakoze: "+e.message);
-}
-};
 
-try{
-const r=await getRedirectResult(auth);
-
-if(r&&r.user){
-
+const provider=new GoogleAuthProvider();
+const r=await signInWithPopup(auth,provider);
 const u=r.user;
 
 const ref=doc(db,"users",u.uid);
@@ -185,11 +166,13 @@ localStorage.setItem("deppNetUser",JSON.stringify(user));
 localStorage.setItem("deppNetLoggedIn","true");
 
 location.href="home.html";
-}
 
 }catch(e){
-msg("error","Google yanse: "+e.message);
+msg("error","Google: "+e.code+" - "+e.message);
+console.log(e);
 }
+
+};
 
 </script>
 </body>
