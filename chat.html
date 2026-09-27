@@ -18,6 +18,7 @@ button{border:0;border-radius:20px;padding:9px 13px}
 #msgs{height:calc(100% - 115px);overflow:auto;padding:10px}
 .msg{max-width:75%;padding:10px 13px;margin:6px 0;background:white;border-radius:16px}
 .mine{margin-left:auto;background:#1877f2;color:white}
+.msg img{max-width:220px;border-radius:12px;display:block}
 .send{height:57px;background:white;display:flex;gap:5px;padding:8px}
 #txt{flex:1;border:1px solid #ddd;border-radius:22px;padding:10px;outline:0}
 </style>
@@ -34,7 +35,6 @@ button{border:0;border-radius:20px;padding:9px 13px}
 <div id="users">Turiko turarondera...</div>
 
 <div id="chat">
-
 <div class="top">
 <button onclick="goBack()">←</button>
 <div class="av" id="avatar">U</div>
@@ -45,208 +45,159 @@ button{border:0;border-radius:20px;padding:9px 13px}
 
 <div class="send">
 <input id="txt" placeholder="Andika ubutumwa...">
+<button onclick="photo.click()">📷</button>
+<input id="photo" type="file" accept="image/*" hidden onchange="sendPhoto()">
 <button onclick="send()">➤</button>
 </div>
-
 </div>
 
 <script type="module">
 
-import{initializeApp}
-from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import{
-getAuth,
-onAuthStateChanged,
-setPersistence,
-browserLocalPersistence
-}
-from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-
+getAuth,onAuthStateChanged,setPersistence,browserLocalPersistence
+}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import{
-getFirestore,
-collection,
-addDoc,
-onSnapshot,
-query,
-orderBy,
-serverTimestamp
-}
-from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
+getFirestore,collection,addDoc,onSnapshot,query,orderBy,serverTimestamp
+}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const app=initializeApp({
-
 apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
 authDomain:"depp-net-apk.firebaseapp.com",
 projectId:"depp-net-apk",
 storageBucket:"depp-net-apk.firebasestorage.app",
 messagingSenderId:"664141462348",
 appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
-
 });
 
-const auth=getAuth(app);
-const db=getFirestore(app);
-
+const auth=getAuth(app),db=getFirestore(app);
 await setPersistence(auth,browserLocalPersistence);
 
-let me=null;
-let other=null;
-let chatId=null;
-let stopMessages=null;
+const CLOUD="sdtggm0f",PRESET="yvgqax4x";
+let me=null,other=null,chatId=null,stopMessages=null;
 
-
-onAuthStateChanged(auth,user=>{
-
-if(!user){
-location.href="login.html";
-return;
-}
-
-me=user;
-loadUsers();
-
+onAuthStateChanged(auth,u=>{
+if(!u)return location.href="login.html";
+me=u;loadUsers();
 });
 
-
 function loadUsers(){
-
 onSnapshot(collection(db,"users"),snap=>{
-
 const box=document.getElementById("users");
 box.innerHTML="";
 
 snap.forEach(d=>{
-
 if(d.id===me.uid)return;
-
 const u={uid:d.id,...d.data()};
-
 const div=document.createElement("div");
 div.className="user";
-
-div.innerHTML=`
-<div class="av">
-${(u.name||"U").charAt(0).toUpperCase()}
-</div>
-
-<div class="info">
-<b>${u.name||"User"}</b><br>
-<small>@${u.username||""}</small>
-</div>
-`;
-
+div.innerHTML=`<div class="av">${(u.name||"U")[0].toUpperCase()}</div>
+<div class="info"><b>${u.name||"User"}</b><br><small>@${u.username||""}</small></div>`;
 div.onclick=()=>openChat(u);
-
 box.appendChild(div);
-
 });
 
-if(!box.innerHTML)
-box.innerHTML="<p>Nta bandi bakoresha Depp Net ubu.</p>";
-
+if(!box.innerHTML)box.innerHTML="<p>Nta bandi bakoresha Depp Net ubu.</p>";
 });
-
 }
-
 
 function openChat(u){
-
 other=u;
-
 chatId=[me.uid,other.uid].sort().join("_");
-
-document.getElementById("users").style.display="none";
-document.getElementById("chat").style.display="block";
-
-document.getElementById("chatName").textContent=
-other.name||"User";
-
-document.getElementById("avatar").textContent=
-(other.name||"U").charAt(0).toUpperCase();
-
+users.style.display="none";
+chat.style.display="block";
+chatName.textContent=other.name||"User";
+avatar.textContent=(other.name||"U")[0].toUpperCase();
 loadMessages();
-
 }
-
 
 function loadMessages(){
-
 if(stopMessages)stopMessages();
 
-const q=query(
-collection(db,"chats",chatId,"messages"),
-orderBy("createdAt")
-);
+const q=query(collection(db,"chats",chatId,"messages"),orderBy("createdAt"));
 
 stopMessages=onSnapshot(q,snap=>{
-
-const box=document.getElementById("msgs");
-box.innerHTML="";
+msgs.innerHTML="";
 
 snap.forEach(d=>{
+const x=d.data(),div=document.createElement("div");
+div.className="msg "+(x.uid===me.uid?"mine":"");
 
-const x=d.data();
-
-const div=document.createElement("div");
-
-div.className=
-"msg "+(x.uid===me.uid?"mine":"");
-
+if(x.mediaType==="image"){
+const im=document.createElement("img");
+im.src=x.media;
+div.appendChild(im);
+}else{
 div.textContent=x.text||"";
-
-box.appendChild(div);
-
-});
-
-box.scrollTop=box.scrollHeight;
-
-});
-
 }
 
+msgs.appendChild(div);
+});
+
+msgs.scrollTop=msgs.scrollHeight;
+});
+}
 
 window.send=async()=>{
-
-const input=document.getElementById("txt");
-const text=input.value.trim();
-
+const input=txt,text=input.value.trim();
 if(!text||!other)return;
 
-await addDoc(
-collection(db,"chats",chatId,"messages"),
-{
-uid:me.uid,
-toUid:other.uid,
-text:text,
-createdAt:serverTimestamp()
-}
-);
-
+await addDoc(collection(db,"chats",chatId,"messages"),{
+uid:me.uid,toUid:other.uid,text,createdAt:serverTimestamp()
+});
 input.value="";
-
 };
 
+window.sendPhoto=async()=>{
+const file=photo.files[0];
+if(!file||!other)return;
 
-window.goBack=()=>{
-
-if(document.getElementById("chat").style.display==="block"){
-
-if(stopMessages)stopMessages();
-
-document.getElementById("chat").style.display="none";
-document.getElementById("users").style.display="block";
-
-}else{
-
-location.href="home.html";
-
+if(file.size>5*1024*1024){
+alert("Photo ntirenge 5MB.");
+photo.value="";
+return;
 }
 
+try{
+const fd=new FormData();
+fd.append("file",file);
+fd.append("upload_preset",PRESET);
+
+const r=await fetch(
+`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`,
+{method:"POST",body:fd}
+);
+
+const x=await r.json();
+
+if(!r.ok){
+alert(x.error?.message||"Photo yanse gushirwa kuri Cloudinary.");
+return;
+}
+
+await addDoc(collection(db,"chats",chatId,"messages"),{
+uid:me.uid,
+toUid:other.uid,
+media:x.secure_url,
+mediaType:"image",
+createdAt:serverTimestamp()
+});
+
+}catch(e){
+alert("Photo yanse koherezwa: "+e.message);
+}
+
+photo.value="";
+};
+
+window.goBack=()=>{
+if(chat.style.display==="block"){
+if(stopMessages)stopMessages();
+chat.style.display="none";
+users.style.display="block";
+}else location.href="home.html";
 };
 
 </script>
-
 </body>
 </html>
