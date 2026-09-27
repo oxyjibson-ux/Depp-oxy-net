@@ -159,13 +159,6 @@ location.href="login.html";
 return;
 }
 
-  const ADMIN="J6cFfnF5XOR67T1vwtLNyaKGw1L2";
-
-onAuthStateChanged(auth,u=>{
-  if(u && u.uid===ADMIN){
-    document.getElementById("adminFilmsBtn").style.display="block";
-  }
-});
 me=u;
 loadMe();
 loadPosts();
