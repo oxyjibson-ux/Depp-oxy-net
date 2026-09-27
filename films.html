@@ -4,145 +4,186 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Depp Net - Films</title>
-
 <style>
 *{box-sizing:border-box;font-family:Arial}
 body{margin:0;background:#f2f4f7}
-header{
-background:#1877f2;color:white;padding:16px;
-display:flex;align-items:center;gap:12px;
-font-size:22px;font-weight:bold
-}
-header button{
-background:white;color:#1877f2;border:0;
-border-radius:8px;padding:8px 12px;font-size:18px
-}
-.box{width:94%;max-width:650px;margin:18px auto}
-input{
-width:100%;padding:14px;border:1px solid #ccc;
-border-radius:12px;font-size:16px;margin-bottom:15px
-}
-.card{
-background:white;border-radius:16px;padding:15px;
-margin-bottom:18px;box-shadow:0 2px 8px #ccc
-}
-h2{margin:5px 0 10px}
-p{color:#555}
-video{width:100%;border-radius:12px}
-button{
-border:0;border-radius:10px;padding:11px 15px;
-background:#1877f2;color:white;font-size:15px;
-font-weight:bold;margin-top:10px
-}
+header{background:#1877f2;color:white;padding:15px;font-size:21px;font-weight:bold}
+.box{max-width:650px;margin:auto;padding:15px}
+.card{background:white;padding:15px;margin:12px 0;border-radius:14px}
+input,textarea,button{width:100%;padding:12px;margin:6px 0;box-sizing:border-box}
+input,textarea{border:1px solid #ddd;border-radius:8px}
+button{border:0;border-radius:8px;background:#1877f2;color:white;font-weight:bold}
+.del{background:#e53935}
+video{width:100%;border-radius:10px;margin-top:8px}
+#admin{display:none}
 </style>
 </head>
 
 <body>
 
-<header>
-<button onclick="location.href='home.html'">⬅️</button>
-🎬 Depp Net Films
-</header>
+<header>🎬 Depp Net Films</header>
 
 <div class="box">
 
-<input id="search" placeholder="🔎 Rondera Film..." oninput="showFilms()">
+<div id="admin" class="card">
+<h2>👑 Admin - Shiramwo Film</h2>
 
-<div id="list">Turiko turarondera Films...</div>
+<input id="title" placeholder="Izina rya Film">
+<textarea id="desc" placeholder="Insiguro ya Film"></textarea>
+<input id="file" type="file" accept="video/*">
+
+<button onclick="uploadFilm()">⬆️ Shiramwo Film</button>
+<p id="msg"></p>
+</div>
+
+<div class="card">
+<input id="search" placeholder="🔎 Rondera Film..." oninput="showFilms()">
+</div>
+
+<div id="list">⏳ Turiko turarondera Films...</div>
 
 </div>
 
 <script type="module">
 
-import{initializeApp}
-from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import{
-getFirestore,collection,getDocs,query,orderBy
+ getFirestore,collection,getDocs,addDoc,deleteDoc,doc,serverTimestamp
 }from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-const app=initializeApp({
+const firebaseConfig={
 apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
 authDomain:"depp-net-apk.firebaseapp.com",
 projectId:"depp-net-apk",
 storageBucket:"depp-net-apk.firebasestorage.app",
 messagingSenderId:"664141462348",
 appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
-});
+};
 
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
 const db=getFirestore(app);
+
+const ADMIN="J6cFfnF5XOR67T1vwtLNyaKGw1L2";
 let films=[];
 
+onAuthStateChanged(auth,user=>{
+ if(user&&user.uid===ADMIN){
+   document.getElementById("admin").style.display="block";
+ }
+ loadFilms();
+});
+
 async function loadFilms(){
-
-try{
-
-const q=query(
-collection(db,"films"),
-orderBy("createdAt","desc")
-);
-
-const s=await getDocs(q);
-
-films=[];
-s.forEach(d=>films.push({id:d.id,...d.data()}));
-
-showFilms();
-
-}catch(e){
-
-console.log(e);
-
-document.getElementById("list").innerHTML=
-"<div class='card'>❌ Films ntizashoboye kuboneka.</div>";
-
-}
-
+ try{
+  const s=await getDocs(collection(db,"films"));
+  films=[];
+  s.forEach(d=>films.push({id:d.id,...d.data()}));
+  showFilms();
+ }catch(e){
+  document.getElementById("list").innerHTML="❌ "+e.message;
+ }
 }
 
 window.showFilms=()=>{
+ const q=document.getElementById("search").value.toLowerCase();
+ const box=document.getElementById("list");
 
-const list=document.getElementById("list");
-const word=document.getElementById("search").value.toLowerCase();
+ const arr=films.filter(x=>
+  (x.title||"").toLowerCase().includes(q)
+ );
 
-const arr=films.filter(x=>
-(x.title||"").toLowerCase().includes(word)
-);
+ if(!arr.length){
+  box.innerHTML="<p>🎬 Nta Film irajako.</p>";
+  return;
+ }
 
-list.innerHTML="";
+ box.innerHTML="";
 
-if(!arr.length){
-list.innerHTML="<div class='card'>🎬 Nta Film ibonetse.</div>";
-return;
-}
+ arr.forEach(x=>{
+  const div=document.createElement("div");
+  div.className="card";
 
-arr.forEach(x=>{
+  div.innerHTML=`
+   <h2>${x.title||"Film"}</h2>
+   <p>${x.description||""}</p>
+   <video src="${x.video}" controls preload="metadata"></video>
+   <a href="${x.video}" target="_blank">
+    <button>⬇️ Fungura / Download</button>
+   </a>
+  `;
 
-const c=document.createElement("div");
-c.className="card";
+  if(auth.currentUser&&auth.currentUser.uid===ADMIN){
+   const b=document.createElement("button");
+   b.className="del";
+   b.textContent="🗑️ Siba Film";
+   b.onclick=async()=>{
+    if(confirm("Urashaka gusiba iyi Film?")){
+     await deleteDoc(doc(db,"films",x.id));
+     loadFilms();
+    }
+   };
+   div.appendChild(b);
+  }
 
-c.innerHTML=`
-<h2>${x.title||"Film"}</h2>
-<p>${x.description||""}</p>
-
-<video src="${x.video}" controls preload="metadata"></video>
-
-<br>
-
-<a href="${x.video}" download>
-<button>⬇️ Download Film</button>
-</a>
-`;
-
-list.appendChild(c);
-
-});
-
+  box.appendChild(div);
+ });
 };
 
-loadFilms();
+window.uploadFilm=async()=>{
+ const title=document.getElementById("title").value.trim();
+ const desc=document.getElementById("desc").value.trim();
+ const file=document.getElementById("file").files[0];
+ const msg=document.getElementById("msg");
+
+ if(!title||!file){
+  msg.textContent="⚠️ Shiramwo izina na video.";
+  return;
+ }
+
+ if(file.size>100*1024*1024){
+  msg.textContent="❌ Video irarenze 100MB.";
+  return;
+ }
+
+ msg.textContent="⏳ Turiko turashiramwo...";
+
+ try{
+  const fd=new FormData();
+  fd.append("file",file);
+  fd.append("upload_preset","yvgqax4x");
+
+  const r=await fetch(
+   "https://api.cloudinary.com/v1_1/sdtggm0f/video/upload",
+   {method:"POST",body:fd}
+  );
+
+  const x=await r.json();
+
+  if(!x.secure_url)
+   throw new Error(x.error?.message||"Cloudinary yanse video.");
+
+  await addDoc(collection(db,"films"),{
+   title:title,
+   description:desc,
+   video:x.secure_url,
+   admin:ADMIN,
+   createdAt:serverTimestamp()
+  });
+
+  document.getElementById("title").value="";
+  document.getElementById("desc").value="";
+  document.getElementById("file").value="";
+
+  msg.textContent="✅ Film yashizweho neza!";
+  loadFilms();
+
+ }catch(e){
+  msg.textContent="❌ "+e.message;
+ }
+};
 
 </script>
-
 </body>
 </html>
