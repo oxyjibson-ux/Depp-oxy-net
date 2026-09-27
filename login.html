@@ -3,19 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Depp Net - Register</title>
+<title>Depp Net - Login</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial;background:#f2f4f7;color:#222}
 header{background:#1877f2;color:white;text-align:center;padding:18px;font-size:25px;font-weight:bold}
-.box{width:92%;max-width:430px;margin:25px auto}
-.card{background:white;padding:22px;border-radius:16px;box-shadow:0 3px 12px #ccc}
+.box{width:92%;max-width:420px;margin:40px auto}
+.card{background:white;padding:24px;border-radius:15px;box-shadow:0 3px 12px #ccc}
 h2{text-align:center}
-input,select{width:100%;padding:13px;margin:6px 0;border:1px solid #ccc;border-radius:10px;font-size:16px}
-button{width:100%;padding:14px;margin-top:10px;border:0;border-radius:10px;background:#1877f2;color:white;font-size:16px;font-weight:bold}
-.msg{display:none;padding:10px;margin-top:10px;border-radius:8px;text-align:center}
+input{width:100%;padding:14px;margin:7px 0;border:1px solid #ccc;border-radius:10px;font-size:16px}
+button{width:100%;padding:13px;margin-top:9px;border:0;border-radius:10px;background:#1877f2;color:white;font-size:16px;font-weight:bold}
+.links{text-align:center;margin-top:15px}
+.links a{display:block;margin:10px;color:#1877f2;text-decoration:none}
+.msg{display:none;padding:10px;border-radius:8px;margin-top:10px;text-align:center}
 .err{background:#ffe5e5;color:#c00}
-a{display:block;text-align:center;margin-top:15px;color:#1877f2;text-decoration:none}
 </style>
 </head>
 <body>
@@ -24,30 +25,22 @@ a{display:block;text-align:center;margin-top:15px;color:#1877f2;text-decoration:
 
 <div class="box">
 <div class="card">
-<h2>📝 Iyandikishe</h2>
 
-<input id="name" placeholder="Amazina yawe">
-<input id="username" placeholder="Username">
-<input id="email" type="email" placeholder="Email">
-<input id="phone" type="tel" placeholder="Numero ya telefone">
+<h2>🔐 Injira muri Depp Net</h2>
 
-<input id="age" type="number" min="1" max="120" placeholder="Imyaka">
-
-<select id="sex">
-<option value="">-- Hitamwo Sexe --</option>
-<option value="Gabo">Gabo</option>
-<option value="Gore">Gore</option>
-</select>
-
+<input id="login" placeholder="Email canke Numero">
 <input id="password" type="password" placeholder="Mot de passe">
-<input id="password2" type="password" placeholder="Subiramwo mot de passe">
 
-<button id="btn" onclick="register()">📝 Iyandikishe</button>
+<button id="btn" onclick="loginNow()">Injira</button>
 
 <div id="error" class="msg err"></div>
 
-<a href="login.html">🔐 Usanzwe ufise konti? Injira</a>
+<div class="links">
+<a href="register.html">📝 Iyandikishe</a>
+<a href="forgot-password.html">🔑 Wibagiye mot de passe?</a>
 <a href="index.html">⬅️ Subira inyuma</a>
+</div>
+
 </div>
 </div>
 
@@ -55,18 +48,18 @@ a{display:block;text-align:center;margin-top:15px;color:#1877f2;text-decoration:
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import{
 getAuth,
-createUserWithEmailAndPassword,
+signInWithEmailAndPassword,
 setPersistence,
 browserLocalPersistence
 }from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import{
 getFirestore,
-doc,
-setDoc,
-query,
 collection,
+query,
 where,
-getDocs
+getDocs,
+doc,
+getDoc
 }from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const app=initializeApp({
@@ -87,69 +80,57 @@ e.textContent=t;
 e.style.display="block";
 }
 
-window.register=async()=>{
-let name=document.getElementById("name").value.trim();
-let username=document.getElementById("username").value.trim().toLowerCase();
-let email=document.getElementById("email").value.trim().toLowerCase();
-let phone=document.getElementById("phone").value.trim().replace(/\D/g,"");
-let age=document.getElementById("age").value;
-let sex=document.getElementById("sex").value;
+window.loginNow=async()=>{
+let value=document.getElementById("login").value.trim();
 let pass=document.getElementById("password").value;
-let pass2=document.getElementById("password2").value;
 let btn=document.getElementById("btn");
 
-if(!name||!username||!email||!phone||!age||!sex||!pass){
-error("Uzuza ibisabwa vyose.");
-return;
-}
-
-if(phone.length<6){
-error("Andika numero ya telefone ibereye.");
-return;
-}
-
-if(pass.length<6){
-error("Mot de passe igomba kuba n'imibare/inyuguti 6 canke birenga.");
-return;
-}
-
-if(pass!==pass2){
-error("Mot de passe ntizisa.");
+if(!value||!pass){
+error("Andika Email/Numero na mot de passe.");
 return;
 }
 
 btn.disabled=true;
-btn.textContent="Turiko turakwiyandikisha...";
+btn.textContent="Turiko turinjira...";
 
 try{
-let q=query(collection(db,"users"),where("phone","==",phone));
-let old=await getDocs(q);
+let email=value.toLowerCase();
 
-if(!old.empty){
-error("Iyi numero isanzwe ifise konti.");
+if(!value.includes("@")){
+let phone=value.replace(/\D/g,"");
+
+let q=query(collection(db,"users"),where("phone","==",phone));
+let r=await getDocs(q);
+
+if(r.empty){
+error("Numero nta konti ifise.");
 btn.disabled=false;
-btn.textContent="📝 Iyandikishe";
+btn.textContent="Injira";
 return;
+}
+
+email=r.docs[0].data().email;
 }
 
 await setPersistence(auth,browserLocalPersistence);
 
-let r=await createUserWithEmailAndPassword(auth,email,pass);
+let r=await signInWithEmailAndPassword(auth,email,pass);
 let u=r.user;
+
+let s=await getDoc(doc(db,"users",u.uid));
+let d=s.exists()?s.data():{};
 
 let user={
 uid:u.uid,
 id:u.uid,
-name,
-username,
-email,
-phone,
-age:Number(age),
-sex,
-photo:""
+name:d.name||u.displayName||u.email,
+username:d.username||u.email.split("@")[0],
+email:u.email,
+phone:d.phone||"",
+age:d.age||"",
+sex:d.sex||"",
+photo:d.photo||""
 };
-
-await setDoc(doc(db,"users",u.uid),user);
 
 localStorage.setItem("deppNetUser",JSON.stringify(user));
 localStorage.setItem("deppNetLoggedIn","true");
@@ -157,14 +138,15 @@ localStorage.setItem("deppNetLoggedIn","true");
 location.href="home.html";
 
 }catch(e){
-let t="Kwiyandikisha vyanse.";
-if(e.code==="auth/email-already-in-use")t="Iyo Email isanzwe ifise konti.";
-if(e.code==="auth/invalid-email")t="Email siyo.";
-if(e.code==="auth/weak-password")t="Mot de passe irorohereye cane.";
-if(e.code==="auth/network-request-failed")t="Internet ntiyabonetse.";
+let t="Email/Numero canke mot de passe si vyo.";
+
+if(e.code==="auth/network-request-failed")
+t="Internet ntiyabonetse.";
+
 error(t);
+
 btn.disabled=false;
-btn.textContent="📝 Iyandikishe";
+btn.textContent="Injira";
 }
 };
 </script>
