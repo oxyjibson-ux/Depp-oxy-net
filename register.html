@@ -1,671 +1,172 @@
 <!DOCTYPE html>
 <html lang="rn">
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Depp Net - Register</title>
-
 <style>
-
-*{
-box-sizing:border-box;
-margin:0;
-padding:0;
-font-family:Arial,sans-serif;
-}
-
-body{
-background:#f2f4f7;
-min-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-padding:20px;
-}
-
-.box{
-width:100%;
-max-width:420px;
-background:white;
-padding:25px 20px;
-border-radius:14px;
-box-shadow:0 3px 12px rgba(0,0,0,.1);
-}
-
-h1{
-text-align:center;
-color:#1877f2;
-margin-bottom:8px;
-}
-
-.subtitle{
-text-align:center;
-color:#666;
-margin-bottom:22px;
-}
-
-input{
-width:100%;
-padding:13px;
-margin-bottom:12px;
-border:1px solid #ddd;
-border-radius:8px;
-font-size:16px;
-outline:none;
-}
-
-input:focus{
-border-color:#1877f2;
-}
-
-button{
-width:100%;
-padding:13px;
-border:none;
-border-radius:8px;
-background:#1877f2;
-color:white;
-font-size:17px;
-cursor:pointer;
-}
-
-button:active{
-opacity:.8;
-}
-
-button:disabled{
-opacity:.6;
-cursor:not-allowed;
-}
-
-.login{
-display:block;
-text-align:center;
-margin-top:18px;
-color:#1877f2;
-text-decoration:none;
-}
-
-#message{
-text-align:center;
-margin-top:15px;
-font-weight:bold;
-line-height:1.4;
-}
-
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f2f4f7;color:#222}
+header{background:#1877f2;color:white;text-align:center;padding:18px;font-size:25px;font-weight:bold}
+.box{width:92%;max-width:430px;margin:25px auto}
+.card{background:white;padding:22px;border-radius:16px;box-shadow:0 3px 12px #ccc}
+h2{text-align:center}
+input,select{width:100%;padding:13px;margin:6px 0;border:1px solid #ccc;border-radius:10px;font-size:16px}
+button{width:100%;padding:14px;margin-top:10px;border:0;border-radius:10px;background:#1877f2;color:white;font-size:16px;font-weight:bold}
+.msg{display:none;padding:10px;margin-top:10px;border-radius:8px;text-align:center}
+.err{background:#ffe5e5;color:#c00}
+a{display:block;text-align:center;margin-top:15px;color:#1877f2;text-decoration:none}
 </style>
-
 </head>
-
 <body>
 
+<header>Depp Net</header>
+
 <div class="box">
+<div class="card">
+<h2>📝 Iyandikishe</h2>
 
-<h1>Depp Net</h1>
+<input id="name" placeholder="Amazina yawe">
+<input id="username" placeholder="Username">
+<input id="email" type="email" placeholder="Email">
+<input id="phone" type="tel" placeholder="Numero ya telefone">
 
-<p class="subtitle">
-Rema konti nshasha
-</p>
+<input id="age" type="number" min="1" max="120" placeholder="Imyaka">
 
-<form id="registerForm">
+<select id="sex">
+<option value="">-- Hitamwo Sexe --</option>
+<option value="Gabo">Gabo</option>
+<option value="Gore">Gore</option>
+</select>
 
-<input
-type="text"
-id="name"
-placeholder="Amazina yawe"
-required
->
+<input id="password" type="password" placeholder="Mot de passe">
+<input id="password2" type="password" placeholder="Subiramwo mot de passe">
 
-<input
-type="text"
-id="username"
-placeholder="Username"
-required
->
+<button id="btn" onclick="register()">📝 Iyandikishe</button>
 
-<input
-type="tel"
-id="phone"
-placeholder="Numero ya telefone (+257...)"
-required
->
+<div id="error" class="msg err"></div>
 
-<input
-type="email"
-id="email"
-placeholder="Email"
-required
->
-
-<input
-type="password"
-id="password"
-placeholder="Password"
-required
->
-
-<input
-type="password"
-id="confirmPassword"
-placeholder="Subiramwo Password"
-required
->
-
-<button
-type="submit"
-id="registerButton"
->
-Iyandikishe
-</button>
-
-</form>
-
-<div id="message"></div>
-
-<a
-href="login.html"
-class="login"
->
-Usanzwe ufise konti? Injira
-</a>
-
+<a href="login.html">🔐 Usanzwe ufise konti? Injira</a>
+<a href="index.html">⬅️ Subira inyuma</a>
+</div>
 </div>
 
-
 <script type="module">
-
-/* =========================
-   FIREBASE
-========================= */
-
-import {
-initializeApp
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-
-import {
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import{
 getAuth,
-createUserWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-
-import {
+createUserWithEmailAndPassword,
+setPersistence,
+browserLocalPersistence
+}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import{
 getFirestore,
 doc,
 setDoc,
-serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
-
-/* =========================
-   FIREBASE CONFIG
-========================= */
-
-const firebaseConfig = {
-
-apiKey:
-"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
-
-authDomain:
-"depp-net-apk.firebaseapp.com",
-
-projectId:
-"depp-net-apk",
-
-storageBucket:
-"depp-net-apk.firebasestorage.app",
-
-messagingSenderId:
-"664141462348",
-
-appId:
-"1:664141462348:web:8202143fef6fcdaf9cede9",
-
-measurementId:
-"G-DMBZT3C6MK"
-
-};
-
-
-/* =========================
-   START FIREBASE
-========================= */
-
-const app =
-initializeApp(firebaseConfig);
-
-const auth =
-getAuth(app);
-
-const db =
-getFirestore(app);
-
-
-/* =========================
-   ELEMENTS
-========================= */
-
-const form =
-document.getElementById("registerForm");
-
-const message =
-document.getElementById("message");
-
-const button =
-document.getElementById("registerButton");
-
-
-/* =========================
-   MESSAGE
-========================= */
-
-function showMessage(text,color){
-
-message.textContent=text;
-
-message.style.color=color;
-
-}
-
-
-/* =========================
-   PHONE
-========================= */
-
-function cleanPhone(phone){
-
-return String(phone || "")
-.trim()
-.replace(/[\s\-().]/g,"");
-
-}
-
-
-/* =========================
-   REGISTER
-========================= */
-
-form.addEventListener(
-"submit",
-async function(event){
-
-event.preventDefault();
-
-
-/* =========================
-   GET DATA
-========================= */
-
-const name =
-document.getElementById("name")
-.value
-.trim();
-
-const username =
-document.getElementById("username")
-.value
-.trim();
-
-const phone =
-cleanPhone(
-document.getElementById("phone")
-.value
-);
-
-const email =
-document.getElementById("email")
-.value
-.trim()
-.toLowerCase();
-
-const password =
-document.getElementById("password")
-.value;
-
-const confirmPassword =
-document.getElementById("confirmPassword")
-.value;
-
-
-/* =========================
-   VALIDATION
-========================= */
-
-if(
-!name ||
-!username ||
-!phone ||
-!email ||
-!password ||
-!confirmPassword
-){
-
-showMessage(
-"Uzuza ibisabwa vyose.",
-"red"
-);
-
-return;
-
-}
-
-
-if(password.length < 6){
-
-showMessage(
-"Password itegerezwa kuba nibura inyuguti 6.",
-"red"
-);
-
-return;
-
-}
-
-
-if(password !== confirmPassword){
-
-showMessage(
-"Password ntizisa.",
-"red"
-);
-
-return;
-
-}
-
-
-/* =========================
-   BUTTON
-========================= */
-
-button.disabled=true;
-
-button.textContent=
-"Turiko turakora konti...";
-
-
-try{
-
-
-/* =========================
-   CREATE AUTH ACCOUNT
-========================= */
-
-const credential =
-await createUserWithEmailAndPassword(
-auth,
-email,
-password
-);
-
-const user =
-credential.user;
-
-
-/* =========================
-   SAVE USER IN FIRESTORE
-========================= */
-
-try{
-
-await setDoc(
-doc(
-db,
-"users",
-user.uid
-),
-{
-
-uid:
-user.uid,
-
-name:
-name,
-
-username:
-username,
-
-usernameLower:
-username.toLowerCase(),
-
-email:
-email,
-
-phone:
-phone,
-
-createdAt:
-serverTimestamp()
-
-}
-);
-
-}catch(firestoreError){
-
-console.error(
-"Firestore error:",
-firestoreError
-);
-
-
-/*
-   AUTH account yamaze kuremwa.
-   Naho Firestore yanse, user ashobora
-   gukomeza kuri Login.
-*/
-
-showMessage(
-"Konti yarakozwe, ariko amakuru ya profile ntiyabitswe neza. Urashobora kwinjira.",
-"orange"
-);
-
-
-/* =========================
-   GO LOGIN
-========================= */
-
-setTimeout(function(){
-
-window.location.href=
-"login.html";
-
-},1500);
-
-return;
-
-}
-
-
-/* =========================
-   LOCAL STORAGE
-========================= */
-
-const localUser={
-
-id:
-user.uid,
-
-uid:
-user.uid,
-
-name:
-name,
-
-username:
-username,
-
-email:
-email,
-
-phone:
-phone,
-
-createdAt:
-new Date().toISOString()
-
-};
-
-
-let users=[];
-
-
-try{
-
-users =
-JSON.parse(
-localStorage.getItem(
-"deppNetUsers"
-) || "[]"
-);
-
-if(!Array.isArray(users)){
-
-users=[];
-
-}
-
-}catch(error){
-
-users=[];
-
-}
-
-
-users.push(localUser);
-
-
-try{
-
-localStorage.setItem(
-"deppNetUsers",
-JSON.stringify(users)
-);
-
-}catch(error){
-
-console.log(
-"LocalStorage error:",
-error
-);
-
-}
-
-
-/* =========================
-   SUCCESS
-========================= */
-
-showMessage(
-"Konti yawe yarakozwe neza! ✅",
-"green"
-);
-
-
-/* =========================
-   CLEAR
-========================= */
-
-form.reset();
-
-
-/* =========================
-   LOGIN
-========================= */
-
-setTimeout(function(){
-
-window.location.href=
-"login.html";
-
-},1200);
-
-
-}catch(error){
-
-console.error(
-"Register error:",
-error
-);
-
-
-/* =========================
-   ERRORS
-========================= */
-
-if(
-error.code ===
-"auth/email-already-in-use"
-){
-
-showMessage(
-"Iyi Email isanzwe ifise konti. Koresha iyindi Email.",
-"red"
-);
-
-}
-
-else if(
-error.code ===
-"auth/invalid-email"
-){
-
-showMessage(
-"Email siyo. Suzuma neza Email yawe.",
-"red"
-);
-
-}
-
-else if(
-error.code ===
-"auth/weak-password"
-){
-
-showMessage(
-"Password itegerezwa kuba nibura inyuguti 6.",
-"red"
-);
-
-}
-
-else if(
-error.code ===
-"auth/network-request-failed"
-){
-
-showMessage(
-"Internet ntiyabonetse. Suzuma connexion yawe.",
-"red"
-);
-
-}
-
-else{
-
-showMessage(
-"Habaye ikibazo mu kwiyandikisha: " +
-(error.message || "ongera ugerageze."),
-"red"
-);
-
-}
-
-
-/* =========================
-   ENABLE BUTTON
-========================= */
-
-button.disabled=false;
-
-button.textContent=
-"Iyandikishe";
-
-}
-
+query,
+collection,
+where,
+getDocs
+}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+const app=initializeApp({
+apiKey:"AIzaSyAddn7bUZfDupIqFsvBbXRpxarFAsV2lYs",
+authDomain:"depp-net-apk.firebaseapp.com",
+projectId:"depp-net-apk",
+storageBucket:"depp-net-apk.firebasestorage.app",
+messagingSenderId:"664141462348",
+appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
 });
 
-</script>
+const auth=getAuth(app);
+const db=getFirestore(app);
 
+function error(t){
+let e=document.getElementById("error");
+e.textContent=t;
+e.style.display="block";
+}
+
+window.register=async()=>{
+let name=document.getElementById("name").value.trim();
+let username=document.getElementById("username").value.trim().toLowerCase();
+let email=document.getElementById("email").value.trim().toLowerCase();
+let phone=document.getElementById("phone").value.trim().replace(/\D/g,"");
+let age=document.getElementById("age").value;
+let sex=document.getElementById("sex").value;
+let pass=document.getElementById("password").value;
+let pass2=document.getElementById("password2").value;
+let btn=document.getElementById("btn");
+
+if(!name||!username||!email||!phone||!age||!sex||!pass){
+error("Uzuza ibisabwa vyose.");
+return;
+}
+
+if(phone.length<6){
+error("Andika numero ya telefone ibereye.");
+return;
+}
+
+if(pass.length<6){
+error("Mot de passe igomba kuba n'imibare/inyuguti 6 canke birenga.");
+return;
+}
+
+if(pass!==pass2){
+error("Mot de passe ntizisa.");
+return;
+}
+
+btn.disabled=true;
+btn.textContent="Turiko turakwiyandikisha...";
+
+try{
+let q=query(collection(db,"users"),where("phone","==",phone));
+let old=await getDocs(q);
+
+if(!old.empty){
+error("Iyi numero isanzwe ifise konti.");
+btn.disabled=false;
+btn.textContent="📝 Iyandikishe";
+return;
+}
+
+await setPersistence(auth,browserLocalPersistence);
+
+let r=await createUserWithEmailAndPassword(auth,email,pass);
+let u=r.user;
+
+let user={
+uid:u.uid,
+id:u.uid,
+name,
+username,
+email,
+phone,
+age:Number(age),
+sex,
+photo:""
+};
+
+await setDoc(doc(db,"users",u.uid),user);
+
+localStorage.setItem("deppNetUser",JSON.stringify(user));
+localStorage.setItem("deppNetLoggedIn","true");
+
+location.href="home.html";
+
+}catch(e){
+let t="Kwiyandikisha vyanse.";
+if(e.code==="auth/email-already-in-use")t="Iyo Email isanzwe ifise konti.";
+if(e.code==="auth/invalid-email")t="Email siyo.";
+if(e.code==="auth/weak-password")t="Mot de passe irorohereye cane.";
+if(e.code==="auth/network-request-failed")t="Internet ntiyabonetse.";
+error(t);
+btn.disabled=false;
+btn.textContent="📝 Iyandikishe";
+}
+};
+</script>
 </body>
 </html>
