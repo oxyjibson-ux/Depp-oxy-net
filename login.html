@@ -4,112 +4,183 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Depp Net - Login</title>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:#f2f4f7}
-header{background:#1877f2;color:white;text-align:center;padding:20px;font-size:27px;font-weight:bold}
-.box{width:92%;max-width:420px;margin:45px auto}
-.card{background:white;padding:25px;border-radius:16px;box-shadow:0 3px 12px #ccc}
-input{width:100%;padding:14px;margin:7px 0;border:1px solid #ccc;border-radius:10px;font-size:16px}
-button{width:100%;padding:14px;margin-top:12px;border:0;border-radius:10px;background:#1877f2;color:white;font-size:17px;font-weight:bold}
-.err{color:#d00000;text-align:center;font-size:14px;margin-top:10px}
-a{display:block;text-align:center;margin-top:16px;color:#1877f2;text-decoration:none}
+
+body{
+margin:0;
+font-family:Arial;
+background:#f2f4f7;
+}
+
+header{
+background:#1877f2;
+color:white;
+text-align:center;
+padding:20px;
+font-size:27px;
+font-weight:bold;
+}
+
+.box{
+width:92%;
+max-width:420px;
+margin:45px auto;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:16px;
+box-shadow:0 3px 12px #ccc;
+}
+
+h2{
+text-align:center;
+}
+
+input{
+width:100%;
+padding:14px;
+margin:7px 0;
+border:1px solid #ccc;
+border-radius:10px;
+font-size:16px;
+}
+
+button{
+width:100%;
+padding:14px;
+margin-top:12px;
+border:0;
+border-radius:10px;
+background:#1877f2;
+color:white;
+font-size:17px;
+font-weight:bold;
+}
+
+button:disabled{
+opacity:.6;
+}
+
+.err{
+color:#d00000;
+text-align:center;
+font-size:14px;
+margin-top:10px;
+}
+
+a{
+display:block;
+text-align:center;
+margin-top:16px;
+color:#1877f2;
+text-decoration:none;
+}
+
+.forgot{
+font-weight:bold;
+}
 </style>
 </head>
+
 <body>
 
 <header>Depp Net</header>
 
-<div class="box"><div class="card">
+<div class="box">
+
+<div class="card">
+
 <h2>🔐 Injira</h2>
 
-<input id="login" placeholder="Email canke numero ya telefone">
-<input id="password" type="password" placeholder="Mot de passe">
+<input
+id="login"
+placeholder="Email canke numero ya telefone"
+>
 
-<button id="btn" onclick="login()">🔐 Injira</button>
+<input
+id="password"
+type="password"
+placeholder="Mot de passe"
+>
+
+<button id="btn" onclick="login()">
+🔐 Injira
+</button>
+
 <div id="err" class="err"></div>
-<a href="forgot-password.html">❓ Wibagiye password?</a>
-<a href="register.html">📝 Nta konti mfise - Iyandikishe</a>
-<a href="index.html">⬅️ Subira inyuma</a>
-</div></div>
+
+<a class="forgot" href="forgot-password.html">
+❓ Wibagiye password?
+</a>
+
+<a href="register.html">
+📝 Nta konti mfise - Iyandikishe
+</a>
+
+<a href="index.html">
+⬅️ Subira inyuma
+</a>
+
+</div>
+</div>
+
 
 <script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import{getAuth,signInWithEmailAndPassword,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import{getFirestore,collection,query,where,getDocs}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-const app=initializeApp({
-apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
-authDomain:"depp-net-apk.firebaseapp.com",
-databaseURL:"https://depp-net-apk-default-rtdb.firebaseio.com",
-projectId:"depp-net-apk",
-storageBucket:"depp-net-apk.firebasestorage.app",
-messagingSenderId:"664141462348",
-appId:"1:664141462348:web:8202143fef6fcdaf9cede9",
-measurementId:"G-DMBZT3C6MK"
-});
+import{
+initializeApp
+}from
+"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
-const auth=getAuth(app),db=getFirestore(app);
-const $=id=>document.getElementById(id);
+import{
+getAuth,
+signInWithEmailAndPassword,
+setPersistence,
+browserLocalPersistence
+}from
+"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
-window.login=async()=>{
-$("err").textContent="";
-let value=$("login").value.trim(),pass=$("password").value;
+import{
+getFirestore,
+collection,
+query,
+where,
+getDocs
+}from
+"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-if(!value||!pass){$("err").textContent="Andika Email/numero na password.";return}
 
-$("btn").disabled=true;
-$("btn").textContent="Turiko turinjira...";
+const firebaseConfig={
 
-try{
-await setPersistence(auth,browserLocalPersistence);
+apiKey:
+"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
 
-let email=value;
+authDomain:
+"depp-net-apk.firebaseapp.com",
 
-if(!value.includes("@")){
-let phone=value.replace(/\D/g,"");
-let q=query(collection(db,"users"),where("phone","==",phone));
-let s=await getDocs(q);
+databaseURL:
+"https://depp-net-apk-default-rtdb.firebaseio.com",
 
-if(s.empty){
-$("err").textContent="Numero ntiyabonetse.";
-$("btn").disabled=false;
-$("btn").textContent="🔐 Injira";
-return;
-}
+projectId:
+"depp-net-apk",
 
-email=s.docs[0].data().email;
-}
+storageBucket:
+"depp-net-apk.firebasestorage.app",
 
-let r=await signInWithEmailAndPassword(auth,email,pass);
+messagingSenderId:
+"664141462348",
 
-let q=query(collection(db,"users"),where("uid","==",r.user.uid));
-let s=await getDocs(q);
+appId:
+"1:664141462348:web:8202143fef6fcdaf9cede9",
 
-if(!s.empty){
-let user=s.docs[0].data();
-localStorage.setItem("deppNetUser",JSON.stringify(user));
-}
+measurementId:
+"G-DMBZT3C6MK"
 
-localStorage.setItem("deppNetLoggedIn","true");
-location.href="home.html";
-
-}catch(e){
-console.log(e);
-let c=e.code||"unknown";
-
-if(c=="auth/invalid-credential"||c=="auth/wrong-password"||c=="auth/user-not-found")
-$("err").textContent="Email/numero canke password si vyo.";
-
-else if(c=="auth/invalid-email")
-$("err").textContent="Email siyo.";
-
-else $("err").textContent="Ikosa: "+c;
-
-$("btn").disabled=false;
-$("btn").textContent="🔐 Injira";
-}
 };
-</script>
-</body>
-</html>
+
+
+const app=
