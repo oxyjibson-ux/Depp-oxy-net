@@ -11,62 +11,77 @@ header{background:#1877f2;color:white;text-align:center;padding:18px;font-size:2
 .box{width:92%;max-width:430px;margin:25px auto}
 .card{background:white;padding:22px;border-radius:16px;box-shadow:0 3px 12px #ccc}
 h2{text-align:center}
-input,select{width:100%;padding:13px;margin:6px 0;border:1px solid #ccc;border-radius:10px;font-size:16px}
+input,select{width:100%;padding:13px;margin:5px 0;border:1px solid #ccc;border-radius:10px;font-size:16px}
+.row{display:flex;gap:6px}
+.row select{flex:1}
+.err{color:#c00;font-size:13px;margin:0 0 5px 3px;min-height:16px}
+input.bad,select.bad{border:2px solid #e00000}
 button{width:100%;padding:14px;margin-top:10px;border:0;border-radius:10px;background:#1877f2;color:white;font-size:16px;font-weight:bold}
-.msg{display:none;padding:10px;margin-top:10px;border-radius:8px;text-align:center}
-.err{background:#ffe5e5;color:#c00}
 a{display:block;text-align:center;margin-top:15px;color:#1877f2;text-decoration:none}
+#msg{display:none;background:#ffe5e5;color:#c00;padding:10px;border-radius:8px;text-align:center;margin-top:10px}
 </style>
 </head>
-<body>
 
+<body>
 <header>Depp Net</header>
 
 <div class="box">
 <div class="card">
+
 <h2>📝 Iyandikishe</h2>
 
 <input id="name" placeholder="Amazina yawe">
-<input id="username" placeholder="Username">
-<input id="email" type="email" placeholder="Email">
-<input id="phone" type="tel" placeholder="Numero ya telefone">
+<div id="eName" class="err"></div>
 
-<input id="age" type="number" min="1" max="120" placeholder="Imyaka">
+<input id="username" placeholder="Username">
+<div id="eUsername" class="err"></div>
+
+<input id="email" type="email" placeholder="Email">
+<div id="eEmail" class="err"></div>
+
+<input id="phone" type="tel" placeholder="Numero ya telefone">
+<div id="ePhone" class="err"></div>
+
+<b>Itariki y'amavuko</b>
+<div class="row">
+<select id="day"><option value="">Umusi</option></select>
+<select id="month"><option value="">Ukwezi</option></select>
+<select id="year"><option value="">Umwaka</option></select>
+</div>
+<div id="eBirth" class="err"></div>
 
 <select id="sex">
 <option value="">-- Hitamwo Sexe --</option>
 <option value="Gabo">Gabo</option>
 <option value="Gore">Gore</option>
 </select>
+<div id="eSex" class="err"></div>
 
 <input id="password" type="password" placeholder="Mot de passe">
+<div id="ePassword" class="err"></div>
+
 <input id="password2" type="password" placeholder="Subiramwo mot de passe">
+<div id="ePassword2" class="err"></div>
 
 <button id="btn" onclick="register()">📝 Iyandikishe</button>
 
-<div id="error" class="msg err"></div>
+<div id="msg"></div>
 
 <a href="login.html">🔐 Usanzwe ufise konti? Injira</a>
 <a href="index.html">⬅️ Subira inyuma</a>
+
 </div>
 </div>
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import{
-getAuth,
-createUserWithEmailAndPassword,
-setPersistence,
-browserLocalPersistence
+getAuth,createUserWithEmailAndPassword,
+setPersistence,browserLocalPersistence
 }from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import{
-getFirestore,
-doc,
-setDoc,
-query,
-collection,
-where,
-getDocs
+getFirestore,doc,setDoc,query,collection,
+where,getDocs
 }from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const app=initializeApp({
@@ -81,52 +96,148 @@ appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-function error(t){
-let e=document.getElementById("error");
-e.textContent=t;
-e.style.display="block";
+const day=document.getElementById("day");
+const month=document.getElementById("month");
+const year=document.getElementById("year");
+
+for(let i=1;i<=31;i++)
+day.innerHTML+=`<option value="${i}">${i}</option>`;
+
+const months=[
+"Mutarama","Ruhuhuma","Ntwarante","Ndamukiza",
+"Rusama","Ruheshi","Mukakaro","Myandagaro",
+"Nyakanga","Gitugutu","Munama","Kigarama"
+];
+
+months.forEach((m,i)=>{
+month.innerHTML+=`<option value="${i+1}">${m}</option>`;
+});
+
+let now=new Date().getFullYear();
+for(let y=now;y>=1900;y--)
+year.innerHTML+=`<option value="${y}">${y}</option>`;
+
+function err(id,text){
+document.getElementById(id).textContent=text;
+}
+
+function bad(id,on){
+document.getElementById(id).classList.toggle("bad",on);
+}
+
+function clearErrors(){
+["eName","eUsername","eEmail","ePhone","eBirth","eSex","ePassword","ePassword2"]
+.forEach(x=>err(x,""));
+
+["name","username","email","phone","day","month","year","sex","password","password2"]
+.forEach(x=>bad(x,false));
+
+document.getElementById("msg").style.display="none";
+}
+
+function getAge(d,m,y){
+let today=new Date();
+let age=today.getFullYear()-y;
+let mm=today.getMonth()+1;
+let dd=today.getDate();
+
+if(mm<m||(mm===m&&dd<d))age--;
+return age;
 }
 
 window.register=async()=>{
+clearErrors();
+
 let name=document.getElementById("name").value.trim();
 let username=document.getElementById("username").value.trim().toLowerCase();
 let email=document.getElementById("email").value.trim().toLowerCase();
 let phone=document.getElementById("phone").value.trim().replace(/\D/g,"");
-let age=document.getElementById("age").value;
+
+let d=Number(day.value);
+let m=Number(month.value);
+let y=Number(year.value);
+
 let sex=document.getElementById("sex").value;
 let pass=document.getElementById("password").value;
 let pass2=document.getElementById("password2").value;
+
+let ok=true;
+
+if(!name){
+err("eName","Andika amazina yawe.");
+bad("name",true);ok=false;
+}
+
+if(!username){
+err("eUsername","Andika username.");
+bad("username",true);ok=false;
+}
+
+if(!email){
+err("eEmail","Andika email.");
+bad("email",true);ok=false;
+}else if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){
+err("eEmail","Email wanditse siyo.");
+bad("email",true);ok=false;
+}
+
+if(!phone){
+err("ePhone","Andika numero ya telefone.");
+bad("phone",true);ok=false;
+}else if(phone.length<6){
+err("ePhone","Numero ni ngufi cane.");
+bad("phone",true);ok=false;
+}
+
+if(!d||!m||!y){
+err("eBirth","Hitamwo umusi, ukwezi n'umwaka w'amavuko.");
+["day","month","year"].forEach(x=>bad(x,true));
+ok=false;
+}else{
+let age=getAge(d,m,y);
+
+if(age<1||age>120){
+err("eBirth","Itariki y'amavuko siyo.");
+["day","month","year"].forEach(x=>bad(x,true));
+ok=false;
+}
+}
+
+if(!sex){
+err("eSex","Hitamwo Sexe.");
+bad("sex",true);ok=false;
+}
+
+if(!pass){
+err("ePassword","Andika mot de passe.");
+bad("password",true);ok=false;
+}else if(pass.length<6){
+err("ePassword","Mot de passe ibe n'inyuguti 6 canke zirenga.");
+bad("password",true);ok=false;
+}
+
+if(!pass2){
+err("ePassword2","Subiramwo mot de passe.");
+bad("password2",true);ok=false;
+}else if(pass!==pass2){
+err("ePassword2","Mot de passe ntizisa.");
+bad("password2",true);ok=false;
+}
+
+if(!ok)return;
+
 let btn=document.getElementById("btn");
-
-if(!name||!username||!email||!phone||!age||!sex||!pass){
-error("Uzuza ibisabwa vyose.");
-return;
-}
-
-if(phone.length<6){
-error("Andika numero ya telefone ibereye.");
-return;
-}
-
-if(pass.length<6){
-error("Mot de passe igomba kuba n'imibare/inyuguti 6 canke birenga.");
-return;
-}
-
-if(pass!==pass2){
-error("Mot de passe ntizisa.");
-return;
-}
-
 btn.disabled=true;
 btn.textContent="Turiko turakwiyandikisha...";
 
 try{
+
 let q=query(collection(db,"users"),where("phone","==",phone));
 let old=await getDocs(q);
 
 if(!old.empty){
-error("Iyi numero isanzwe ifise konti.");
+err("ePhone","Iyi numero isanzwe ifise konti.");
+bad("phone",true);
 btn.disabled=false;
 btn.textContent="📝 Iyandikishe";
 return;
@@ -137,6 +248,8 @@ await setPersistence(auth,browserLocalPersistence);
 let r=await createUserWithEmailAndPassword(auth,email,pass);
 let u=r.user;
 
+let age=getAge(d,m,y);
+
 let user={
 uid:u.uid,
 id:u.uid,
@@ -144,7 +257,10 @@ name,
 username,
 email,
 phone,
-age:Number(age),
+birthDay:d,
+birthMonth:m,
+birthYear:y,
+age,
 sex,
 photo:""
 };
@@ -157,16 +273,40 @@ localStorage.setItem("deppNetLoggedIn","true");
 location.href="home.html";
 
 }catch(e){
+
 let t="Kwiyandikisha vyanse.";
-if(e.code==="auth/email-already-in-use")t="Iyo Email isanzwe ifise konti.";
-if(e.code==="auth/invalid-email")t="Email siyo.";
-if(e.code==="auth/weak-password")t="Mot de passe irorohereye cane.";
-if(e.code==="auth/network-request-failed")t="Internet ntiyabonetse.";
-error(t);
+
+if(e.code==="auth/email-already-in-use"){
+err("eEmail","Iyi Email isanzwe ifise konti.");
+bad("email",true);
+}
+
+else if(e.code==="auth/invalid-email"){
+err("eEmail","Email wanditse siyo.");
+bad("email",true);
+}
+
+else if(e.code==="auth/weak-password"){
+err("ePassword","Mot de passe irorohereye cane.");
+bad("password",true);
+}
+
+else if(e.code==="auth/operation-not-allowed"){
+t="Email na Password ntibirafungurwa muri Firebase.";
+}
+
+else if(e.code==="auth/network-request-failed"){
+t="Internet ntiyabonetse.";
+}
+
+document.getElementById("msg").textContent=t;
+document.getElementById("msg").style.display="block";
+
 btn.disabled=false;
 btn.textContent="📝 Iyandikishe";
 }
 };
 </script>
+
 </body>
 </html>
