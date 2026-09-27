@@ -10,7 +10,7 @@ body{margin:0;background:#f2f4f7}
 header{background:#1877f2;color:white;padding:15px;font-size:21px;font-weight:bold}
 .box{max-width:650px;margin:auto;padding:15px}
 .card{background:white;padding:15px;margin:12px 0;border-radius:14px}
-input,textarea,button{width:100%;padding:12px;margin:6px 0;box-sizing:border-box}
+input,textarea,button{width:100%;padding:12px;margin:6px 0}
 input,textarea{border:1px solid #ddd;border-radius:8px}
 button{border:0;border-radius:8px;background:#1877f2;color:white;font-weight:bold}
 .del{background:#e53935}
@@ -30,9 +30,11 @@ video{width:100%;border-radius:10px;margin-top:8px}
 
 <input id="title" placeholder="Izina rya Film">
 <textarea id="desc" placeholder="Insiguro ya Film"></textarea>
+
 <input id="file" type="file" accept="video/*">
 
 <button onclick="uploadFilm()">⬆️ Shiramwo Film</button>
+
 <p id="msg"></p>
 </div>
 
@@ -49,7 +51,7 @@ video{width:100%;border-radius:10px;margin-top:8px}
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import{
- getFirestore,collection,getDocs,addDoc,deleteDoc,doc,serverTimestamp
+getFirestore,collection,getDocs,addDoc,deleteDoc,doc,serverTimestamp
 }from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const firebaseConfig={
@@ -66,28 +68,45 @@ const auth=getAuth(app);
 const db=getFirestore(app);
 
 const ADMIN="J6cFfnF5XOR67T1vwtLNyaKGw1L2";
+const MAX=3*1024*1024*1024;
+
 let films=[];
 
 onAuthStateChanged(auth,user=>{
  if(user&&user.uid===ADMIN){
-   document.getElementById("admin").style.display="block";
+  document.getElementById("admin").style.display="block";
  }
  loadFilms();
 });
 
+
 async function loadFilms(){
+
  try{
+
   const s=await getDocs(collection(db,"films"));
+
   films=[];
-  s.forEach(d=>films.push({id:d.id,...d.data()}));
+
+  s.forEach(d=>{
+   films.push({id:d.id,...d.data()});
+  });
+
   showFilms();
+
  }catch(e){
+
   document.getElementById("list").innerHTML="❌ "+e.message;
+
  }
+
 }
 
+
 window.showFilms=()=>{
+
  const q=document.getElementById("search").value.toLowerCase();
+
  const box=document.getElementById("list");
 
  const arr=films.filter(x=>
@@ -95,81 +114,153 @@ window.showFilms=()=>{
  );
 
  if(!arr.length){
+
   box.innerHTML="<p>🎬 Nta Film irajako.</p>";
   return;
+
  }
 
  box.innerHTML="";
 
  arr.forEach(x=>{
+
   const div=document.createElement("div");
+
   div.className="card";
 
   div.innerHTML=`
-   <h2>${x.title||"Film"}</h2>
-   <p>${x.description||""}</p>
-   <video src="${x.video}" controls preload="metadata"></video>
-   <a href="${x.video}" target="_blank">
-    <button>⬇️ Fungura / Download</button>
-   </a>
+  <h2>${x.title||"Film"}</h2>
+  <p>${x.description||""}</p>
+  <video src="${x.video}" controls preload="metadata"></video>
+  <a href="${x.video}" target="_blank">
+  <button>⬇️ Fungura / Download</button>
+  </a>
   `;
 
   if(auth.currentUser&&auth.currentUser.uid===ADMIN){
+
    const b=document.createElement("button");
+
    b.className="del";
    b.textContent="🗑️ Siba Film";
+
    b.onclick=async()=>{
+
     if(confirm("Urashaka gusiba iyi Film?")){
+
      await deleteDoc(doc(db,"films",x.id));
      loadFilms();
+
     }
+
    };
+
    div.appendChild(b);
+
   }
 
   box.appendChild(div);
+
  });
+
 };
 
+
 window.uploadFilm=async()=>{
+
  const title=document.getElementById("title").value.trim();
  const desc=document.getElementById("desc").value.trim();
  const file=document.getElementById("file").files[0];
  const msg=document.getElementById("msg");
 
  if(!title||!file){
+
   msg.textContent="⚠️ Shiramwo izina na video.";
   return;
+
  }
 
- if(file.size>100*1024*1024){
-  msg.textContent="❌ Video irarenze 100MB.";
+ if(file.size>MAX){
+
+  msg.textContent="❌ Film irarenze 3GB.";
   return;
+
  }
 
- msg.textContent="⏳ Turiko turashiramwo...";
+ msg.textContent=
+ "⏳ Turiko turashiramwo... Ntufunge page.";
 
  try{
-  const fd=new FormData();
-  fd.append("file",file);
-  fd.append("upload_preset","yvgqax4x");
 
-  const r=await fetch(
-   "https://api.cloudinary.com/v1_1/sdtggm0f/video/upload",
-   {method:"POST",body:fd}
-  );
+  const uploadId=crypto.randomUUID();
 
-  const x=await r.json();
+  const chunk=20*1024*1024;
 
-  if(!x.secure_url)
-   throw new Error(x.error?.message||"Cloudinary yanse video.");
+  let start=0;
+  let result=null;
+
+  while(start<file.size){
+
+   const end=Math.min(start+chunk,file.size)-1;
+
+   const part=file.slice(start,end+1);
+
+   const fd=new FormData();
+
+   fd.append("file",part);
+   fd.append("upload_preset","yvgqax4x");
+
+   const r=await fetch(
+    "https://api.cloudinary.com/v1_1/sdtggm0f/video/upload",
+    {
+     method:"POST",
+     headers:{
+      "X-Unique-Upload-Id":uploadId,
+      "Content-Range":
+      "bytes "+start+"-"+end+"/"+file.size
+     },
+     body:fd
+    }
+   );
+
+   result=await r.json();
+
+   if(!r.ok||result.error){
+
+    throw new Error(
+     result.error?.message||
+     "Cloudinary yanse upload."
+    );
+
+   }
+
+   start=end+1;
+
+   const percent=Math.round(
+    start/file.size*100
+   );
+
+   msg.textContent=
+    "⏳ Upload: "+percent+"%";
+
+  }
+
+  if(!result.secure_url){
+
+   throw new Error(
+    "Video ntiyagaragaye muri Cloudinary."
+   );
+
+  }
 
   await addDoc(collection(db,"films"),{
+
    title:title,
    description:desc,
-   video:x.secure_url,
+   video:result.secure_url,
    admin:ADMIN,
    createdAt:serverTimestamp()
+
   });
 
   document.getElementById("title").value="";
@@ -177,13 +268,18 @@ window.uploadFilm=async()=>{
   document.getElementById("file").value="";
 
   msg.textContent="✅ Film yashizweho neza!";
+
   loadFilms();
 
  }catch(e){
+
   msg.textContent="❌ "+e.message;
+
  }
+
 };
 
 </script>
+
 </body>
 </html>
