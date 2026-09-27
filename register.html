@@ -7,29 +7,41 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial;background:#f2f4f7;color:#222}
-header{background:#1877f2;color:white;text-align:center;padding:18px;font-size:25px;font-weight:bold}
+header{background:#1877f2;color:#fff;text-align:center;padding:18px;font-size:25px;font-weight:bold}
 .box{width:92%;max-width:430px;margin:25px auto}
-.card{background:white;padding:22px;border-radius:16px;box-shadow:0 3px 12px #ccc}
+.card{background:#fff;padding:22px;border-radius:16px;box-shadow:0 3px 12px #ccc}
 h2{text-align:center}
 input,select{width:100%;padding:13px;margin:5px 0;border:1px solid #ccc;border-radius:10px;font-size:16px}
 .err{color:#d00000;font-size:13px;min-height:16px}
-button{width:100%;padding:14px;margin-top:10px;border:0;border-radius:10px;background:#1877f2;color:white;font-size:16px;font-weight:bold}
+button{width:100%;padding:14px;margin-top:10px;border:0;border-radius:10px;background:#1877f2;color:#fff;font-size:16px;font-weight:bold}
+button:disabled{opacity:.6}
 a{display:block;text-align:center;margin-top:15px;color:#1877f2;text-decoration:none}
 #result{margin-top:12px;padding:10px;text-align:center;border-radius:8px}
 </style>
 </head>
-<body>
 
+<body>
 <header>Depp Net</header>
 
-<div class="box"><div class="card">
+<div class="box">
+<div class="card">
+
 <h2>📝 Iyandikishe</h2>
 
-<input id="name" placeholder="Amazina yawe"><div id="en" class="err"></div>
-<input id="username" placeholder="Username"><div id="eu" class="err"></div>
-<input id="email" type="email" placeholder="Email"><div id="ee" class="err"></div>
-<input id="phone" type="tel" placeholder="Numero ya telefone"><div id="ep" class="err"></div>
-<input id="birth" type="date"><div id="eb" class="err"></div>
+<input id="name" placeholder="Amazina yawe">
+<div id="en" class="err"></div>
+
+<input id="username" placeholder="Username">
+<div id="eu" class="err"></div>
+
+<input id="email" type="email" placeholder="Email">
+<div id="ee" class="err"></div>
+
+<input id="phone" type="tel" placeholder="Numero ya telefone">
+<div id="ep" class="err"></div>
+
+<input id="birth" type="date">
+<div id="eb" class="err"></div>
 
 <select id="sex">
 <option value="">-- Hitamwo Sexe --</option>
@@ -38,22 +50,45 @@ a{display:block;text-align:center;margin-top:15px;color:#1877f2;text-decoration:
 </select>
 <div id="es" class="err"></div>
 
-<input id="password" type="password" placeholder="Mot de passe"><div id="ew" class="err"></div>
-<input id="password2" type="password" placeholder="Subiramwo mot de passe"><div id="ew2" class="err"></div>
+<input id="password" type="password" placeholder="Mot de passe">
+<div id="ew" class="err"></div>
+
+<input id="password2" type="password" placeholder="Subiramwo mot de passe">
+<div id="ew2" class="err"></div>
 
 <button id="btn" onclick="register()">📝 Iyandikishe</button>
+
 <div id="result"></div>
 
 <a href="login.html">🔐 Usanzwe ufise konti? Injira</a>
 <a href="index.html">⬅️ Subira inyuma</a>
-</div></div>
+
+</div>
+</div>
 
 <script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import{getAuth,createUserWithEmailAndPassword,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import{getFirestore,collection,query,where,getDocs,doc,setDoc}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-const app=initializeApp({
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import{
+getAuth,
+createUserWithEmailAndPassword,
+setPersistence,
+browserLocalPersistence
+}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import{
+getFirestore,
+collection,
+query,
+where,
+getDocs,
+doc,
+setDoc
+}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+const firebaseConfig={
 apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
 authDomain:"depp-net-apk.firebaseapp.com",
 databaseURL:"https://depp-net-apk-default-rtdb.firebaseio.com",
@@ -62,26 +97,40 @@ storageBucket:"depp-net-apk.firebasestorage.app",
 messagingSenderId:"664141462348",
 appId:"1:664141462348:web:8202143fef6fcdaf9cede9",
 measurementId:"G-DMBZT3C6MK"
-});
+};
 
-const auth=getAuth(app),db=getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
 const $=id=>document.getElementById(id);
-function er(id,t){$(id).textContent=t}
-function msg(t){$("result").textContent=t;$("result").style.background="#ffe5e5";$("result").style.color="#c00"}
 
-window.register=async()=>{
+function er(id,text){
+$(id).textContent=text;
+}
+
+function result(text,color="#c00"){
+$("result").textContent=text;
+$("result").style.background="#ffe5e5";
+$("result").style.color=color;
+}
+
+window.register=async function(){
+
 ["en","eu","ee","ep","eb","es","ew","ew2"].forEach(x=>er(x,""));
+$("result").textContent="";
 
-let name=$("name").value.trim(),
-username=$("username").value.trim().toLowerCase(),
-email=$("email").value.trim(),
-phone=$("phone").value.replace(/\D/g,""),
-birth=$("birth").value,
-sex=$("sex").value,
-pass=$("password").value,
-pass2=$("password2").value;
+const name=$("name").value.trim();
+const username=$("username").value.trim().toLowerCase();
+const email=$("email").value.trim();
+const phone=$("phone").value.replace(/\D/g,"");
+const birth=$("birth").value;
+const sex=$("sex").value;
+const pass=$("password").value;
+const pass2=$("password2").value;
 
 let ok=true;
+
 if(!name){er("en","Andika amazina.");ok=false}
 if(!username){er("eu","Andika username.");ok=false}
 if(!email){er("ee","Andika Email.");ok=false}
@@ -90,42 +139,124 @@ if(!birth){er("eb","Hitamwo itariki.");ok=false}
 if(!sex){er("es","Hitamwo Sexe.");ok=false}
 if(pass.length<6){er("ew","Password ibe nibura inyuguti 6.");ok=false}
 if(pass!==pass2){er("ew2","Password ntizisa.");ok=false}
+
 if(!ok)return;
 
 $("btn").disabled=true;
+$("btn").textContent="Turiko turiyandikisha...";
 
 try{
-let pq=query(collection(db,"users"),where("phone","==",phone));
-if(!(await getDocs(pq)).empty){er("ep","Iyi numero isanzwe ifise konti.");$("btn").disabled=false;return}
 
-let uq=query(collection(db,"users"),where("username","==",username));
-if(!(await getDocs(uq)).empty){er("eu","Iyi username isanzwe ikoreshwa.");$("btn").disabled=false;return}
+const pq=query(
+collection(db,"users"),
+where("phone","==",phone)
+);
+
+const ps=await getDocs(pq);
+
+if(!ps.empty){
+er("ep","Iyi numero isanzwe ifise konti.");
+$("btn").disabled=false;
+$("btn").textContent="📝 Iyandikishe";
+return;
+}
+
+const uq=query(
+collection(db,"users"),
+where("username","==",username)
+);
+
+const us=await getDocs(uq);
+
+if(!us.empty){
+er("eu","Iyi username isanzwe ikoreshwa.");
+$("btn").disabled=false;
+$("btn").textContent="📝 Iyandikishe";
+return;
+}
 
 await setPersistence(auth,browserLocalPersistence);
-let r=await createUserWithEmailAndPassword(auth,email,pass);
 
-let b=new Date(birth+"T00:00:00"),d=new Date();
-let age=d.getFullYear()-b.getFullYear();
-if(d.getMonth()<b.getMonth()||(d.getMonth()==b.getMonth()&&d.getDate()<b.getDate()))age--;
+const r=await createUserWithEmailAndPassword(
+auth,
+email,
+pass
+);
 
-let user={uid:r.user.uid,id:r.user.uid,name,username,email,phone,birthDate:birth,age,sex,photo:""};
+const b=new Date(birth+"T00:00:00");
+const now=new Date();
 
-await setDoc(doc(db,"users",r.user.uid),user);
-localStorage.setItem("deppNetUser",JSON.stringify(user));
-localStorage.setItem("deppNetLoggedIn","true");
+let age=now.getFullYear()-b.getFullYear();
+
+if(
+now.getMonth()<b.getMonth() ||
+(
+now.getMonth()==b.getMonth() &&
+now.getDate()<b.getDate()
+)
+){
+age--;
+}
+
+const user={
+uid:r.user.uid,
+id:r.user.uid,
+name:name,
+username:username,
+email:email,
+phone:phone,
+birthDate:birth,
+age:age,
+sex:sex,
+photo:""
+};
+
+await setDoc(
+doc(db,"users",r.user.uid),
+user
+);
+
+localStorage.setItem(
+"deppNetUser",
+JSON.stringify(user)
+);
+
+localStorage.setItem(
+"deppNetLoggedIn",
+"true"
+);
 
 location.href="home.html";
 
 }catch(e){
+
 console.log(e);
-let c=e.code||"unknown";
-if(c=="auth/email-already-in-use")er("ee","Iyi Email isanzwe ifise konti.");
-else if(c=="auth/invalid-email")er("ee","Email siyo.");
-else if(c=="auth/weak-password")er("ew","Password irorohereye.");
-else msg("Ikosa: "+c);
-$("btn").disabled=false;
+
+const c=e.code||"unknown";
+
+if(c=="auth/email-already-in-use"){
+er("ee","Iyi Email isanzwe ifise konti.");
 }
+else if(c=="auth/invalid-email"){
+er("ee","Email siyo.");
+}
+else if(c=="auth/weak-password"){
+er("ew","Password irorohereye.");
+}
+else if(c=="auth/api-key-not-valid-please-pass-a-valid-api-key"){
+result("Firebase API key ntiriko irakora. Turaza kubikosora kuri Firebase.");
+}
+else{
+result("Ikosa: "+c);
+}
+
+$("btn").disabled=false;
+$("btn").textContent="📝 Iyandikishe";
+
+}
+
 };
+
 </script>
 </body>
-  </html>
+</html>
