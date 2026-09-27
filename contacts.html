@@ -6,23 +6,26 @@
 <title>Depp Net - Contacts</title>
 <style>
 *{box-sizing:border-box;font-family:Arial}
-body{margin:0;background:#f2f4f7;color:#222}
-header{height:60px;background:#1877f2;color:white;display:flex;align-items:center;justify-content:space-between;padding:0 15px}
+body{margin:0;background:#f2f5f9;color:#222}
+header{height:60px;background:#1877f2;color:white;display:flex;align-items:center;justify-content:space-between;padding:0 14px}
 header b{font-size:21px}
-button{border:0;border-radius:9px;padding:10px 13px;font-weight:bold}
+button{border:0;border-radius:10px;padding:10px 13px;font-weight:bold}
 .home{background:white;color:#1877f2}
-.box{max-width:650px;margin:auto;padding:15px}
-.card{background:white;border-radius:14px;padding:16px;margin-bottom:15px}
-h3{margin:0 0 14px}
-input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:9px;margin-bottom:10px;font-size:15px}
-.searchBtn{width:100%;background:#1877f2;color:white;font-size:16px}
-.result{background:white;border-radius:12px;padding:13px;margin-top:10px;display:flex;align-items:center;gap:10px}
-.avatar{width:48px;height:48px;border-radius:50%;background:#1877f2;color:white;display:grid;place-items:center;font-weight:bold;font-size:20px}
-.info{flex:1}
+.main{max-width:650px;margin:auto;padding:14px}
+.card{background:white;border-radius:16px;padding:15px;margin-bottom:14px;box-shadow:0 2px 8px #0001}
+.title{font-size:19px;font-weight:bold;margin-bottom:12px}
+.searchbox{display:flex;gap:7px}
+input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:11px;font-size:15px;outline:0}
+.searchbox button{background:#1877f2;color:white;font-size:18px}
+.add{background:#1877f2;color:white;width:100%;font-size:15px}
+.contact{display:flex;align-items:center;gap:11px;padding:12px;background:#f4f6f8;border-radius:13px;margin-top:9px}
+.avatar{width:46px;height:46px;border-radius:50%;background:#1877f2;color:white;display:grid;place-items:center;font-size:19px;font-weight:bold}
+.info{flex:1;min-width:0}
 .name{font-weight:bold}
-.phone{font-size:13px;color:#777;margin-top:4px}
+.phone{font-size:12px;color:#777;margin-top:4px}
 .chat{background:#1877f2;color:white}
-.msg{text-align:center;color:#777;padding:20px}
+.status{text-align:center;color:#777;padding:18px}
+.line{height:1px;background:#eee;margin:14px 0}
 </style>
 </head>
 
@@ -33,29 +36,45 @@ input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:9px;mar
 <button class="home" onclick="location.href='home.html'">🏠 Home</button>
 </header>
 
-<div class="box">
+<div class="main">
 
 <div class="card">
-<h3>🔎 Rondera umuntu kuri Depp Net</h3>
+<div class="title">🔎 Rondera kuri Depp Net</div>
+
+<div class="searchbox">
+<input id="searchPhone" type="tel" placeholder="Andika numero...">
+<button onclick="findUser()">🔎</button>
+</div>
+
+<div id="searchResult" class="status">
+Rondera umuntu ukoresheje numero.
+</div>
+</div>
+
+<div class="card">
+<div class="title">➕ Contact nshasha</div>
+
+<input id="name" placeholder="Izina ry'umuntu">
+
+<br><br>
 
 <select id="country"></select>
 
-<input id="phone"
-type="tel"
-placeholder="Numero ya telefone">
+<br><br>
 
-<div id="preview" style="font-size:13px;color:#777;margin-bottom:10px"></div>
+<input id="phone" type="tel" placeholder="Numero ya telefone">
 
-<button class="searchBtn" onclick="searchUser()">
-🔎 Rondera
+<p id="preview" style="font-size:12px;color:#777"></p>
+
+<button class="add" onclick="saveContact()">
+💾 Bika Contact
 </button>
 </div>
 
 <div class="card">
-<h3>👥 Umuntu wabonetse</h3>
-<div id="result" class="msg">
-Andika numero kugira urondere.
-</div>
+<div class="title">👥 Contacts zawe</div>
+<input id="filter" placeholder="Rondera muri Contacts zawe...">
+<div id="list"><div class="status">⏳ Rindira...</div></div>
 </div>
 
 </div>
@@ -68,8 +87,10 @@ from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import{getAuth,onAuthStateChanged}
 from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
-import{getFirestore,collection,query,where,getDocs}
-from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import{
+getFirestore,collection,query,where,getDocs,
+doc,setDoc,onSnapshot
+}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const app=initializeApp({
 apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
@@ -80,15 +101,9 @@ messagingSenderId:"664141462348",
 appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
 });
 
-const auth=getAuth(app);
-const db=getFirestore(app);
+const auth=getAuth(app),db=getFirestore(app);
 
-const country=document.getElementById("country");
-const phone=document.getElementById("phone");
-const preview=document.getElementById("preview");
-const result=document.getElementById("result");
-
-let me=null;
+let me=null,contacts=[];
 
 const countries=[
 ["🇧🇮","Burundi","257"],["🇷🇼","Rwanda","250"],
@@ -100,7 +115,6 @@ const countries=[
 ["🇲🇱","Mali","223"],["🇧🇫","Burkina Faso","226"],
 ["🇳🇪","Niger","227"],["🇹🇬","Togo","228"],
 ["🇧🇯","Bénin","229"],["🇬🇳","Guinée","224"],
-["🇨🇫","RCA","236"],["🇹🇩","Tchad","235"],
 ["🇬🇦","Gabon","241"],["🇨🇬","Congo","242"],
 ["🇲🇬","Madagascar","261"],["🇲🇿","Mozambique","258"],
 ["🇿🇲","Zambie","260"],["🇿🇼","Zimbabwe","263"],
@@ -130,110 +144,194 @@ o.value=c[2];
 o.textContent=`${c[0]} ${c[1]} (+${c[2]})`;
 country.appendChild(o);
 });
-
 country.value="257";
 
-function getPhone(){
+function fullPhone(input){
 let code=country.value;
-let n=phone.value.replace(/\D/g,"");
-
+let n=input.replace(/\D/g,"");
 if(n.startsWith("00"))n=n.slice(2);
 if(n.startsWith(code))return"+"+n;
 if(n.startsWith("0"))n=n.slice(1);
-
 return"+"+code+n;
 }
 
 phone.oninput=()=>{
-let p=getPhone();
-preview.textContent=p.length>4?"Numero: "+p:"";
+preview.textContent="Numero: "+fullPhone(phone.value);
 };
 
+function esc(x){
+let d=document.createElement("div");
+d.textContent=x||"";
+return d.innerHTML;
+}
+
 onAuthStateChanged(auth,u=>{
-if(!u)location.href="login.html";
-else me=u;
+if(!u)return location.href="login.html";
+me=u;
+loadContacts();
 });
 
-window.searchUser=async()=>{
+async function findByPhone(p){
 
-if(!me)return;
+let r=await getDocs(query(
+collection(db,"users"),where("phone","==",p)
+));
 
-let p=getPhone();
+if(!r.empty)return r.docs[0];
+
+let n=p.replace("+","");
+r=await getDocs(query(
+collection(db,"users"),where("phone","==",n)
+));
+
+return r.empty?null:r.docs[0];
+}
+
+window.findUser=async()=>{
+
+let p=fullPhone(searchPhone.value);
 
 if(p.length<7){
 alert("Andika numero neza.");
 return;
 }
 
-result.innerHTML="⏳ Turiko turarondera...";
+searchResult.innerHTML="⏳ Turiko turarondera...";
+
+let u=await findByPhone(p);
+
+if(!u){
+searchResult.innerHTML=
+"❌ Uwo muntu ntarafungura konti ya Depp Net.";
+return;
+}
+
+if(u.id===me.uid){
+searchResult.innerHTML="👤 Iyo ni numero yawe.";
+return;
+}
+
+let d=u.data();
+
+searchResult.innerHTML=`
+<div class="contact">
+<div class="avatar">${esc((d.name||"U")[0])}</div>
+<div class="info">
+<div class="name">${esc(d.name||"User")}</div>
+<div class="phone">📞 ${esc(p)}</div>
+</div>
+<button class="chat"
+onclick="chat('${u.id}','${esc(d.name||"User")}')">
+💬
+</button>
+</div>`;
+};
+
+window.saveContact=async()=>{
+
+let n=name.value.trim();
+let p=fullPhone(phone.value);
+
+if(!n||p.length<7){
+alert("Shiramwo izina na numero neza.");
+return;
+}
+
+if(p===me.phone){
+alert("Iyo ni numero yawe.");
+return;
+}
 
 try{
 
-let r=await getDocs(
-query(collection(db,"users"),where("phone","==",p))
+let u=await findByPhone(p);
+let data={
+name:n,
+phone:p,
+uid:u?u.id:"",
+deppNet:u?true:false
+};
+
+await setDoc(
+doc(db,"users",me.uid,"contacts",p.replace(/\D/g,"")),
+data
 );
 
-if(r.empty){
+name.value="";
+phone.value="";
+preview.textContent="";
 
-let noPlus=p.replace("+","");
+alert(u?
+"Contact yabitswe. Ubu akoresha Depp Net. 💬":
+"Contact yabitswe. Ntarakoresha Depp Net.");
 
-r=await getDocs(
-query(collection(db,"users"),where("phone","==",noPlus))
-);
-}
-
-if(r.empty){
-
-result.innerHTML=
-"❌ Uwo muntu ntarafungura konti ya Depp Net.";
-
-return;
-}
-
-let d=r.docs[0];
-
-if(d.id===me.uid){
-
-result.innerHTML="👤 Iyo ni konti yawe.";
-
-return;
-}
-
-let u=d.data();
-let name=u.name||"User";
-let letter=name[0]?.toUpperCase()||"U";
-
-result.innerHTML=`
-<div class="result">
-<div class="avatar">${letter}</div>
-<div class="info">
-<div class="name">${name}</div>
-<div class="phone">📞 ${p}</div>
-</div>
-<button class="chat"
-onclick="openChat('${d.id}','${name.replace(/'/g,"\\'")}')">
-💬 Chat
-</button>
-</div>
-`;
+loadContacts();
 
 }catch(e){
-
-console.error(e);
-
-result.innerHTML=
-"❌ Habaye ikibazo mu kurondera uwo muntu.";
+alert("Vyaranse kubika contact.");
 }
 };
 
-window.openChat=(uid,name)=>{
+async function loadContacts(){
+
+let s=await getDocs(
+collection(db,"users",me.uid,"contacts")
+);
+
+contacts=s.docs.map(d=>({
+id:d.id,...d.data()
+}));
+
+render();
+}
+
+filter.oninput=render;
+
+function render(){
+
+let q=filter.value.toLowerCase().trim();
+
+let a=contacts.filter(x=>
+!q||
+(x.name||"").toLowerCase().includes(q)||
+(x.phone||"").includes(q)
+);
+
+if(!a.length){
+list.innerHTML='<div class="status">📱 Nta contacts zibitswe.</div>';
+return;
+}
+
+list.innerHTML=a.map(x=>`
+
+<div class="contact">
+<div class="avatar">
+${esc((x.name||"U")[0].toUpperCase())}
+</div>
+
+<div class="info">
+<div class="name">${esc(x.name||"Contact")}</div>
+<div class="phone">📞 ${esc(x.phone)}</div>
+</div>
+
+${x.deppNet?
+`<button class="chat"
+onclick="chat('${x.uid}','${esc(x.name)}')">💬</button>`:
+`<span style="font-size:12px;color:#888">Nta Depp Net</span>`}
+
+</div>
+
+`).join("");
+}
+
+window.chat=(uid,n)=>{
 
 localStorage.setItem(
 "deppNetSelectedContactUid",uid
 );
 
 localStorage.setItem(
-"deppNetSelectedContactName",name
+"deppNetSelectedContactName",n
 );
 
 location.href="chat.html";
