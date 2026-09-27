@@ -5,92 +5,29 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Depp Net</title>
 <style>
-*{box-sizing:border-box;font-family:Arial}
-body{margin:0;background:#f2f4f7;min-height:100vh;display:flex;align-items:center;justify-content:center}
-.box{width:90%;max-width:380px;background:#fff;padding:30px 22px;border-radius:22px;text-align:center;box-shadow:0 5px 25px #0002}
-.logo{font-size:38px;font-weight:bold;color:#1877f2}
-p{color:#666;margin:10px 0 28px}
-button{width:100%;padding:15px;margin:8px 0;border:0;border-radius:12px;font-size:16px;font-weight:bold}
-.signup{background:#1877f2;color:white}
-.google{background:white;border:1px solid #ccc}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f2f4f7}
+header{background:#1877f2;color:white;text-align:center;padding:22px;font-size:30px;font-weight:bold}
+.box{width:90%;max-width:420px;margin:70px auto}
+.card{background:white;padding:28px;border-radius:18px;box-shadow:0 3px 15px #ccc;text-align:center}
+button{width:100%;padding:15px;margin-top:14px;border:0;border-radius:11px;font-size:17px;font-weight:bold;background:#1877f2;color:white}
+.reg{background:#20a84b}
+p{color:#666}
 </style>
 </head>
 <body>
 
+<header>Depp Net</header>
+
 <div class="box">
-<div class="logo">Depp Net</div>
-<p>Murakaza neza kuri Depp Net</p>
+<div class="card">
+<h2>Murakaza neza kuri Depp Net</h2>
+<p>Injira canke wiyandikishe kugira ukoreshe Depp Net.</p>
 
-<button class="signup" onclick="location.href='register.html'">
-📝 Sign up
-</button>
-
-<button class="google" onclick="googleLogin()">
-🔵 Continue with Google
-</button>
+<button onclick="location.href='login.html'">🔐 Injira</button>
+<button class="reg" onclick="location.href='register.html'">📝 Iyandikishe</button>
 </div>
-
-<script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import{getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,browserLocalPersistence,setPersistence}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import{getFirestore,doc,setDoc,getDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
-const config={
-apiKey:"AIzaSyAddn7bUZfDupIqFsvBbXRpxarFAsV2lYs",
-authDomain:"depp-net-apk.firebaseapp.com",
-projectId:"depp-net-apk",
-storageBucket:"depp-net-apk.firebasestorage.app",
-messagingSenderId:"664141462348",
-appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
-};
-
-const app=initializeApp(config);
-const auth=getAuth(app);
-const db=getFirestore(app);
-const provider=new GoogleAuthProvider();
-
-await setPersistence(auth,browserLocalPersistence);
-
-let going=false;
-
-onAuthStateChanged(auth,async u=>{
-if(!u||going)return;
-going=true;
-
-const data={
-uid:u.uid,
-name:u.displayName||"User",
-username:(u.email||"user").split("@")[0],
-email:u.email||"",
-photo:u.photoURL||""
-};
-
-localStorage.setItem("deppNetUser",JSON.stringify(data));
-localStorage.setItem("deppNetLoggedIn","true");
-
-try{
-const ref=doc(db,"users",u.uid);
-const old=await getDoc(ref);
-
-if(!old.exists()){
-await setDoc(ref,{...data,createdAt:serverTimestamp()});
-}
-}catch(e){
-console.log("User save:",e.message);
-}
-
-location.href="home.html";
-});
-
-window.googleLogin=async()=>{
-try{
-await signInWithPopup(auth,provider);
-}catch(e){
-console.log(e);
-alert("Google yanse: "+e.message);
-}
-};
-</script>
+</div>
 
 </body>
 </html>
