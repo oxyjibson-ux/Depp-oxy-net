@@ -6,147 +6,108 @@
 <title>Depp Net - Login</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:#f2f4f7;color:#222}
-header{background:#1877f2;color:white;text-align:center;padding:18px;font-size:25px;font-weight:bold}
-.box{width:92%;max-width:420px;margin:40px auto}
-.card{background:white;padding:24px;border-radius:15px;box-shadow:0 3px 12px #ccc}
-h2{text-align:center}
+body{margin:0;font-family:Arial;background:#f2f4f7}
+header{background:#1877f2;color:white;text-align:center;padding:20px;font-size:27px;font-weight:bold}
+.box{width:92%;max-width:420px;margin:45px auto}
+.card{background:white;padding:25px;border-radius:16px;box-shadow:0 3px 12px #ccc}
 input{width:100%;padding:14px;margin:7px 0;border:1px solid #ccc;border-radius:10px;font-size:16px}
-button{width:100%;padding:13px;margin-top:9px;border:0;border-radius:10px;background:#1877f2;color:white;font-size:16px;font-weight:bold}
-.links{text-align:center;margin-top:15px}
-.links a{display:block;margin:10px;color:#1877f2;text-decoration:none}
-.msg{display:none;padding:10px;border-radius:8px;margin-top:10px;text-align:center}
-.err{background:#ffe5e5;color:#c00}
+button{width:100%;padding:14px;margin-top:12px;border:0;border-radius:10px;background:#1877f2;color:white;font-size:17px;font-weight:bold}
+.err{color:#d00000;text-align:center;font-size:14px;margin-top:10px}
+a{display:block;text-align:center;margin-top:16px;color:#1877f2;text-decoration:none}
 </style>
 </head>
 <body>
 
 <header>Depp Net</header>
 
-<div class="box">
-<div class="card">
+<div class="box"><div class="card">
+<h2>🔐 Injira</h2>
 
-<h2>🔐 Injira muri Depp Net</h2>
-
-<input id="login" placeholder="Email canke Numero">
+<input id="login" placeholder="Email canke numero ya telefone">
 <input id="password" type="password" placeholder="Mot de passe">
 
-<button id="btn" onclick="loginNow()">Injira</button>
+<button id="btn" onclick="login()">🔐 Injira</button>
+<div id="err" class="err"></div>
 
-<div id="error" class="msg err"></div>
-
-<div class="links">
-<a href="register.html">📝 Iyandikishe</a>
-<a href="forgot-password.html">🔑 Wibagiye mot de passe?</a>
+<a href="register.html">📝 Nta konti mfise - Iyandikishe</a>
 <a href="index.html">⬅️ Subira inyuma</a>
-</div>
-
-</div>
-</div>
+</div></div>
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import{
-getAuth,
-signInWithEmailAndPassword,
-setPersistence,
-browserLocalPersistence
-}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import{
-getFirestore,
-collection,
-query,
-where,
-getDocs,
-doc,
-getDoc
-}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import{getAuth,signInWithEmailAndPassword,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import{getFirestore,collection,query,where,getDocs}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const app=initializeApp({
 apiKey:"AIzaSyAddn7bUZfDupIqFsvBbXRpxarFAsV2lYs",
 authDomain:"depp-net-apk.firebaseapp.com",
+databaseURL:"https://depp-net-apk-default-rtdb.firebaseio.com",
 projectId:"depp-net-apk",
 storageBucket:"depp-net-apk.firebasestorage.app",
 messagingSenderId:"664141462348",
-appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
+appId:"1:664141462348:web:8202143fef6fcdaf9cede9",
+measurementId:"G-DMBZT3C6MK"
 });
 
-const auth=getAuth(app);
-const db=getFirestore(app);
+const auth=getAuth(app),db=getFirestore(app);
+const $=id=>document.getElementById(id);
 
-function error(t){
-let e=document.getElementById("error");
-e.textContent=t;
-e.style.display="block";
-}
+window.login=async()=>{
+$("err").textContent="";
+let value=$("login").value.trim(),pass=$("password").value;
 
-window.loginNow=async()=>{
-let value=document.getElementById("login").value.trim();
-let pass=document.getElementById("password").value;
-let btn=document.getElementById("btn");
+if(!value||!pass){$("err").textContent="Andika Email/numero na password.";return}
 
-if(!value||!pass){
-error("Andika Email/Numero na mot de passe.");
-return;
-}
-
-btn.disabled=true;
-btn.textContent="Turiko turinjira...";
+$("btn").disabled=true;
+$("btn").textContent="Turiko turinjira...";
 
 try{
-let email=value.toLowerCase();
+await setPersistence(auth,browserLocalPersistence);
+
+let email=value;
 
 if(!value.includes("@")){
 let phone=value.replace(/\D/g,"");
-
 let q=query(collection(db,"users"),where("phone","==",phone));
-let r=await getDocs(q);
+let s=await getDocs(q);
 
-if(r.empty){
-error("Numero nta konti ifise.");
-btn.disabled=false;
-btn.textContent="Injira";
+if(s.empty){
+$("err").textContent="Numero ntiyabonetse.";
+$("btn").disabled=false;
+$("btn").textContent="🔐 Injira";
 return;
 }
 
-email=r.docs[0].data().email;
+email=s.docs[0].data().email;
 }
 
-await setPersistence(auth,browserLocalPersistence);
-
 let r=await signInWithEmailAndPassword(auth,email,pass);
-let u=r.user;
 
-let s=await getDoc(doc(db,"users",u.uid));
-let d=s.exists()?s.data():{};
+let q=query(collection(db,"users"),where("uid","==",r.user.uid));
+let s=await getDocs(q);
 
-let user={
-uid:u.uid,
-id:u.uid,
-name:d.name||u.displayName||u.email,
-username:d.username||u.email.split("@")[0],
-email:u.email,
-phone:d.phone||"",
-age:d.age||"",
-sex:d.sex||"",
-photo:d.photo||""
-};
-
+if(!s.empty){
+let user=s.docs[0].data();
 localStorage.setItem("deppNetUser",JSON.stringify(user));
-localStorage.setItem("deppNetLoggedIn","true");
+}
 
+localStorage.setItem("deppNetLoggedIn","true");
 location.href="home.html";
 
 }catch(e){
-let t="Email/Numero canke mot de passe si vyo.";
+console.log(e);
+let c=e.code||"unknown";
 
-if(e.code==="auth/network-request-failed")
-t="Internet ntiyabonetse.";
+if(c=="auth/invalid-credential"||c=="auth/wrong-password"||c=="auth/user-not-found")
+$("err").textContent="Email/numero canke password si vyo.";
 
-error(t);
+else if(c=="auth/invalid-email")
+$("err").textContent="Email siyo.";
 
-btn.disabled=false;
-btn.textContent="Injira";
+else $("err").textContent="Ikosa: "+c;
+
+$("btn").disabled=false;
+$("btn").textContent="🔐 Injira";
 }
 };
 </script>
