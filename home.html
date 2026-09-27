@@ -126,12 +126,12 @@ window.menu=()=>{m.style.display=m.style.display==="block"?"none":"block"};
 onAuthStateChanged(auth,u=>{  
 if(!u){location.href="login.html";return}  
 me=u;  
-loadMe();
-loadPosts();
-loadComments();
-loadNotify();
-loadStreak();
-loadStatuses();  
+loadMe();  
+loadPosts();  
+loadComments();  
+loadNotify();  
+loadStreak();  
+});  
   
 async function loadMe(){  
 try{  
@@ -483,58 +483,7 @@ streak.textContent="🔥 "+days+" Day Streak";
 alert("Streak ntiyakoze: "+e.message);  
 }  
 };  
-
-function loadStatuses(){
-let q=query(collection(db,"statuses"));
-
-onSnapshot(q,s=>{
-let now=Date.now();
-
-let a=s.docs.map(d=>({id:d.id,...d.data()}))
-.filter(x=>{
-let t=x.createdMs||0;
-return now-t<24*60*60*1000;
-})
-.sort((a,b)=>(b.createdMs||0)-(a.createdMs||0));
-
-if(!a.length){
-statuses.innerHTML="<div class='time'>Nta Status nshasha ubu.</div>";
-return;
-}
-
-statuses.innerHTML=
-"<div class='statusList'>"+
-a.map(x=>{
-
-let media="";
-
-if(x.type==="image"&&x.media)
-media=`<img src="${x.media}">`;
-
-else if(x.type==="video"&&x.media)
-media=`<video src="${x.media}" controls></video>`;
-
-else if(x.text)
-media=`<div class="statusText">${escStatus(x.text)}</div>`;
-
-return`
-<div class="statusItem"
-onclick="go('status.html')">
-<b>${escStatus(x.name||"User")}</b>
-${media}
-</div>`;
-
-}).join("")+
-"</div>";
-
-});
-}
-
-function escStatus(x){
-let d=document.createElement("div");
-d.textContent=x||"";
-return d.innerHTML;
-}  
+  
 window.logout=async()=>{  
 try{  
 await signOut(auth);  
