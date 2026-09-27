@@ -3,94 +3,77 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Depp Net - Contacts</title>
+<title>Depp Net Chat</title>
 <style>
 *{box-sizing:border-box;font-family:Arial}
-body{margin:0;background:#f2f5f9;color:#222}
-header{height:60px;background:#1877f2;color:white;display:flex;align-items:center;justify-content:space-between;padding:0 14px}
-header b{font-size:21px}
-button{border:0;border-radius:10px;padding:10px 13px;font-weight:bold}
-.home{background:white;color:#1877f2}
-.main{max-width:650px;margin:auto;padding:14px}
-.card{background:white;border-radius:16px;padding:15px;margin-bottom:14px;box-shadow:0 2px 8px #0001}
-.title{font-size:19px;font-weight:bold;margin-bottom:12px}
-.searchbox{display:flex;gap:7px}
-input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:11px;font-size:15px;outline:0}
-.searchbox button{background:#1877f2;color:white;font-size:18px}
-.add{background:#1877f2;color:white;width:100%;font-size:15px}
-.contact{display:flex;align-items:center;gap:11px;padding:12px;background:#f4f6f8;border-radius:13px;margin-top:9px}
-.avatar{width:46px;height:46px;border-radius:50%;background:#1877f2;color:white;display:grid;place-items:center;font-size:19px;font-weight:bold}
-.info{flex:1;min-width:0}
-.name{font-weight:bold}
-.phone{font-size:12px;color:#777;margin-top:4px}
-.chat{background:#1877f2;color:white}
-.status{text-align:center;color:#777;padding:18px}
-.line{height:1px;background:#eee;margin:14px 0}
+body{margin:0;background:#eef2f7}
+header{height:55px;background:#1877f2;color:white;display:flex;align-items:center;justify-content:space-between;padding:0 10px}
+button{border:0;border-radius:20px;padding:9px 13px}
+#users{padding:10px}
+.user{background:white;padding:12px;margin:8px 0;border-radius:15px;display:flex;align-items:center;gap:10px}
+.av{width:45px;height:45px;border-radius:50%;background:#1877f2;color:white;display:grid;place-items:center;font-weight:bold}
+.info{flex:1}
+#chat{display:none;height:calc(100vh - 55px)}
+.top{height:58px;background:white;display:flex;align-items:center;gap:8px;padding:7px}
+#msgs{height:calc(100% - 115px);overflow:auto;padding:10px}
+.msg{max-width:75%;padding:8px 10px;margin:6px 0;background:white;border-radius:16px}
+.mine{margin-left:auto;background:#1877f2;color:white}
+.msg img,.msg video{max-width:220px;border-radius:12px;display:block}
+.msg audio{max-width:230px}
+.send{min-height:57px;background:white;display:flex;align-items:center;gap:4px;padding:6px}
+#txt{flex:1;border:1px solid #ddd;border-radius:22px;padding:10px;outline:0}
+#pick{display:none;align-items:center;gap:4px;background:#f1f3f5;border-radius:15px;padding:3px}
+#pick img{width:42px;height:42px;object-fit:cover;border-radius:10px}
+#pick audio{width:120px}
+#pick span{max-width:90px;overflow:hidden;white-space:nowrap}
+#time{display:none;color:#e53935;font-size:12px;font-weight:bold}
 </style>
 </head>
 
 <body>
 
 <header>
+<button onclick="goBack()">←</button>
 <b>Depp Net</b>
-<button class="home" onclick="location.href='home.html'">🏠 Home</button>
+<button onclick="location.href='home.html'">⌂</button>
 </header>
 
-<div class="main">
+<div id="users">Turiko turarondera...</div>
 
-<div class="card">
-<div class="title">🔎 Rondera kuri Depp Net</div>
-
-<div class="searchbox">
-<input id="searchPhone" type="tel" placeholder="Andika numero...">
-<button onclick="findUser()">🔎</button>
+<div id="chat">
+<div class="top">
+<button onclick="goBack()">←</button>
+<div class="av" id="avatar">U</div>
+<div class="info"><b id="chatName">User</b></div>
 </div>
 
-<div id="searchResult" class="status">
-Rondera umuntu ukoresheje numero.
+<div id="msgs"></div>
+
+<div class="send">
+
+<button onclick="photo.click()">📷</button>
+<input id="photo" type="file" accept="image/*" hidden onchange="choosePhoto()">
+
+<button onclick="video.click()">🎥</button>
+<input id="video" type="file" accept="video/*" hidden onchange="chooseVideo()">
+
+<div id="pick"></div>
+<span id="time">00:00</span>
+
+<input id="txt" placeholder="Andika ubutumwa...">
+
+<button id="sendBtn" onclick="send()">🎙️</button>
+
 </div>
-</div>
-
-<div class="card">
-<div class="title">➕ Contact nshasha</div>
-
-<input id="name" placeholder="Izina ry'umuntu">
-
-<br><br>
-
-<select id="country"></select>
-
-<br><br>
-
-<input id="phone" type="tel" placeholder="Numero ya telefone">
-
-<p id="preview" style="font-size:12px;color:#777"></p>
-
-<button class="add" onclick="saveContact()">
-💾 Bika Contact
-</button>
-</div>
-
-<div class="card">
-<div class="title">👥 Contacts zawe</div>
-<input id="filter" placeholder="Rondera muri Contacts zawe...">
-<div id="list"><div class="status">⏳ Rindira...</div></div>
-</div>
-
 </div>
 
 <script type="module">
 
-import{initializeApp}
-from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-
-import{getAuth,onAuthStateChanged}
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import{getAuth,onAuthStateChanged,setPersistence,browserLocalPersistence}
 from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-
-import{
-getFirestore,collection,query,where,getDocs,
-doc,setDoc,onSnapshot
-}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import{getFirestore,collection,addDoc,onSnapshot,query,orderBy,serverTimestamp}
+from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const app=initializeApp({
 apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
@@ -102,76 +85,387 @@ appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
 });
 
 const auth=getAuth(app),db=getFirestore(app);
+await setPersistence(auth,browserLocalPersistence);
 
-let me=null,contacts=[];
+const CLOUD="sdtggm0f",PRESET="yvgqax4x";
 
-const countries=[
-["🇧🇮","Burundi","257"],["🇷🇼","Rwanda","250"],
-["🇨🇩","RDC","243"],["🇹🇿","Tanzania","255"],
-["🇺🇬","Ouganda","256"],["🇰🇪","Kenya","254"],
-["🇿🇦","Afrique du Sud","27"],["🇳🇬","Nigeria","234"],
-["🇬🇭","Ghana","233"],["🇨🇲","Cameroun","237"],
-["🇨🇮","Côte d’Ivoire","225"],["🇸🇳","Sénégal","221"],
-["🇲🇱","Mali","223"],["🇧🇫","Burkina Faso","226"],
-["🇳🇪","Niger","227"],["🇹🇬","Togo","228"],
-["🇧🇯","Bénin","229"],["🇬🇳","Guinée","224"],
-["🇬🇦","Gabon","241"],["🇨🇬","Congo","242"],
-["🇲🇬","Madagascar","261"],["🇲🇿","Mozambique","258"],
-["🇿🇲","Zambie","260"],["🇿🇼","Zimbabwe","263"],
-["🇪🇬","Égypte","20"],["🇲🇦","Maroc","212"],
-["🇩🇿","Algérie","213"],["🇹🇳","Tunisie","216"],
-["🇦🇪","Émirats arabes unis","971"],["🇸🇦","Arabie Saoudite","966"],
-["🇶🇦","Qatar","974"],["🇰🇼","Koweït","965"],
-["🇹🇷","Turquie","90"],["🇫🇷","France","33"],
-["🇧🇪","Belgique","32"],["🇩🇪","Allemagne","49"],
-["🇨🇭","Suisse","41"],["🇮🇹","Italie","39"],
-["🇪🇸","Espagne","34"],["🇵🇹","Portugal","351"],
-["🇳🇱","Pays-Bas","31"],["🇬🇧","Royaume-Uni","44"],
-["🇺🇸","USA","1"],["🇨🇦","Canada","1"],
-["🇧🇷","Brésil","55"],["🇲🇽","Mexique","52"],
-["🇦🇷","Argentine","54"],["🇮🇳","Inde","91"],
-["🇵🇰","Pakistan","92"],["🇨🇳","Chine","86"],
-["🇯🇵","Japon","81"],["🇰🇷","Corée du Sud","82"],
-["🇮🇩","Indonésie","62"],["🇲🇾","Malaisie","60"],
-["🇸🇬","Singapour","65"],["🇦🇺","Australie","61"],
-["🇳🇿","Nouvelle-Zélande","64"],["🇷🇺","Russie","7"],
-["🇪🇹","Éthiopie","251"],["🇸🇴","Somalie","252"]
-];
-
-countries.forEach(c=>{
-let o=document.createElement("option");
-o.value=c[2];
-o.textContent=`${c[0]} ${c[1]} (+${c[2]})`;
-country.appendChild(o);
-});
-country.value="257";
-
-function fullPhone(input){
-let code=country.value;
-let n=input.replace(/\D/g,"");
-if(n.startsWith("00"))n=n.slice(2);
-if(n.startsWith(code))return"+"+n;
-if(n.startsWith("0"))n=n.slice(1);
-return"+"+code+n;
-}
-
-phone.oninput=()=>{
-preview.textContent="Numero: "+fullPhone(phone.value);
-};
-
-function esc(x){
-let d=document.createElement("div");
-d.textContent=x||"";
-return d.innerHTML;
-}
+let me=null,other=null,chatId=null,stopMessages=null;
+let pending=null,type=null;
+let recorder=null,chunks=[],recordStart=0,timer=null;
 
 onAuthStateChanged(auth,u=>{
 if(!u)return location.href="login.html";
 me=u;
-loadContacts();
+loadUsers();
 });
 
-async function findByPhone(p){
+function loadUsers(){
+onSnapshot(collection(db,"users"),snap=>{
+users.innerHTML="";
 
-let r=await getDocs(query(
-collection(db,"users"),where("phone","==
+snap.forEach(d=>{
+if(d.id===me.uid)return;
+
+const u={uid:d.id,...d.data()};
+const div=document.createElement("div");
+
+div.className="user";
+div.innerHTML=
+`<div class="av">${(u.name||"U")[0].toUpperCase()}</div>
+<div class="info"><b>${u.name||"User"}</b><br>
+<small>@${u.username||""}</small></div>`;
+
+div.onclick=()=>openChat(u);
+users.appendChild(div);
+});
+
+if(!users.innerHTML)
+users.innerHTML="<p>Nta bandi bakoresha Depp Net ubu.</p>";
+});
+}
+
+function openChat(u){
+other=u;
+chatId=[me.uid,other.uid].sort().join("_");
+
+users.style.display="none";
+chat.style.display="block";
+
+chatName.textContent=other.name||"User";
+avatar.textContent=(other.name||"U")[0].toUpperCase();
+
+loadMessages();
+}
+
+function loadMessages(){
+
+if(stopMessages)stopMessages();
+
+const q=query(
+collection(db,"chats",chatId,"messages"),
+orderBy("createdAt")
+);
+
+stopMessages=onSnapshot(q,snap=>{
+msgs.innerHTML="";
+
+snap.forEach(d=>{
+const x=d.data();
+const div=document.createElement("div");
+
+div.className="msg "+(x.uid===me.uid?"mine":"");
+
+if(x.mediaType==="image"){
+const im=document.createElement("img");
+im.src=x.media;
+div.appendChild(im);
+}
+else if(x.mediaType==="video"){
+const v=document.createElement("video");
+v.src=x.media;
+v.controls=true;
+div.appendChild(v);
+}
+else if(x.mediaType==="audio"){
+const a=document.createElement("audio");
+a.src=x.media;
+a.controls=true;
+div.appendChild(a);
+}
+else{
+div.textContent=x.text||"";
+}
+
+msgs.appendChild(div);
+});
+
+msgs.scrollTop=msgs.scrollHeight;
+});
+}
+
+window.choosePhoto=async()=>{
+
+const f=photo.files[0];
+if(!f)return;
+
+if(f.size>8*1024*1024){
+alert("Photo ntirenge 8MB.");
+photo.value="";
+return;
+}
+
+pending=await compressPhoto(f);
+type="image";
+
+pick.innerHTML=
+`<img src="${URL.createObjectURL(pending)}">
+<button onclick="cancelPick()">✕</button>`;
+
+pick.style.display="flex";
+updateIcon();
+};
+
+function compressPhoto(file){
+
+return new Promise(resolve=>{
+
+const img=new Image();
+
+img.onload=()=>{
+
+const max=1200;
+let w=img.width,h=img.height;
+
+if(w>max){
+h=h*max/w;
+w=max;
+}
+
+const c=document.createElement("canvas");
+c.width=w;
+c.height=h;
+
+c.getContext("2d").drawImage(img,0,0,w,h);
+
+c.toBlob(b=>resolve(
+new File([b],"photo.jpg",{type:"image/jpeg"})
+),"image/jpeg",.65);
+};
+
+img.src=URL.createObjectURL(file);
+});
+}
+
+window.chooseVideo=()=>{
+
+const f=video.files[0];
+if(!f)return;
+
+if(f.size>10*1024*1024){
+alert("Video ntirenge 10MB.");
+video.value="";
+return;
+}
+
+pending=f;
+type="video";
+
+pick.innerHTML=
+`<span>🎥 ${f.name}</span>
+<button onclick="cancelPick()">✕</button>`;
+
+pick.style.display="flex";
+updateIcon();
+};
+
+window.cancelPick=()=>{
+pending=null;
+type=null;
+photo.value="";
+video.value="";
+pick.innerHTML="";
+pick.style.display="none";
+updateIcon();
+};
+
+txt.addEventListener("input",updateIcon);
+
+function updateIcon(){
+
+if(recorder){
+sendBtn.textContent="⏹️";
+return;
+}
+
+if(txt.value.trim()||pending)
+sendBtn.textContent="➤";
+else
+sendBtn.textContent="🎙️";
+}
+
+window.send=async()=>{
+
+if(recorder){
+stopRecord();
+return;
+}
+
+if(pending){
+await sendMedia();
+return;
+}
+
+if(!txt.value.trim()){
+startRecord();
+return;
+}
+
+const text=txt.value.trim();
+
+await addDoc(
+collection(db,"chats",chatId,"messages"),
+{
+uid:me.uid,
+toUid:other.uid,
+text:text,
+createdAt:serverTimestamp()
+}
+);
+
+txt.value="";
+updateIcon();
+};
+
+async function startRecord(){
+
+if(!navigator.mediaDevices||!window.MediaRecorder){
+alert("Iyi telefone/browser ntishigikira amajwi.");
+return;
+}
+
+try{
+
+const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+
+chunks=[];
+recorder=new MediaRecorder(stream);
+
+recorder.ondataavailable=e=>{
+if(e.data.size)chunks.push(e.data);
+};
+
+recorder.onstop=()=>{
+
+stream.getTracks().forEach(t=>t.stop());
+
+const blob=new Blob(chunks,{
+type:recorder.mimeType||"audio/webm"
+});
+
+pending=new File([blob],"voice.webm",{
+type:blob.type
+});
+
+type="audio";
+
+pick.innerHTML=
+`<audio controls src="${URL.createObjectURL(pending)}"></audio>
+<button onclick="cancelPick()">✕</button>`;
+
+pick.style.display="flex";
+
+clearInterval(timer);
+time.style.display="none";
+
+recorder=null;
+updateIcon();
+};
+
+recorder.start();
+
+recordStart=Date.now();
+time.style.display="inline";
+updateTime();
+
+timer=setInterval(updateTime,1000);
+
+updateIcon();
+
+}catch(e){
+alert("Microphone ntiyemerewe.");
+}
+}
+
+function updateTime(){
+
+if(!recordStart)return;
+
+let s=Math.floor((Date.now()-recordStart)/1000);
+let m=Math.floor(s/60);
+s=s%60;
+
+time.textContent=
+String(m).padStart(2,"0")+":"+
+String(s).padStart(2,"0");
+}
+
+function stopRecord(){
+
+if(!recorder)return;
+
+recorder.stop();
+recordStart=0;
+clearInterval(timer);
+}
+
+async function sendMedia(){
+
+if(!pending)return;
+
+sendBtn.textContent="⏳";
+
+try{
+
+const fd=new FormData();
+fd.append("file",pending);
+fd.append("upload_preset",PRESET);
+
+let folder=
+type==="image"?"image":
+type==="video"?"video":"video";
+
+const endpoint=
+`https://api.cloudinary.com/v1_1/${CLOUD}/${folder}/upload`;
+
+const r=await fetch(endpoint,{
+method:"POST",
+body:fd
+});
+
+const x=await r.json();
+
+if(!r.ok){
+alert(x.error?.message||"Media yanse kurungikwa.");
+updateIcon();
+return;
+}
+
+await addDoc(
+collection(db,"chats",chatId,"messages"),
+{
+uid:me.uid,
+toUid:other.uid,
+media:x.secure_url,
+mediaType:type,
+createdAt:serverTimestamp()
+}
+);
+
+cancelPick();
+
+}catch(e){
+alert("Vyaranse: "+e.message);
+updateIcon();
+}
+}
+
+window.goBack=()=>{
+
+if(recorder)stopRecord();
+
+if(chat.style.display==="block"){
+
+if(stopMessages)stopMessages();
+
+chat.style.display="none";
+users.style.display="block";
+
+}else{
+location.href="home.html";
+}
+
+};
+
+</script>
+</body>
+</html>
