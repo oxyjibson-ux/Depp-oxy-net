@@ -7,358 +7,246 @@
 <style>
 *{box-sizing:border-box;font-family:Arial}
 body{margin:0;background:#eef2f7}
-header{height:56px;background:#1877f2;color:white;display:flex;align-items:center;justify-content:space-between;padding:0 10px}
-button{border:0;border-radius:20px;padding:9px 12px}
-#users{padding:10px}.user{background:white;margin:8px 0;padding:11px;border-radius:15px;display:flex;gap:10px;align-items:center}
-.av{width:44px;height:44px;border-radius:50%;background:#1877f2;color:white;display:grid;place-items:center;font-weight:bold}
-.info{flex:1}.on{color:#16a34a;font-size:12px}.off{color:#888;font-size:12px}
-#chat{display:none;height:calc(100vh - 56px)}
+header{height:55px;background:#1877f2;color:white;display:flex;align-items:center;justify-content:space-between;padding:0 10px}
+button{border:0;border-radius:20px;padding:9px 13px}
+#users{padding:10px}
+.user{background:white;padding:12px;margin:8px 0;border-radius:15px;display:flex;align-items:center;gap:10px}
+.av{width:45px;height:45px;border-radius:50%;background:#1877f2;color:white;display:grid;place-items:center;font-weight:bold}
+.info{flex:1}
+#chat{display:none;height:calc(100vh - 55px)}
 .top{height:58px;background:white;display:flex;align-items:center;gap:8px;padding:7px}
-#msgs{height:calc(100% - 125px);overflow:auto;padding:10px}
-.m{max-width:78%;width:max-content;padding:9px 12px;margin:6px 0;background:white;border-radius:16px}
+#msgs{height:calc(100% - 115px);overflow:auto;padding:10px}
+.msg{max-width:75%;padding:10px 13px;margin:6px 0;background:white;border-radius:16px}
 .mine{margin-left:auto;background:#1877f2;color:white}
-.typ{height:20px;padding-left:12px;color:#777;font-size:12px}
-.send{height:67px;background:white;display:flex;gap:5px;padding:8px;align-items:center}
+.send{height:57px;background:white;display:flex;gap:5px;padding:8px}
 #txt{flex:1;border:1px solid #ddd;border-radius:22px;padding:10px;outline:0}
-.rec{background:#e53935;color:white}
-#timer{display:none;color:#e53935;font-size:12px;font-weight:bold}
-#cancel{display:none}
-#net{text-align:center;padding:6px;font-size:12px}
 </style>
 </head>
+
 <body>
 
 <header>
-<button onclick="back()">←</button><b>Depp Net</b>
+<button onclick="goBack()">←</button>
+<b>Depp Net</b>
 <button onclick="location.href='home.html'">⌂</button>
 </header>
 
-<div id="net"></div>
 <div id="users">Turiko turarondera...</div>
 
 <div id="chat">
+
 <div class="top">
-<button onclick="back()">←</button>
-<div class="av" id="av">U</div>
-<div class="info"><b id="name">User</b><br><small id="status">Offline</small></div>
+<button onclick="goBack()">←</button>
+<div class="av" id="avatar">U</div>
+<div class="info"><b id="chatName">User</b></div>
 </div>
 
 <div id="msgs"></div>
-<div id="typing" class="typ"></div>
 
 <div class="send">
-<button class="rec" id="rec" onclick="record()">🎙️</button>
-<button onclick="photo.click()">📷</button>
-<button onclick="video.click()">🎥</button>
-<span id="timer">00:00</span>
-<button id="cancel" onclick="cancelRecord()">❌</button>
 <input id="txt" placeholder="Andika ubutumwa...">
 <button onclick="send()">➤</button>
-
-<input id="photo" type="file" accept="image/*" hidden onchange="sendMedia('image')">
-<input id="video" type="file" accept="video/*" hidden onchange="sendMedia('video')">
 </div>
+
 </div>
 
 <script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import{getAuth,onAuthStateChanged,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import{getFirestore,collection,doc,setDoc,addDoc,onSnapshot,query,orderBy,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+import{initializeApp}
+from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import{
+getAuth,
+onAuthStateChanged,
+setPersistence,
+browserLocalPersistence
+}
+from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import{
+getFirestore,
+collection,
+addDoc,
+onSnapshot,
+query,
+orderBy,
+serverTimestamp
+}
+from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
 
 const app=initializeApp({
+
 apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
 authDomain:"depp-net-apk.firebaseapp.com",
 projectId:"depp-net-apk",
 storageBucket:"depp-net-apk.firebasestorage.app",
 messagingSenderId:"664141462348",
 appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
+
 });
 
-const auth=getAuth(app),db=getFirestore(app);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
 await setPersistence(auth,browserLocalPersistence);
 
-const CLOUD="sdtggm0f",PRESET="yvgqax4x";
-let me,to,chatId,recorder,chunks=[],timer,seconds=0,cancelled=false;
+let me=null;
+let other=null;
+let chatId=null;
+let stopMessages=null;
 
-const $=x=>document.getElementById(x);
 
-function net(){
-$("net").textContent=navigator.onLine?"🟢 Online":"📴 Offline";
+onAuthStateChanged(auth,user=>{
+
+if(!user){
+location.href="login.html";
+return;
 }
-net();addEventListener("online",net);addEventListener("offline",net);
 
-onAuthStateChanged(auth,u=>{
-if(!u)return location.href="login.html";
-me=u;
+me=user;
 loadUsers();
+
 });
 
-async function presence(x){
-await setDoc(doc(db,"presence",me.uid),{
-online:x,lastSeen:serverTimestamp()
-},{merge:true});
-}
 
-async function loadUsers(){
-await presence(true);
-onSnapshot(collection(db,"users"),s=>{
-$("users").innerHTML="";
-s.forEach(d=>{
+function loadUsers(){
+
+onSnapshot(collection(db,"users"),snap=>{
+
+const box=document.getElementById("users");
+box.innerHTML="";
+
+snap.forEach(d=>{
+
 if(d.id===me.uid)return;
-let u={uid:d.id,...d.data()};
-let b=document.createElement("div");
-b.className="user";
-b.innerHTML=`<div class="av">${(u.name||"U")[0]}</div>
-<div class="info"><b>${u.name||"User"}</b><br>
-<small>@${u.username||""}</small></div>
-<span id="p${u.uid}" class="off">● Offline</span>`;
-b.onclick=()=>openChat(u);
-$("users").appendChild(b);
 
-onSnapshot(doc(db,"presence",u.uid),p=>{
-let x=p.data()||{},e=$("p"+u.uid);
-if(e){
-e.className=x.online?"on":"off";
-e.textContent=x.online?"● Online":"● Offline";
+const u={uid:d.id,...d.data()};
+
+const div=document.createElement("div");
+div.className="user";
+
+div.innerHTML=`
+<div class="av">
+${(u.name||"U").charAt(0).toUpperCase()}
+</div>
+
+<div class="info">
+<b>${u.name||"User"}</b><br>
+<small>@${u.username||""}</small>
+</div>
+`;
+
+div.onclick=()=>openChat(u);
+
+box.appendChild(div);
+
+});
+
+if(!box.innerHTML)
+box.innerHTML="<p>Nta bandi bakoresha Depp Net ubu.</p>";
+
+});
+
 }
-});
-});
-});
-}
+
 
 function openChat(u){
-to=u;
-chatId=[me.uid,to.uid].sort().join("_");
-$("users").style.display="none";
-$("chat").style.display="block";
-$("name").textContent=to.name||"User";
-$("av").textContent=(to.name||"U")[0];
+
+other=u;
+
+chatId=[me.uid,other.uid].sort().join("_");
+
+document.getElementById("users").style.display="none";
+document.getElementById("chat").style.display="block";
+
+document.getElementById("chatName").textContent=
+other.name||"User";
+
+document.getElementById("avatar").textContent=
+(other.name||"U").charAt(0).toUpperCase();
+
 loadMessages();
-watchTyping();
+
 }
+
 
 function loadMessages(){
-onSnapshot(query(
+
+if(stopMessages)stopMessages();
+
+const q=query(
 collection(db,"chats",chatId,"messages"),
 orderBy("createdAt")
-),s=>{
-$("msgs").innerHTML="";
+);
 
-s.forEach(d=>{
-let x=d.data(),m=document.createElement("div");
-m.className="m "+(x.uid===me.uid?"mine":"");
+stopMessages=onSnapshot(q,snap=>{
 
-if(x.audio){
-let a=document.createElement("audio");
-a.controls=true;
-a.src=x.audio;
-a.style.maxWidth="230px";
-m.appendChild(a);
-}
-else if(x.mediaType==="image"){
-let i=document.createElement("img");
-i.src=x.media;
-i.style="max-width:230px;border-radius:12px";
-m.appendChild(i);
-}
-else if(x.mediaType==="video"){
-let v=document.createElement("video");
-v.src=x.media;
-v.controls=true;
-v.playsInline=true;
-v.style="max-width:230px;border-radius:12px";
-m.appendChild(v);
-}
-else m.textContent=x.text||"";
+const box=document.getElementById("msgs");
+box.innerHTML="";
 
-$("msgs").appendChild(m);
+snap.forEach(d=>{
+
+const x=d.data();
+
+const div=document.createElement("div");
+
+div.className=
+"msg "+(x.uid===me.uid?"mine":"");
+
+div.textContent=x.text||"";
+
+box.appendChild(div);
+
 });
 
-$("msgs").scrollTop=$("msgs").scrollHeight;
+box.scrollTop=box.scrollHeight;
+
 });
+
 }
 
-function watchTyping(){
-onSnapshot(doc(db,"typing",chatId),s=>{
-let x=s.data()||{};
-$("typing").textContent=
-x.uid===to.uid&&x.on?"Ariko arandika...":"";
-});
-}
-
-$("txt").oninput=async()=>{
-if(!to)return;
-await setDoc(doc(db,"typing",chatId),{
-uid:me.uid,on:true
-},{merge:true});
-clearTimeout(window.tt);
-window.tt=setTimeout(()=>setDoc(
-doc(db,"typing",chatId),
-{uid:me.uid,on:false},
-{merge:true}
-),800);
-};
 
 window.send=async()=>{
-let t=$("txt").value.trim();
-if(!t||!to)return;
 
-await addDoc(collection(db,"chats",chatId,"messages"),{
-uid:me.uid,toUid:to.uid,text:t,
+const input=document.getElementById("txt");
+const text=input.value.trim();
+
+if(!text||!other)return;
+
+await addDoc(
+collection(db,"chats",chatId,"messages"),
+{
+uid:me.uid,
+toUid:other.uid,
+text:text,
 createdAt:serverTimestamp()
-});
-
-$("txt").value="";
-};
-
-
-window.sendMedia=async type=>{
-if(!to)return;
-
-let input=$(type==="image"?"photo":"video");
-let file=input.files[0];
-if(!file)return;
-
-let max=type==="image"?5:20;
-if(file.size>max*1024*1024){
-alert(type==="image"?"Photo irarenze 5 MB":"Video irarenze 20 MB");
-input.value="";
-return;
 }
-
-try{
-let fd=new FormData();
-fd.append("file",file);
-fd.append("upload_preset",PRESET);
-
-let resource=type==="image"?"image":"video";
-
-let r=await fetch(
-`https://api.cloudinary.com/v1_1/${CLOUD}/${resource}/upload`,
-{method:"POST",body:fd}
 );
 
-let x=await r.json();
-
-if(!x.secure_url){
-alert("Cloudinary yanse: "+(x.error?.message||"Upload yanse"));
-return;
-}
-
-await addDoc(collection(db,"chats",chatId,"messages"),{
-uid:me.uid,
-toUid:to.uid,
-media:x.secure_url,
-mediaType:type,
-createdAt:serverTimestamp()
-});
-
 input.value="";
-}catch(e){
-console.error(e);
-alert("Ntivyashoboye kurungika: "+e.message);
-}
+
 };
 
-/* AUDIO MESSAGE */
-window.record=async()=>{
-if(!to)return;
 
-if(recorder?.state==="recording"){
-recorder.stop();
-return;
-}
+window.goBack=()=>{
 
-try{
-let stream=await navigator.mediaDevices.getUserMedia({audio:true});
-chunks=[];
-cancelled=false;
+if(document.getElementById("chat").style.display==="block"){
 
-recorder=new MediaRecorder(stream);
+if(stopMessages)stopMessages();
 
-recorder.ondataavailable=e=>{
-if(e.data.size)chunks.push(e.data);
-};
+document.getElementById("chat").style.display="none";
+document.getElementById("users").style.display="block";
 
-recorder.onstop=async()=>{
-clearInterval(timer);
-$("timer").style.display="none";
-$("cancel").style.display="none";
-$("rec").textContent="🎙️";
-stream.getTracks().forEach(t=>t.stop());
+}else{
 
-if(cancelled){
-cancelled=false;
-chunks=[];
-return;
+location.href="home.html";
+
 }
 
-try{
-let blob=new Blob(chunks,{type:"audio/webm"});
-let fd=new FormData();
-
-fd.append("file",blob,"audio.webm");
-fd.append("upload_preset",PRESET);
-
-let r=await fetch(
-`https://api.cloudinary.com/v1_1/${CLOUD}/video/upload`,
-{method:"POST",body:fd}
-);
-
-let x=await r.json();
-
-if(!x.secure_url)throw Error("Audio upload failed");
-
-await addDoc(collection(db,"chats",chatId,"messages"),{
-uid:me.uid,
-toUid:to.uid,
-audio:x.secure_url,
-createdAt:serverTimestamp()
-});
-
-chunks=[];
-}catch(e){
-console.error(e);
-alert("Audio ntishoboye kurungika.");
-}
 };
 
-recorder.start();
-$("rec").textContent="⏹️";
-$("cancel").style.display="inline-block";
-$("timer").style.display="inline";
-
-seconds=0;
-$("timer").textContent="00:00";
-
-timer=setInterval(()=>{
-seconds++;
-let m=Math.floor(seconds/60),s=seconds%60;
-$("timer").textContent=
-String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
-},1000);
-
-}catch(e){
-alert("Emera microphone muri browser.");
-}
-};
-
-window.cancelRecord=()=>{
-if(!recorder||recorder.state!=="recording")return;
-cancelled=true;
-recorder.stop();
-};
-
-window.back=()=>{
-if($("chat").style.display==="block"){
-$("chat").style.display="none";
-$("users").style.display="block";
-}else location.href="home.html";
-};
-
-addEventListener("beforeunload",()=>{
-if(me)presence(false);
-});
 </script>
+
 </body>
 </html>
