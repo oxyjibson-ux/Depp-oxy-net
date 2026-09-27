@@ -5,23 +5,34 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Depp Net - Films</title>
 
-<script src="https://upload-widget.cloudinary.com/global/all.js"></script>
+<script src="https://upload-widget.cloudinary.com/latest/global/all.js"></script>
 
 <style>
 *{box-sizing:border-box;font-family:Arial}
 body{margin:0;background:#f2f4f7}
-header{background:#1877f2;color:white;padding:16px;font-size:21px;font-weight:bold}
+header{
+ background:#1877f2;color:white;padding:16px;
+ font-size:21px;font-weight:bold
+}
 .box{max-width:650px;margin:auto;padding:15px}
-.card{background:white;padding:15px;margin:12px 0;border-radius:14px}
-input,textarea,button{width:100%;padding:12px;margin:6px 0}
-input,textarea{border:1px solid #ddd;border-radius:8px}
-button{border:0;border-radius:8px;background:#1877f2;color:white;font-weight:bold}
+.card{
+ background:white;padding:15px;margin:12px 0;
+ border-radius:14px
+}
+input,textarea,button{
+ width:100%;padding:12px;margin:6px 0;
+ border-radius:8px
+}
+input,textarea{border:1px solid #ddd}
+button{
+ border:0;background:#1877f2;
+ color:white;font-weight:bold
+}
 .red{background:#e53935}
 video{width:100%;border-radius:10px;margin-top:8px}
 #admin{display:none}
-#progress{display:none;background:#eee;border-radius:10px;height:25px;margin-top:10px;overflow:hidden}
-#bar{height:100%;width:0%;background:#1877f2;color:white;text-align:center;line-height:25px}
 #status{font-weight:bold}
+#widgetBox{margin-top:10px}
 </style>
 </head>
 
@@ -38,40 +49,46 @@ video{width:100%;border-radius:10px;margin-top:8px}
 
 <input id="title" placeholder="Izina rya Film">
 
-<textarea id="desc" placeholder="Insiguro ya Film"></textarea>
+<textarea id="desc"
+placeholder="Insiguro ya Film"></textarea>
 
-<button onclick="chooseFilm()">
+<button id="uploadBtn">
 🎥 Hitamwo Film
 </button>
 
-<div id="progress">
-<div id="bar">0%</div>
-</div>
-
 <p id="status"></p>
 
+<div id="widgetBox"></div>
+
 </div>
+
 
 <!-- SEARCH -->
 <div class="card">
+
 <input id="search"
-placeholder="🔎 Rondera Film..."
-oninput="showFilms()">
+placeholder="🔎 Rondera Film...">
+
 </div>
 
+
+<!-- FILMS -->
 <div id="list">
 ⏳ Turiko turarondera Films...
 </div>
 
 </div>
 
+
 <script type="module">
 
 import{initializeApp}
 from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
-import{getAuth,onAuthStateChanged}
-from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import{
+getAuth,
+onAuthStateChanged
+}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 import{
 getFirestore,
@@ -100,20 +117,43 @@ const auth=getAuth(app);
 const db=getFirestore(app);
 
 
-/* ADMIN UID */
+/* ADMIN */
 
-const ADMIN="J6cFfnF5XOR67T1vwtLNyaKGw1L2";
+const ADMIN_UID=
+"J6cFfnF5XOR67T1vwtLNyaKGw1L2";
 
+const ADMIN_EMAIL=
+"deppoxy6@gmail.com";
+
+let isAdmin=false;
 let films=[];
 
 
-/* LOGIN */
+/* AUTH */
 
 onAuthStateChanged(auth,user=>{
 
- if(user && user.uid===ADMIN){
+ if(user){
 
-  document.getElementById("admin").style.display="block";
+  if(
+   user.uid===ADMIN_UID ||
+   user.email===ADMIN_EMAIL
+  ){
+
+   isAdmin=true;
+
+   document.getElementById("admin")
+   .style.display="block";
+
+   document.getElementById("status")
+   .textContent="✅ Admin yemerewe.";
+
+  }
+
+ }else{
+
+  document.getElementById("status")
+  .textContent="";
 
  }
 
@@ -122,7 +162,7 @@ onAuthStateChanged(auth,user=>{
 });
 
 
-/* CLOUDINARY */
+/* CLOUDINARY WIDGET */
 
 const widget=cloudinary.createUploadWidget({
 
@@ -132,60 +172,111 @@ const widget=cloudinary.createUploadWidget({
 
  resourceType:"video",
 
- clientAllowedFormats:["video"],
+ multiple:false,
 
  maxFileSize:3*1024*1024*1024,
 
  maxChunkSize:20000000,
 
- multiple:false,
-
- showAdvancedOptions:false,
+ clientAllowedFormats:["video"],
 
  sources:["local"],
 
- language:"en"
+ singleUploadAutoClose:true
 
-},(error,result)=>{
+},async(error,result)=>{
 
  if(error){
 
-  document.getElementById("status").textContent=
+  document.getElementById("status")
+  .textContent=
   "❌ "+(error.message||"Upload yanse.");
 
   return;
  }
 
 
- /* UPLOAD IRIKO IRAJA */
+ if(result && result.event==="upload-added"){
 
- if(result.event==="upload-added"){
-
-  document.getElementById("progress").style.display="block";
-
-  document.getElementById("bar").style.width="0%";
-
-  document.getElementById("bar").textContent="0%";
-
-  document.getElementById("status").textContent=
-  "⏳ Turatanguye gushiramwo...";
+  document.getElementById("status")
+  .textContent=
+  "⏳ Video yatanguye gushirwa...";
 
  }
 
 
- /* PROGRESS */
+ if(result && result.event==="queues-start"){
 
- if(result.event==="queues-start"){
-
-  document.getElementById("status").textContent=
-  "⏳ Upload iriko iraba...";
+  document.getElementById("status")
+  .textContent=
+  "⏳ Video iriko irashirwa kuri Cloudinary. Ntufunge page.";
 
  }
 
 
- if(result.event==="success"){
+ if(result && result.event==="success"){
 
-  saveFilm(result.info);
+  const info=result.info;
+
+  const title=
+   document.getElementById("title")
+   .value.trim();
+
+  const desc=
+   document.getElementById("desc")
+   .value.trim();
+
+
+  if(!title){
+
+   document.getElementById("status")
+   .textContent=
+   "❌ Andika izina rya Film.";
+
+   return;
+  }
+
+
+  try{
+
+   document.getElementById("status")
+   .textContent=
+   "⏳ Video yarangiye. Turiko tuyibika...";
+
+
+   await addDoc(
+    collection(db,"films"),
+    {
+     title:title,
+     description:desc,
+     video:info.secure_url,
+     publicId:info.public_id||"",
+     size:info.bytes||0,
+     format:info.format||"",
+     admin:ADMIN_UID,
+     createdAt:serverTimestamp()
+    }
+   );
+
+
+   document.getElementById("title").value="";
+   document.getElementById("desc").value="";
+
+
+   document.getElementById("status")
+   .textContent=
+   "✅ Film yashizweho neza!";
+
+
+   loadFilms();
+
+  }catch(e){
+
+   document.getElementById("status")
+   .textContent=
+   "❌ Firebase: "+e.message;
+
+  }
 
  }
 
@@ -194,86 +285,35 @@ const widget=cloudinary.createUploadWidget({
 
 /* OPEN UPLOAD */
 
-window.chooseFilm=()=>{
+document.getElementById("uploadBtn")
+.onclick=()=>{
 
- const title=document.getElementById("title").value.trim();
+ const title=
+  document.getElementById("title")
+  .value.trim();
 
  if(!title){
 
-  document.getElementById("status").textContent=
+  document.getElementById("status")
+  .textContent=
   "⚠️ Banza wandike izina rya Film.";
 
   return;
  }
+
+ document.getElementById("status")
+ .textContent=
+ "⏳ Hitamwo video...";
 
  widget.open();
 
 };
 
 
-/* SAVE FIREBASE */
+/* SEARCH */
 
-async function saveFilm(info){
-
- try{
-
-  const title=document.getElementById("title").value.trim();
-
-  const desc=document.getElementById("desc").value.trim();
-
-  document.getElementById("progress").style.display="block";
-
-  document.getElementById("bar").style.width="100%";
-
-  document.getElementById("bar").textContent="100%";
-
-  document.getElementById("status").textContent=
-  "⏳ Video yashizwe kuri Cloudinary. Turiko turayibika...";
-
-
-  await addDoc(collection(db,"films"),{
-
-   title:title,
-
-   description:desc,
-
-   video:info.secure_url,
-
-   publicId:info.public_id||"",
-
-   size:info.bytes||0,
-
-   format:info.format||"",
-
-   admin:ADMIN,
-
-   createdAt:serverTimestamp()
-
-  });
-
-
-  document.getElementById("title").value="";
-  document.getElementById("desc").value="";
-
-  document.getElementById("status").textContent=
-  "✅ Film yashizweho neza!";
-
-  setTimeout(()=>{
-
-   document.getElementById("progress").style.display="none";
-
-  },3000);
-
-  loadFilms();
-
- }catch(e){
-
-  document.getElementById("status").textContent=
-  "❌ Firebase: "+e.message;
-
- }
-
-}
+document.getElementById("search")
+.addEventListener("input",showFilms);
 
 
 /* LOAD FILMS */
@@ -282,9 +322,10 @@ async function loadFilms(){
 
  try{
 
-  const snap=await getDocs(
-   collection(db,"films")
-  );
+  const snap=
+   await getDocs(
+    collection(db,"films")
+   );
 
   films=[];
 
@@ -301,7 +342,8 @@ async function loadFilms(){
 
  }catch(e){
 
-  document.getElementById("list").innerHTML=
+  document.getElementById("list")
+  .innerHTML=
   "❌ "+e.message;
 
  }
@@ -309,18 +351,24 @@ async function loadFilms(){
 }
 
 
-/* SEARCH + DISPLAY */
+/* SHOW FILMS */
 
-window.showFilms=()=>{
+function showFilms(){
 
- const q=document.getElementById("search")
- .value.toLowerCase();
+ const q=
+  document.getElementById("search")
+  .value.toLowerCase();
 
- const box=document.getElementById("list");
+ const box=
+  document.getElementById("list");
+
 
  const arr=films.filter(x=>
-  (x.title||"").toLowerCase().includes(q)
+  (x.title||"")
+  .toLowerCase()
+  .includes(q)
  );
+
 
  if(!arr.length){
 
@@ -328,26 +376,37 @@ window.showFilms=()=>{
   "<div class='card'>🎬 Nta Film irajako.</div>";
 
   return;
-
  }
+
 
  box.innerHTML="";
 
+
  arr.forEach(x=>{
 
-  const div=document.createElement("div");
+  const div=
+   document.createElement("div");
 
   div.className="card";
+
 
   let size="";
 
   if(x.size){
 
-   size=(x.size/1024/1024/1024).toFixed(2)+" GB";
+   if(x.size>=1024*1024*1024){
 
-   if(x.size<1024*1024*1024){
+    size=
+     (x.size/
+      (1024*1024*1024))
+     .toFixed(2)+" GB";
 
-    size=(x.size/1024/1024).toFixed(1)+" MB";
+   }else{
+
+    size=
+     (x.size/
+      (1024*1024))
+     .toFixed(1)+" MB";
 
    }
 
@@ -360,7 +419,8 @@ window.showFilms=()=>{
 
    <p>${x.description||""}</p>
 
-   ${size?`<small>📦 ${size}</small>`:""}
+   ${size?
+   `<small>📦 ${size}</small>`:""}
 
    <video
     src="${x.video}"
@@ -372,29 +432,32 @@ window.showFilms=()=>{
     href="${x.video}"
     target="_blank"
     style="text-decoration:none">
-    <button>⬇️ Download / Fungura</button>
-   </a>
 
+    <button>
+     ⬇️ Fungura / Download
+    </button>
+
+   </a>
   `;
 
 
-  /* ADMIN DELETE */
+  if(isAdmin){
 
-  if(
-   auth.currentUser &&
-   auth.currentUser.uid===ADMIN
-  ){
+   const del=
+    document.createElement("button");
 
-   const b=document.createElement("button");
+   del.className="red";
 
-   b.className="red";
+   del.textContent=
+    "🗑️ Siba Film";
 
-   b.textContent="🗑️ Siba Film";
 
-   b.onclick=async()=>{
+   del.onclick=async()=>{
 
-    if(!confirm("Urashaka gusiba iyi Film?"))
-     return;
+    if(!confirm(
+     "Urashaka gusiba iyi Film?"
+    ))return;
+
 
     try{
 
@@ -412,7 +475,8 @@ window.showFilms=()=>{
 
    };
 
-   div.appendChild(b);
+
+   div.appendChild(del);
 
   }
 
@@ -421,7 +485,7 @@ window.showFilms=()=>{
 
  });
 
-};
+}
 
 </script>
 
