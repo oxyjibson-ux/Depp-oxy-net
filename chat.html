@@ -301,7 +301,7 @@ fd.append("file",blob,"audio.webm");
 fd.append("upload_preset",PRESET);
 
 let r=await fetch(
-`https://api.cloudinary.com/v1_1/${CLOUD}/auto/upload`,
+`https://api.cloudinary.com/v1_1/${CLOUD}/video/upload`,
 {method:"POST",body:fd}
 );
 
