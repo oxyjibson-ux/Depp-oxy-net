@@ -211,6 +211,7 @@ createdAt:serverTimestamp()
 $("txt").value="";
 };
 
+
 window.sendMedia=async type=>{
 if(!to)return;
 
@@ -230,16 +231,23 @@ let fd=new FormData();
 fd.append("file",file);
 fd.append("upload_preset",PRESET);
 
+let resource=type==="image"?"image":"video";
+
 let r=await fetch(
-`https://api.cloudinary.com/v1_1/${CLOUD}/auto/upload`,
+`https://api.cloudinary.com/v1_1/${CLOUD}/${resource}/upload`,
 {method:"POST",body:fd}
 );
 
 let x=await r.json();
-if(!x.secure_url)throw Error("upload");
+
+if(!x.secure_url){
+alert("Cloudinary yanse: "+(x.error?.message||"Upload yanse"));
+return;
+}
 
 await addDoc(collection(db,"chats",chatId,"messages"),{
-uid:me.uid,toUid:to.uid,
+uid:me.uid,
+toUid:to.uid,
 media:x.secure_url,
 mediaType:type,
 createdAt:serverTimestamp()
@@ -248,7 +256,7 @@ createdAt:serverTimestamp()
 input.value="";
 }catch(e){
 console.error(e);
-alert("Ntivyashoboye kurungika.");
+alert("Ntivyashoboye kurungika: "+e.message);
 }
 };
 
