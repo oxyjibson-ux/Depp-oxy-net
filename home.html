@@ -65,7 +65,9 @@ textarea{width:100%;min-height:65px;border:1px solid #ddd;border-radius:10px;pad
 
 <!-- FILMS -->
 <button onclick="go('films.html')">🎬 Films</button>
-
+<button id="adminFilmsBtn" onclick="go('admin-films.html')" style="display:none">
+🎬 Admin Films
+</button>
 <button onclick="go('settings.html')" id="tSettings">⚙️ Settings</button>
 <button onclick="logout()" id="tLogout">🚪 Logout</button>
 </div>
@@ -157,6 +159,13 @@ location.href="login.html";
 return;
 }
 
+  const ADMIN="J6cFfnF5XOR67T1vwtLNyaKGw1L2";
+
+onAuthStateChanged(auth,u=>{
+  if(u && u.uid===ADMIN){
+    document.getElementById("adminFilmsBtn").style.display="block";
+  }
+});
 me=u;
 loadMe();
 loadPosts();
