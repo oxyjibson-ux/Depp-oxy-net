@@ -4,338 +4,333 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Depp Net - Contacts</title>
+
 <style>
 *{box-sizing:border-box;font-family:Arial}
-body{margin:0;background:#f2f5f9;color:#222}
-header{height:60px;background:#1877f2;color:white;display:flex;align-items:center;justify-content:space-between;padding:0 14px}
-header b{font-size:21px}
-button{border:0;border-radius:10px;padding:10px 13px;font-weight:bold}
-.home{background:white;color:#1877f2}
-.main{max-width:650px;margin:auto;padding:14px}
-.card{background:white;border-radius:16px;padding:15px;margin-bottom:14px;box-shadow:0 2px 8px #0001}
-.title{font-size:19px;font-weight:bold;margin-bottom:12px}
-.searchbox{display:flex;gap:7px}
-input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:11px;font-size:15px;outline:0}
-.searchbox button{background:#1877f2;color:white;font-size:18px}
-.add{background:#1877f2;color:white;width:100%;font-size:15px}
-.contact{display:flex;align-items:center;gap:11px;padding:12px;background:#f4f6f8;border-radius:13px;margin-top:9px}
-.avatar{width:46px;height:46px;border-radius:50%;background:#1877f2;color:white;display:grid;place-items:center;font-size:19px;font-weight:bold}
-.info{flex:1;min-width:0}
-.name{font-weight:bold}
-.phone{font-size:12px;color:#777;margin-top:4px}
-.chat{background:#1877f2;color:white}
-.status{text-align:center;color:#777;padding:18px}
-.line{height:1px;background:#eee;margin:14px 0}
+body{margin:0;background:#f2f4f7;color:#222}
+header{background:#1877f2;color:white;padding:16px;display:flex;align-items:center;justify-content:space-between}
+header b{font-size:22px}
+header span{font-size:25px;cursor:pointer}
+.box{width:94%;max-width:500px;margin:15px auto}
+.card{background:white;padding:16px;border-radius:15px;margin-bottom:15px;box-shadow:0 2px 8px #ccc}
+h3{margin-top:0}
+input,select{width:100%;padding:13px;margin:6px 0;border:1px solid #ccc;border-radius:10px;font-size:16px}
+button{border:0;border-radius:9px;padding:11px 15px;background:#1877f2;color:white;font-weight:bold}
+.add{width:100%;margin-top:8px}
+.contact{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eee;padding:13px 0}
+.contact:last-child{border:0}
+.info b{display:block}
+.info small{color:#777}
+.chat{background:#1877f2}
+.none{color:#999;font-size:13px}
+#msg{text-align:center;margin:8px;color:#1877f2}
 </style>
 </head>
 
 <body>
 
 <header>
-<b>Depp Net</b>
-<button class="home" onclick="location.href='home.html'">🏠 Home</button>
+<span onclick="history.back()">←</span>
+<b>👥 Contacts</b>
+<span onclick="searchBox()">🔍</span>
 </header>
 
-<div class="main">
+<div class="box">
 
-<div class="card">
-<div class="title">🔎 Rondera kuri Depp Net</div>
-
-<div class="searchbox">
-<input id="searchPhone" type="tel" placeholder="Andika numero...">
-<button onclick="findUser()">🔎</button>
-</div>
-
-<div id="searchResult" class="status">
-Rondera umuntu ukoresheje numero.
-</div>
+<div class="card" id="searchCard" style="display:none">
+<input id="search" placeholder="Rondera contact...">
 </div>
 
 <div class="card">
-<div class="title">➕ Contact nshasha</div>
+<h3>➕ Contact nshasha</h3>
 
-<input id="name" placeholder="Izina ry'umuntu">
+<input id="name" placeholder="Izina rya contact">
 
-<br><br>
-
-<select id="country"></select>
-
-<br><br>
+<select id="code">
+<option value="257">🇧🇮 +257 Burundi</option>
+<option value="250">🇷🇼 +250 Rwanda</option>
+<option value="255">🇹🇿 +255 Tanzania</option>
+<option value="256">🇺🇬 +256 Uganda</option>
+<option value="254">🇰🇪 +254 Kenya</option>
+<option value="243">🇨🇩 +243 DR Congo</option>
+<option value="971">🇦🇪 +971 UAE</option>
+<option value="1">🇺🇸 +1 USA</option>
+<option value="44">🇬🇧 +44 UK</option>
+<option value="33">🇫🇷 +33 France</option>
+<option value="49">🇩🇪 +49 Germany</option>
+<option value="27">🇿🇦 +27 South Africa</option>
+<option value="255">🇹🇿 +255 Tanzania</option>
+<option value="91">🇮🇳 +91 India</option>
+<option value="86">🇨🇳 +86 China</option>
+</select>
 
 <input id="phone" type="tel" placeholder="Numero ya telefone">
 
-<p id="preview" style="font-size:12px;color:#777"></p>
-
-<button class="add" onclick="saveContact()">
-💾 Bika Contact
-</button>
+<button class="add" onclick="saveContact()">💾 Bika Contact</button>
+<div id="msg"></div>
 </div>
 
 <div class="card">
-<div class="title">👥 Contacts zawe</div>
-<input id="filter" placeholder="Rondera muri Contacts zawe...">
-<div id="list"><div class="status">⏳ Rindira...</div></div>
+<h3>📱 Contacts zawe</h3>
+<div id="list">Turiko turarondera...</div>
 </div>
 
 </div>
 
 <script type="module">
 
-import{initializeApp}
-from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-
-import{getAuth,onAuthStateChanged}
-from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
 import{
-getFirestore,collection,query,where,getDocs,
-doc,setDoc,onSnapshot
+getAuth,
+onAuthStateChanged
+}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import{
+getFirestore,
+collection,
+query,
+where,
+getDocs,
+getDoc,
+doc,
+setDoc,
+onSnapshot
 }from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-const app=initializeApp({
+const firebaseConfig={
 apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
 authDomain:"depp-net-apk.firebaseapp.com",
 projectId:"depp-net-apk",
 storageBucket:"depp-net-apk.firebasestorage.app",
 messagingSenderId:"664141462348",
-appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
-});
-
-const auth=getAuth(app),db=getFirestore(app);
-
-let me=null,contacts=[];
-
-const countries=[
-["🇧🇮","Burundi","257"],["🇷🇼","Rwanda","250"],
-["🇨🇩","RDC","243"],["🇹🇿","Tanzania","255"],
-["🇺🇬","Ouganda","256"],["🇰🇪","Kenya","254"],
-["🇿🇦","Afrique du Sud","27"],["🇳🇬","Nigeria","234"],
-["🇬🇭","Ghana","233"],["🇨🇲","Cameroun","237"],
-["🇨🇮","Côte d’Ivoire","225"],["🇸🇳","Sénégal","221"],
-["🇲🇱","Mali","223"],["🇧🇫","Burkina Faso","226"],
-["🇳🇪","Niger","227"],["🇹🇬","Togo","228"],
-["🇧🇯","Bénin","229"],["🇬🇳","Guinée","224"],
-["🇬🇦","Gabon","241"],["🇨🇬","Congo","242"],
-["🇲🇬","Madagascar","261"],["🇲🇿","Mozambique","258"],
-["🇿🇲","Zambie","260"],["🇿🇼","Zimbabwe","263"],
-["🇪🇬","Égypte","20"],["🇲🇦","Maroc","212"],
-["🇩🇿","Algérie","213"],["🇹🇳","Tunisie","216"],
-["🇦🇪","Émirats arabes unis","971"],["🇸🇦","Arabie Saoudite","966"],
-["🇶🇦","Qatar","974"],["🇰🇼","Koweït","965"],
-["🇹🇷","Turquie","90"],["🇫🇷","France","33"],
-["🇧🇪","Belgique","32"],["🇩🇪","Allemagne","49"],
-["🇨🇭","Suisse","41"],["🇮🇹","Italie","39"],
-["🇪🇸","Espagne","34"],["🇵🇹","Portugal","351"],
-["🇳🇱","Pays-Bas","31"],["🇬🇧","Royaume-Uni","44"],
-["🇺🇸","USA","1"],["🇨🇦","Canada","1"],
-["🇧🇷","Brésil","55"],["🇲🇽","Mexique","52"],
-["🇦🇷","Argentine","54"],["🇮🇳","Inde","91"],
-["🇵🇰","Pakistan","92"],["🇨🇳","Chine","86"],
-["🇯🇵","Japon","81"],["🇰🇷","Corée du Sud","82"],
-["🇮🇩","Indonésie","62"],["🇲🇾","Malaisie","60"],
-["🇸🇬","Singapour","65"],["🇦🇺","Australie","61"],
-["🇳🇿","Nouvelle-Zélande","64"],["🇷🇺","Russie","7"],
-["🇪🇹","Éthiopie","251"],["🇸🇴","Somalie","252"]
-];
-
-countries.forEach(c=>{
-let o=document.createElement("option");
-o.value=c[2];
-o.textContent=`${c[0]} ${c[1]} (+${c[2]})`;
-country.appendChild(o);
-});
-country.value="257";
-
-function fullPhone(input){
-let code=country.value;
-let n=input.replace(/\D/g,"");
-if(n.startsWith("00"))n=n.slice(2);
-if(n.startsWith(code))return"+"+n;
-if(n.startsWith("0"))n=n.slice(1);
-return"+"+code+n;
-}
-
-phone.oninput=()=>{
-preview.textContent="Numero: "+fullPhone(phone.value);
+appId:"1:664141462348:web:8202143fef6fcdaf9cede9",
+measurementId:"G-DMBZT3C6MK"
 };
 
-function esc(x){
-let d=document.createElement("div");
-d.textContent=x||"";
-return d.innerHTML;
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+let me=null;
+let all=[];
+
+const $=x=>document.getElementById(x);
+
+function clean(x){
+return String(x||"").replace(/\D/g,"");
 }
 
-onAuthStateChanged(auth,u=>{
-if(!u)return location.href="login.html";
-me=u;
-loadContacts();
-});
+async function findUser(phone){
 
-async function findByPhone(p){
+phone=clean(phone);
 
-let r=await getDocs(query(
-collection(db,"users"),where("phone","==",p)
-));
+if(!phone)return null;
 
-if(!r.empty)return r.docs[0];
+const q=query(
+collection(db,"users"),
+where("phone","==",phone)
+);
 
-let n=p.replace("+","");
-r=await getDocs(query(
-collection(db,"users"),where("phone","==",n)
-));
+const r=await getDocs(q);
 
 return r.empty?null:r.docs[0];
 }
 
-window.findUser=async()=>{
+function esc(x){
+return String(x||"")
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+}
 
-let p=fullPhone(searchPhone.value);
+async function load(){
 
-if(p.length<7){
-alert("Andika numero neza.");
+if(!me)return;
+
+onSnapshot(
+collection(db,"users",me.uid,"contacts"),
+async snap=>{
+
+all=snap.docs.map(x=>({
+id:x.id,
+...x.data()
+}));
+
+render(all);
+
+}
+);
+
+}
+
+async function render(items){
+
+if(!items.length){
+$("list").innerHTML="<p class='none'>Nta contact urabika.</p>";
 return;
 }
 
-searchResult.innerHTML="⏳ Turiko turarondera...";
+$("list").innerHTML="Turiko turagenzura...";
 
-let u=await findByPhone(p);
+let html="";
 
-if(!u){
-searchResult.innerHTML=
-"❌ Uwo muntu ntarafungura konti ya Depp Net.";
-return;
+for(const x of items){
+
+let u=null;
+
+try{
+u=await findUser(x.phone);
+}catch(e){}
+
+if(u){
+
+const d=u.data();
+
+if(x.uid!==u.id || !x.deppNet){
+await setDoc(
+doc(db,"users",me.uid,"contacts",x.id),
+{
+...x,
+uid:u.id,
+deppNet:true,
+name:x.name||d.name||"Contact",
+username:d.username||"",
+updatedAt:new Date()
+},
+{merge:true}
+);
 }
 
-if(u.id===me.uid){
-searchResult.innerHTML="👤 Iyo ni numero yawe.";
-return;
-}
-
-let d=u.data();
-
-searchResult.innerHTML=`
+html+=`
 <div class="contact">
-<div class="avatar">${esc((d.name||"U")[0])}</div>
 <div class="info">
-<div class="name">${esc(d.name||"User")}</div>
-<div class="phone">📞 ${esc(p)}</div>
+<b>${esc(x.name||d.name||"Contact")}</b>
+<small>${esc(x.phone)}</small>
 </div>
 <button class="chat"
-onclick="chat('${u.id}','${esc(d.name||"User")}')">
-💬
+onclick="chat('${u.id}','${esc(x.name||d.name||"Contact")}','${esc(x.phone)}')">
+💬 Chat
 </button>
 </div>`;
-};
+}else{
 
-window.saveContact=async()=>{
+html+=`
+<div class="contact">
+<div class="info">
+<b>${esc(x.name||"Contact")}</b>
+<small>${esc(x.phone)}</small>
+</div>
+<span class="none">Nta Depp Net</span>
+</div>`;
+}
 
-let n=name.value.trim();
-let p=fullPhone(phone.value);
+}
 
-if(!n||p.length<7){
-alert("Shiramwo izina na numero neza.");
+$("list").innerHTML=html;
+}
+
+window.saveContact=async function(){
+
+if(!me)return;
+
+const name=$("name").value.trim();
+const number=clean($("phone").value);
+const code=clean($("code").value);
+
+if(!name){
+$("msg").textContent="Andika izina.";
 return;
 }
 
-if(p===me.phone){
-alert("Iyo ni numero yawe.");
+if(!number){
+$("msg").textContent="Andika numero.";
 return;
 }
+
+const phone=code+number;
+
+$("msg").textContent="Turiko turabika...";
 
 try{
 
-let u=await findByPhone(p);
-let data={
-name:n,
-phone:p,
+const u=await findUser(phone);
+
+const data={
+name:name,
+phone:phone,
 uid:u?u.id:"",
-deppNet:u?true:false
+deppNet:!!u,
+createdAt:new Date()
 };
 
 await setDoc(
-doc(db,"users",me.uid,"contacts",p.replace(/\D/g,"")),
-data
+doc(db,"users",me.uid,"contacts",phone),
+data,
+{merge:true}
 );
 
-name.value="";
-phone.value="";
-preview.textContent="";
+$("name").value="";
+$("phone").value="";
 
-alert(u?
-"Contact yabitswe. Ubu akoresha Depp Net. 💬":
-"Contact yabitswe. Ntarakoresha Depp Net.");
-
-loadContacts();
+$("msg").textContent=u
+?"✅ Contact wa Depp Net yabonetse."
+:"✅ Contact yabitswe. Nta Depp Net ubu.";
 
 }catch(e){
-alert("Vyaranse kubika contact.");
+
+console.log(e);
+$("msg").textContent="❌ Ntivyashobotse kubika contact.";
+
 }
+
 };
 
-async function loadContacts(){
+window.chat=function(uid,name,phone){
 
-let s=await getDocs(
-collection(db,"users",me.uid,"contacts")
-);
-
-contacts=s.docs.map(d=>({
-id:d.id,...d.data()
-}));
-
-render();
-}
-
-filter.oninput=render;
-
-function render(){
-
-let q=filter.value.toLowerCase().trim();
-
-let a=contacts.filter(x=>
-!q||
-(x.name||"").toLowerCase().includes(q)||
-(x.phone||"").includes(q)
-);
-
-if(!a.length){
-list.innerHTML='<div class="status">📱 Nta contacts zibitswe.</div>';
-return;
-}
-
-list.innerHTML=a.map(x=>`
-
-<div class="contact">
-<div class="avatar">
-${esc((x.name||"U")[0].toUpperCase())}
-</div>
-
-<div class="info">
-<div class="name">${esc(x.name||"Contact")}</div>
-<div class="phone">📞 ${esc(x.phone)}</div>
-</div>
-
-${x.deppNet?
-`<button class="chat"
-onclick="chat('${x.uid}','${esc(x.name)}')">💬</button>`:
-`<span style="font-size:12px;color:#888">Nta Depp Net</span>`}
-
-</div>
-
-`).join("");
-}
-
-window.chat=(uid,n)=>{
-
-localStorage.setItem(
-"deppNetSelectedContactUid",uid
-);
-
-localStorage.setItem(
-"deppNetSelectedContactName",n
-);
+localStorage.setItem("deppNetSelectedContactUid",uid);
+localStorage.setItem("deppNetSelectedContactName",name);
+localStorage.setItem("deppNetSelectedContactPhone",phone);
 
 location.href="chat.html";
 };
+
+window.searchBox=function(){
+
+const x=$("searchCard");
+
+x.style.display=x.style.display=="none"?"block":"none";
+
+if(x.style.display=="block")$("search").focus();
+
+};
+
+$("search").oninput=function(){
+
+const s=this.value.toLowerCase();
+
+render(
+all.filter(x=>
+String(x.name||"").toLowerCase().includes(s)||
+String(x.phone||"").includes(s)
+)
+);
+
+};
+
+onAuthStateChanged(auth,u=>{
+
+if(!u){
+location.href="login.html";
+return;
+}
+
+me=u;
+load();
+
+});
 
 </script>
 </body>
