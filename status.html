@@ -15,12 +15,13 @@ header{height:60px;background:#1877f2;color:white;display:flex;align-items:cente
 textarea{width:100%;height:80px;padding:10px;border:1px solid #ddd;border-radius:8px;resize:none}
 button{border:0;border-radius:8px;padding:11px;margin-top:8px}
 .add{width:100%;background:#1877f2;color:white}
-.photo{background:#e8f0fe;color:#1877f2;width:100%}
-.status img{width:100%;max-height:450px;object-fit:cover;border-radius:9px;margin-top:8px}
-.name{font-weight:bold}
-.time{font-size:12px;color:#777;margin-top:4px}
-.remove{background:#ff3b30;color:white}
+.pick{width:100%;background:#e8f0fe;color:#1877f2}
 input[type=file]{display:none}
+.media{width:100%;max-height:450px;object-fit:cover;border-radius:9px;margin-top:8px}
+.name{font-weight:bold}
+.time{font-size:12px;color:#777}
+.remove{background:#ff3b30;color:white}
+#msg{text-align:center;color:#d00;margin:8px}
 </style>
 </head>
 
@@ -34,172 +35,379 @@ input[type=file]{display:none}
 <div class="box">
 
 <div class="card">
+
 <textarea id="text" placeholder="Andika Status yawe..."></textarea>
 
-<input id="photoInput" type="file" accept="image/*">
+<input id="file" type="file" accept="image/*,video/*">
 
-<button class="photo" onclick="photoInput.click()">
-📷 Shiramwo Photo
+<button class="pick" onclick="document.getElementById('file').click()">
+📷🎥 Shiramwo Photo canke Video
 </button>
 
 <div id="preview"></div>
 
-<button class="add" onclick="addStatus()">
+<button class="add" id="btn" onclick="addStatus()">
 ➕ Shira Status
 </button>
+
+<div id="msg"></div>
+
 </div>
 
 <div id="list"></div>
 
 </div>
 
-<script>
+<script type="module">
 
-if(localStorage.getItem("deppNetLoggedIn")!=="true")
+import{initializeApp}
+from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import{
+getAuth,
+onAuthStateChanged
+}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import{
+getFirestore,
+collection,
+addDoc,
+getDocs,
+query,
+where,
+deleteDoc,
+doc,
+serverTimestamp
+}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+const firebaseConfig={
+apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
+authDomain:"depp-net-apk.firebaseapp.com",
+databaseURL:"https://depp-net-apk-default-rtdb.firebaseio.com",
+projectId:"depp-net-apk",
+storageBucket:"depp-net-apk.firebasestorage.app",
+messagingSenderId:"664141462348",
+appId:"1:664141462348:web:8202143fef6fcdaf9cede9",
+measurementId:"G-DMBZT3C6MK"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+const CLOUD="sdtggm0f";
+const PRESET="yvgqax4x";
+
+let me=null;
+let selected=null;
+
+const $=id=>document.getElementById(id);
+
+
+try{
+me=JSON.parse(localStorage.getItem("deppNetUser")||"null");
+}catch(e){}
+
+if(!me){
 location.href="login.html";
-
-function getUser(){
-try{
-return JSON.parse(localStorage.getItem("deppNetUser")||"null");
-}catch(e){return null}
 }
 
-let me=getUser();
-let photo=null;
 
-/* PHOTO */
+/* FILE */
 
-photoInput.onchange=function(){
+$("file").onchange=function(){
 
-let f=this.files[0];
-if(!f)return;
+selected=this.files[0];
 
-if(f.size>5*1024*1024){
-alert("Photo ni nini cane. Hitamwo iri munsi ya 5MB.");
+if(!selected)return;
+
+if(selected.type.startsWith("image/") &&
+selected.size>5*1024*1024){
+$("msg").textContent="Photo ntibe irenze 5MB.";
 this.value="";
+selected=null;
 return;
 }
 
-let r=new FileReader();
+if(selected.type.startsWith("video/") &&
+selected.size>20*1024*1024){
+$("msg").textContent="Video ntibe irenze 20MB.";
+this.value="";
+selected=null;
+return;
+}
 
-r.onload=function(e){
-photo=e.target.result;
-preview.innerHTML=`<img src="${photo}" style="width:100%;border-radius:9px">`;
+let url=URL.createObjectURL(selected);
+
+$("preview").innerHTML=
+selected.type.startsWith("video/")
+?`<video class="media" src="${url}" controls></video>`
+:`<img class="media" src="${url}">`;
+
 };
 
-r.readAsDataURL(f);
-};
 
-/* STATUS */
+/* UPLOAD */
 
-function getStatuses(){
+async function upload(file){
+
+let data=new FormData();
+
+data.append("file",file);
+data.append("upload_preset",PRESET);
+
+let r=await fetch(
+`https://api.cloudinary.com/v1_1/${CLOUD}/auto/upload`,
+{
+method:"POST",
+body:data
+});
+
+let j=await r.json();
+
+if(!j.secure_url)
+throw new Error("Upload yanse");
+
+return j.secure_url;
+}
+
+
+/* ADD STATUS */
+
+window.addStatus=async function(){
+
+$("msg").textContent="";
+
+let text=$("text").value.trim();
+
+if(!text&&!selected){
+$("msg").textContent=
+"Andika Status canke ushireko Photo/Video.";
+return;
+}
+
+$("btn").disabled=true;
+$("btn").textContent="Turiko turashira Status...";
 
 try{
-let x=JSON.parse(localStorage.getItem("deppNetStatuses")||"[]");
-return Array.isArray(x)?x:[];
-}catch(e){
-return [];
-}
+
+let media="";
+let type="text";
+
+if(selected){
+
+media=await upload(selected);
+
+type=selected.type.startsWith("video/")
+?"video":"image";
 
 }
 
-function addStatus(){
-
-let t=text.value.trim();
-
-if(!t&&!photo){
-alert("Andika Status canke ushireko Photo.");
-return;
-}
-
-let a=getStatuses();
-
-a.unshift({
-id:Date.now(),
+await addDoc(
+collection(db,"statuses"),
+{
+uid:me.uid||me.id,
 name:me.name||"User",
 username:me.username||"user",
-text:t,
-photo:photo,
+text:text,
+media:media,
+type:type,
+createdAt:serverTimestamp(),
+createdMs:Date.now()
+}
+);
+
+
+/* SAVE LOCAL TOO */
+
+let old=[];
+
+try{
+old=JSON.parse(
+localStorage.getItem("deppNetStatuses")||"[]"
+);
+}catch(e){}
+
+old.unshift({
+id:Date.now(),
+uid:me.uid||me.id,
+name:me.name||"User",
+username:me.username||"user",
+text:text,
+media:media,
+type:type,
 created:Date.now()
 });
 
-localStorage.setItem("deppNetStatuses",JSON.stringify(a));
+localStorage.setItem(
+"deppNetStatuses",
+JSON.stringify(old)
+);
 
-text.value="";
-photo=null;
-photoInput.value="";
-preview.innerHTML="";
 
-showStatuses();
+$("text").value="";
+$("file").value="";
+$("preview").innerHTML="";
+selected=null;
+
+$("msg").style.color="green";
+$("msg").textContent="✅ Status yashizweko.";
+
+await showStatuses();
+
+}catch(e){
+
+console.log(e);
+
+$("msg").style.color="red";
+$("msg").textContent=
+"Status yanse gushirwako.";
+
 }
+
+$("btn").disabled=false;
+$("btn").textContent="➕ Shira Status";
+
+};
+
 
 /* SHOW */
 
-function showStatuses(){
+async function showStatuses(){
 
-let now=Date.now();
-let a=getStatuses();
+let cutoff=Date.now()-24*60*60*1000;
 
-/* Remove old statuses */
-a=a.filter(x=>now-x.created<24*60*60*1000);
+try{
 
-localStorage.setItem("deppNetStatuses",JSON.stringify(a));
+let q=query(
+collection(db,"statuses"),
+where("createdMs",">",cutoff)
+);
+
+let s=await getDocs(q);
+
+let a=s.docs.map(x=>({
+id:x.id,
+...x.data()
+}));
+
+a.sort((x,y)=>
+(y.createdMs||0)-(x.createdMs||0)
+);
 
 if(!a.length){
-list.innerHTML="<div class='card'>Nta Status irashirwako ubu.</div>";
+$("list").innerHTML=
+"<div class='card'>Nta Status nshasha ubu.</div>";
 return;
 }
 
-list.innerHTML=a.map(x=>{
+$("list").innerHTML=a.map(x=>{
 
-let hours=Math.floor((now-x.created)/3600000);
-let time=hours<1?"Ubu":hours+"h ago";
+let age=Date.now()-(x.createdMs||Date.now());
 
-return `
+let hours=Math.floor(age/3600000);
+
+let time=hours<1
+?"Ubu"
+:hours+"h ago";
+
+let media="";
+
+if(x.type==="image"&&x.media){
+media=`<img class="media" src="${x.media}">`;
+}
+
+if(x.type==="video"&&x.media){
+media=`<video class="media" src="${x.media}" controls></video>`;
+}
+
+let mine=String(x.uid)===String(me.uid||me.id);
+
+return`
+
 <div class="status">
 
 <div class="name">${esc(x.name)}</div>
-<div class="time">${esc(time)} · @${esc(x.username)}</div>
+
+<div class="time">
+${time} · @${esc(x.username)}
+</div>
 
 ${x.text?`<p>${esc(x.text)}</p>`:""}
 
-${x.photo?`<img src="${x.photo}">`:""}
+${media}
 
-${String(x.username).toLowerCase()===
-String(me.username).toLowerCase()
-?`<button class="remove" onclick="removeStatus(${x.id})">❌ Kuraho</button>`
-:""}
+${mine?
+`<button class="remove"
+onclick="removeStatus('${x.id}')">
+❌ Kuraho
+</button>`:""}
 
 </div>
+
 `;
 
 }).join("");
 
-}
+}catch(e){
 
-/* REMOVE */
+console.log(e);
 
-function removeStatus(id){
-
-let a=getStatuses().filter(x=>x.id!==id);
-
-localStorage.setItem("deppNetStatuses",JSON.stringify(a));
-
-showStatuses();
+$("list").innerHTML=
+"<div class='card'>Ntivyashoboye kwerekana Status.</div>";
 
 }
+
+}
+
+
+/* DELETE */
+
+window.removeStatus=async function(id){
+
+if(!confirm("Urashaka gukuraho iyi Status?"))return;
+
+try{
+
+await deleteDoc(
+doc(db,"statuses",id)
+);
+
+await showStatuses();
+
+}catch(e){
+
+alert("Ntivyakunze gukuraho Status.");
+
+}
+
+};
+
 
 /* SECURITY */
 
 function esc(x){
 
 let d=document.createElement("div");
+
 d.textContent=x||"";
+
 return d.innerHTML;
 
 }
 
+
+onAuthStateChanged(auth,user=>{
+
+if(!user){
+location.href="login.html";
+return;
+}
+
 showStatuses();
+
+});
 
 </script>
 
