@@ -3,157 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Depp Net - Login</title>
+<title>Depp Net</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:#f2f4f7;color:#222}
-header{background:#1877f2;color:white;text-align:center;padding:18px;font-size:25px;font-weight:bold}
-.box{width:92%;max-width:420px;margin:40px auto}
-.card{background:white;padding:24px;border-radius:15px;box-shadow:0 3px 12px #ccc}
-h2{text-align:center}
-input{width:100%;padding:14px;margin:7px 0;border:1px solid #ccc;border-radius:10px;font-size:16px}
-button{width:100%;padding:13px;margin-top:9px;border:0;border-radius:10px;background:#1877f2;color:white;font-size:16px;font-weight:bold}
-.google{background:white;color:#222;border:1px solid #ccc}
-.links{text-align:center;margin-top:15px}
-.links a{display:block;margin:10px;color:#1877f2;text-decoration:none}
-.msg{display:none;padding:10px;border-radius:8px;margin-top:10px;text-align:center}
-.err{background:#ffe5e5;color:#c00}
-.ok{background:#e5ffe9;color:#087a1d}
+body{margin:0;font-family:Arial;background:#f2f4f7}
+header{background:#1877f2;color:white;text-align:center;padding:22px;font-size:30px;font-weight:bold}
+.box{width:90%;max-width:420px;margin:70px auto}
+.card{background:white;padding:28px;border-radius:18px;box-shadow:0 3px 15px #ccc;text-align:center}
+button{width:100%;padding:15px;margin-top:14px;border:0;border-radius:11px;font-size:17px;font-weight:bold;background:#1877f2;color:white}
+.reg{background:#20a84b}
+p{color:#666}
 </style>
 </head>
-
 <body>
+
 <header>Depp Net</header>
 
 <div class="box">
 <div class="card">
-<h2>Injira muri Depp Net</h2>
+<h2>Murakaza neza kuri Depp Net</h2>
+<p>Injira canke wiyandikishe kugira ukoreshe Depp Net.</p>
 
-<input id="email" type="email" placeholder="Email">
-<input id="password" type="password" placeholder="Mot de passe">
-
-<button id="loginBtn" onclick="login()">Injira</button>
-<button class="google" onclick="googleLogin()">🔵 Injira na Google</button>
-
-<div id="error" class="msg err"></div>
-<div id="ok" class="msg ok"></div>
-
-<div class="links">
-<a href="register.html">📝 Iyandikishe / Sign up</a>
-<a href="forgot-password.html">🔑 Wibagiye mot de passe?</a>
-<a href="index.html">⬅️ Subira inyuma</a>
-</div>
+<button onclick="location.href='login.html'">🔐 Injira</button>
+<button class="reg" onclick="location.href='register.html'">📝 Iyandikishe</button>
 </div>
 </div>
 
-<script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-
-import{
-getAuth,
-setPersistence,
-browserLocalPersistence,
-signInWithEmailAndPassword,
-GoogleAuthProvider,
-signInWithRedirect,
-getRedirectResult
-}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-
-import{
-getFirestore,
-doc,
-getDoc,
-setDoc
-}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
-const app=initializeApp({
-apiKey:"AIzaSyAddn7bUZfDupIqFsvBbXRpxarFAsV2lYs",
-authDomain:"depp-net-apk.firebaseapp.com",
-projectId:"depp-net-apk",
-storageBucket:"depp-net-apk.firebasestorage.app",
-messagingSenderId:"664141462348",
-appId:"1:664141462348:web:8202143fef6fcdaf9cede9",
-measurementId:"G-DMBZT3C6MK"
-});
-
-const auth=getAuth(app);
-const db=getFirestore(app);
-
-function msg(id,text){
- const x=document.getElementById(id);
- x.textContent=text;
- x.style.display="block";
-}
-
-async function saveUser(u){
- const ref=doc(db,"users",u.uid);
- const snap=await getDoc(ref);
- const d=snap.exists()?snap.data():{};
-
- const user={
-  id:u.uid,
-  uid:u.uid,
-  name:d.name||u.displayName||u.email,
-  username:d.username||u.email.split("@")[0],
-  email:u.email,
-  phone:d.phone||"",
-  photo:d.photo||u.photoURL||""
- };
-
- await setDoc(ref,user,{merge:true});
- localStorage.setItem("deppNetUser",JSON.stringify(user));
- localStorage.setItem("deppNetLoggedIn","true");
- location.href="home.html";
-}
-
-window.login=async()=>{
- const email=document.getElementById("email").value.trim().toLowerCase();
- const pass=document.getElementById("password").value;
- const btn=document.getElementById("loginBtn");
-
- if(!email||!pass){
-  msg("error","Shiramwo email na mot de passe.");
-  return;
- }
-
- btn.disabled=true;
- btn.textContent="Turiko turinjiza...";
-
- try{
-  await setPersistence(auth,browserLocalPersistence);
-  const r=await signInWithEmailAndPassword(auth,email,pass);
-  await saveUser(r.user);
- }catch(e){
-  let t="Habaye ikibazo mu kwinjira.";
-  if(e.code==="auth/invalid-credential")t="Email canke mot de passe si vyo.";
-  if(e.code==="auth/invalid-email")t="Email siyo.";
-  if(e.code==="auth/too-many-requests")t="Rindira gatoyi hanyuma wongere ugerageze.";
-  if(e.code==="auth/network-request-failed")t="Internet ntiyabonetse.";
-  msg("error",t);
-  btn.disabled=false;
-  btn.textContent="Injira";
- }
-};
-
-window.googleLogin=async()=>{
- try{
-  msg("ok","Turiko turajana kuri Google...");
-  await setPersistence(auth,browserLocalPersistence);
-  const provider=new GoogleAuthProvider();
-  await signInWithRedirect(auth,provider);
- }catch(e){
-  msg("error","Google yanse: "+e.code);
- }
-};
-
-try{
- const r=await getRedirectResult(auth);
- if(r&&r.user){
-  await saveUser(r.user);
- }
-}catch(e){
- msg("error","Google yanse: "+e.code);
-}
-</script>
 </body>
 </html>
