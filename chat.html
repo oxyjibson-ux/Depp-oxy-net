@@ -19,12 +19,14 @@ button{border:0;border-radius:20px;padding:9px 13px}
 .msg{max-width:75%;padding:8px 10px;margin:6px 0;background:white;border-radius:16px}
 .mine{margin-left:auto;background:#1877f2;color:white}
 .msg img,.msg video{max-width:220px;border-radius:12px;display:block}
+.msg audio{max-width:230px}
 .send{min-height:57px;background:white;display:flex;align-items:center;gap:4px;padding:6px}
 #txt{flex:1;border:1px solid #ddd;border-radius:22px;padding:10px;outline:0}
-#pick{display:none;align-items:center;background:#f1f3f5;border-radius:15px;padding:3px}
+#pick{display:none;align-items:center;gap:4px;background:#f1f3f5;border-radius:15px;padding:3px}
 #pick img{width:42px;height:42px;object-fit:cover;border-radius:10px}
+#pick audio{width:120px}
 #pick span{max-width:90px;overflow:hidden;white-space:nowrap}
-#loading{display:none;color:#1877f2;font-size:12px}
+#time{display:none;color:#e53935;font-size:12px;font-weight:bold}
 </style>
 </head>
 
@@ -56,11 +58,11 @@ button{border:0;border-radius:20px;padding:9px 13px}
 <input id="video" type="file" accept="video/*" hidden onchange="chooseVideo()">
 
 <div id="pick"></div>
+<span id="time">00:00</span>
 
 <input id="txt" placeholder="Andika ubutumwa...">
 
-<span id="loading">...</span>
-<button onclick="send()">➤</button>
+<button id="sendBtn" onclick="send()">🎙️</button>
 
 </div>
 </div>
@@ -89,10 +91,12 @@ const CLOUD="sdtggm0f",PRESET="yvgqax4x";
 
 let me=null,other=null,chatId=null,stopMessages=null;
 let pending=null,type=null;
+let recorder=null,chunks=[],recordStart=0,timer=null;
 
 onAuthStateChanged(auth,u=>{
 if(!u)return location.href="login.html";
-me=u;loadUsers();
+me=u;
+loadUsers();
 });
 
 function loadUsers(){
@@ -162,6 +166,12 @@ v.src=x.media;
 v.controls=true;
 div.appendChild(v);
 }
+else if(x.mediaType==="audio"){
+const a=document.createElement("audio");
+a.src=x.media;
+a.controls=true;
+div.appendChild(a);
+}
 else{
 div.textContent=x.text||"";
 }
@@ -192,6 +202,7 @@ pick.innerHTML=
 <button onclick="cancelPick()">✕</button>`;
 
 pick.style.display="flex";
+updateIcon();
 };
 
 function compressPhoto(file){
@@ -219,7 +230,6 @@ c.getContext("2d").drawImage(img,0,0,w,h);
 c.toBlob(b=>resolve(
 new File([b],"photo.jpg",{type:"image/jpeg"})
 ),"image/jpeg",.65);
-
 };
 
 img.src=URL.createObjectURL(file);
@@ -232,7 +242,7 @@ const f=video.files[0];
 if(!f)return;
 
 if(f.size>10*1024*1024){
-alert("Video ntirenge 10MB kugira yihute.");
+alert("Video ntirenge 10MB.");
 video.value="";
 return;
 }
@@ -245,6 +255,7 @@ pick.innerHTML=
 <button onclick="cancelPick()">✕</button>`;
 
 pick.style.display="flex";
+updateIcon();
 };
 
 window.cancelPick=()=>{
@@ -254,17 +265,42 @@ photo.value="";
 video.value="";
 pick.innerHTML="";
 pick.style.display="none";
+updateIcon();
 };
 
+txt.addEventListener("input",updateIcon);
+
+function updateIcon(){
+
+if(recorder){
+sendBtn.textContent="⏹️";
+return;
+}
+
+if(txt.value.trim()||pending)
+sendBtn.textContent="➤";
+else
+sendBtn.textContent="🎙️";
+}
+
 window.send=async()=>{
+
+if(recorder){
+stopRecord();
+return;
+}
 
 if(pending){
 await sendMedia();
 return;
 }
 
+if(!txt.value.trim()){
+startRecord();
+return;
+}
+
 const text=txt.value.trim();
-if(!text||!other)return;
 
 await addDoc(
 collection(db,"chats",chatId,"messages"),
@@ -277,13 +313,96 @@ createdAt:serverTimestamp()
 );
 
 txt.value="";
+updateIcon();
 };
+
+async function startRecord(){
+
+if(!navigator.mediaDevices||!window.MediaRecorder){
+alert("Iyi telefone/browser ntishigikira amajwi.");
+return;
+}
+
+try{
+
+const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+
+chunks=[];
+recorder=new MediaRecorder(stream);
+
+recorder.ondataavailable=e=>{
+if(e.data.size)chunks.push(e.data);
+};
+
+recorder.onstop=()=>{
+
+stream.getTracks().forEach(t=>t.stop());
+
+const blob=new Blob(chunks,{
+type:recorder.mimeType||"audio/webm"
+});
+
+pending=new File([blob],"voice.webm",{
+type:blob.type
+});
+
+type="audio";
+
+pick.innerHTML=
+`<audio controls src="${URL.createObjectURL(pending)}"></audio>
+<button onclick="cancelPick()">✕</button>`;
+
+pick.style.display="flex";
+
+clearInterval(timer);
+time.style.display="none";
+
+recorder=null;
+updateIcon();
+};
+
+recorder.start();
+
+recordStart=Date.now();
+time.style.display="inline";
+updateTime();
+
+timer=setInterval(updateTime,1000);
+
+updateIcon();
+
+}catch(e){
+alert("Microphone ntiyemerewe.");
+}
+}
+
+function updateTime(){
+
+if(!recordStart)return;
+
+let s=Math.floor((Date.now()-recordStart)/1000);
+let m=Math.floor(s/60);
+s=s%60;
+
+time.textContent=
+String(m).padStart(2,"0")+":"+
+String(s).padStart(2,"0");
+}
+
+function stopRecord(){
+
+if(!recorder)return;
+
+recorder.stop();
+recordStart=0;
+clearInterval(timer);
+}
 
 async function sendMedia(){
 
 if(!pending)return;
 
-loading.style.display="inline";
+sendBtn.textContent="⏳";
 
 try{
 
@@ -291,10 +410,12 @@ const fd=new FormData();
 fd.append("file",pending);
 fd.append("upload_preset",PRESET);
 
+let folder=
+type==="image"?"image":
+type==="video"?"video":"video";
+
 const endpoint=
-`https://api.cloudinary.com/v1_1/${CLOUD}/`+
-(type==="image"?"image":"video")+
-"/upload";
+`https://api.cloudinary.com/v1_1/${CLOUD}/${folder}/upload`;
 
 const r=await fetch(endpoint,{
 method:"POST",
@@ -305,6 +426,7 @@ const x=await r.json();
 
 if(!r.ok){
 alert(x.error?.message||"Media yanse kurungikwa.");
+updateIcon();
 return;
 }
 
@@ -323,12 +445,13 @@ cancelPick();
 
 }catch(e){
 alert("Vyaranse: "+e.message);
+updateIcon();
 }
-
-loading.style.display="none";
 }
 
 window.goBack=()=>{
+
+if(recorder)stopRecord();
 
 if(chat.style.display==="block"){
 
