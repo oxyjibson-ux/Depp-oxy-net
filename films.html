@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="rn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Depp Net - Films</title>
+
+<style>
+*{box-sizing:border-box;font-family:Arial}
+body{margin:0;background:#f2f4f7}
+header{
+background:#1877f2;color:white;padding:16px;
+display:flex;align-items:center;gap:12px;
+font-size:22px;font-weight:bold
+}
+header button{
+background:white;color:#1877f2;border:0;
+border-radius:8px;padding:8px 12px;font-size:18px
+}
+.box{width:94%;max-width:650px;margin:18px auto}
+input{
+width:100%;padding:14px;border:1px solid #ccc;
+border-radius:12px;font-size:16px;margin-bottom:15px
+}
+.card{
+background:white;border-radius:16px;padding:15px;
+margin-bottom:18px;box-shadow:0 2px 8px #ccc
+}
+h2{margin:5px 0 10px}
+p{color:#555}
+video{width:100%;border-radius:12px}
+button{
+border:0;border-radius:10px;padding:11px 15px;
+background:#1877f2;color:white;font-size:15px;
+font-weight:bold;margin-top:10px
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<button onclick="location.href='home.html'">⬅️</button>
+🎬 Depp Net Films
+</header>
+
+<div class="box">
+
+<input id="search" placeholder="🔎 Rondera Film..." oninput="showFilms()">
+
+<div id="list">Turiko turarondera Films...</div>
+
+</div>
+
+<script type="module">
+
+import{initializeApp}
+from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import{
+getFirestore,collection,getDocs,query,orderBy
+}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+const app=initializeApp({
+apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
+authDomain:"depp-net-apk.firebaseapp.com",
+projectId:"depp-net-apk",
+storageBucket:"depp-net-apk.firebasestorage.app",
+messagingSenderId:"664141462348",
+appId:"1:664141462348:web:8202143fef6fcdaf9cede9"
+});
+
+const db=getFirestore(app);
+let films=[];
+
+async function loadFilms(){
+
+try{
+
+const q=query(
+collection(db,"films"),
+orderBy("createdAt","desc")
+);
+
+const s=await getDocs(q);
+
+films=[];
+s.forEach(d=>films.push({id:d.id,...d.data()}));
+
+showFilms();
+
+}catch(e){
+
+console.log(e);
+
+document.getElementById("list").innerHTML=
+"<div class='card'>❌ Films ntizashoboye kuboneka.</div>";
+
+}
+
+}
+
+window.showFilms=()=>{
+
+const list=document.getElementById("list");
+const word=document.getElementById("search").value.toLowerCase();
+
+const arr=films.filter(x=>
+(x.title||"").toLowerCase().includes(word)
+);
+
+list.innerHTML="";
+
+if(!arr.length){
+list.innerHTML="<div class='card'>🎬 Nta Film ibonetse.</div>";
+return;
+}
+
+arr.forEach(x=>{
+
+const c=document.createElement("div");
+c.className="card";
+
+c.innerHTML=`
+<h2>${x.title||"Film"}</h2>
+<p>${x.description||""}</p>
+
+<video src="${x.video}" controls preload="metadata"></video>
+
+<br>
+
+<a href="${x.video}" download>
+<button>⬇️ Download Film</button>
+</a>
+`;
+
+list.appendChild(c);
+
+});
+
+};
+
+loadFilms();
+
+</script>
+
+</body>
+</html>
