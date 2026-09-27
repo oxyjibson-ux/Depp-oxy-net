@@ -4,18 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Depp Net - Films</title>
+
+<script src="https://upload-widget.cloudinary.com/global/all.js"></script>
+
 <style>
 *{box-sizing:border-box;font-family:Arial}
 body{margin:0;background:#f2f4f7}
-header{background:#1877f2;color:white;padding:15px;font-size:21px;font-weight:bold}
+header{background:#1877f2;color:white;padding:16px;font-size:21px;font-weight:bold}
 .box{max-width:650px;margin:auto;padding:15px}
 .card{background:white;padding:15px;margin:12px 0;border-radius:14px}
 input,textarea,button{width:100%;padding:12px;margin:6px 0}
 input,textarea{border:1px solid #ddd;border-radius:8px}
 button{border:0;border-radius:8px;background:#1877f2;color:white;font-weight:bold}
-.del{background:#e53935}
+.red{background:#e53935}
 video{width:100%;border-radius:10px;margin-top:8px}
 #admin{display:none}
+#progress{display:none;background:#eee;border-radius:10px;height:25px;margin-top:10px;overflow:hidden}
+#bar{height:100%;width:0%;background:#1877f2;color:white;text-align:center;line-height:25px}
+#status{font-weight:bold}
 </style>
 </head>
 
@@ -25,34 +31,60 @@ video{width:100%;border-radius:10px;margin-top:8px}
 
 <div class="box">
 
+<!-- ADMIN -->
 <div id="admin" class="card">
+
 <h2>👑 Admin - Shiramwo Film</h2>
 
 <input id="title" placeholder="Izina rya Film">
+
 <textarea id="desc" placeholder="Insiguro ya Film"></textarea>
 
-<input id="file" type="file" accept="video/*">
+<button onclick="chooseFilm()">
+🎥 Hitamwo Film
+</button>
 
-<button onclick="uploadFilm()">⬆️ Shiramwo Film</button>
-
-<p id="msg"></p>
+<div id="progress">
+<div id="bar">0%</div>
 </div>
 
+<p id="status"></p>
+
+</div>
+
+<!-- SEARCH -->
 <div class="card">
-<input id="search" placeholder="🔎 Rondera Film..." oninput="showFilms()">
+<input id="search"
+placeholder="🔎 Rondera Film..."
+oninput="showFilms()">
 </div>
 
-<div id="list">⏳ Turiko turarondera Films...</div>
+<div id="list">
+⏳ Turiko turarondera Films...
+</div>
 
 </div>
 
 <script type="module">
 
-import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import{initializeApp}
+from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import{getAuth,onAuthStateChanged}
+from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
 import{
-getFirestore,collection,getDocs,addDoc,deleteDoc,doc,serverTimestamp
+getFirestore,
+collection,
+getDocs,
+addDoc,
+deleteDoc,
+doc,
+serverTimestamp
 }from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+/* FIREBASE */
 
 const firebaseConfig={
 apiKey:"AIzaSyAddn7bUZfDupIqfSvBbXRpxarFAsV2lYs",
@@ -67,45 +99,222 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
+
+/* ADMIN UID */
+
 const ADMIN="J6cFfnF5XOR67T1vwtLNyaKGw1L2";
-const MAX=3*1024*1024*1024;
 
 let films=[];
 
+
+/* LOGIN */
+
 onAuthStateChanged(auth,user=>{
- if(user&&user.uid===ADMIN){
+
+ if(user && user.uid===ADMIN){
+
   document.getElementById("admin").style.display="block";
+
  }
+
  loadFilms();
+
 });
 
 
-async function loadFilms(){
+/* CLOUDINARY */
+
+const widget=cloudinary.createUploadWidget({
+
+ cloudName:"sdtggm0f",
+
+ uploadPreset:"yvgqax4x",
+
+ resourceType:"video",
+
+ clientAllowedFormats:["video"],
+
+ maxFileSize:3*1024*1024*1024,
+
+ maxChunkSize:20000000,
+
+ multiple:false,
+
+ showAdvancedOptions:false,
+
+ sources:["local"],
+
+ language:"en"
+
+},(error,result)=>{
+
+ if(error){
+
+  document.getElementById("status").textContent=
+  "❌ "+(error.message||"Upload yanse.");
+
+  return;
+ }
+
+
+ /* UPLOAD IRIKO IRAJA */
+
+ if(result.event==="upload-added"){
+
+  document.getElementById("progress").style.display="block";
+
+  document.getElementById("bar").style.width="0%";
+
+  document.getElementById("bar").textContent="0%";
+
+  document.getElementById("status").textContent=
+  "⏳ Turatanguye gushiramwo...";
+
+ }
+
+
+ /* PROGRESS */
+
+ if(result.event==="queues-start"){
+
+  document.getElementById("status").textContent=
+  "⏳ Upload iriko iraba...";
+
+ }
+
+
+ if(result.event==="success"){
+
+  saveFilm(result.info);
+
+ }
+
+});
+
+
+/* OPEN UPLOAD */
+
+window.chooseFilm=()=>{
+
+ const title=document.getElementById("title").value.trim();
+
+ if(!title){
+
+  document.getElementById("status").textContent=
+  "⚠️ Banza wandike izina rya Film.";
+
+  return;
+ }
+
+ widget.open();
+
+};
+
+
+/* SAVE FIREBASE */
+
+async function saveFilm(info){
 
  try{
 
-  const s=await getDocs(collection(db,"films"));
+  const title=document.getElementById("title").value.trim();
 
-  films=[];
+  const desc=document.getElementById("desc").value.trim();
 
-  s.forEach(d=>{
-   films.push({id:d.id,...d.data()});
+  document.getElementById("progress").style.display="block";
+
+  document.getElementById("bar").style.width="100%";
+
+  document.getElementById("bar").textContent="100%";
+
+  document.getElementById("status").textContent=
+  "⏳ Video yashizwe kuri Cloudinary. Turiko turayibika...";
+
+
+  await addDoc(collection(db,"films"),{
+
+   title:title,
+
+   description:desc,
+
+   video:info.secure_url,
+
+   publicId:info.public_id||"",
+
+   size:info.bytes||0,
+
+   format:info.format||"",
+
+   admin:ADMIN,
+
+   createdAt:serverTimestamp()
+
   });
 
-  showFilms();
+
+  document.getElementById("title").value="";
+  document.getElementById("desc").value="";
+
+  document.getElementById("status").textContent=
+  "✅ Film yashizweho neza!";
+
+  setTimeout(()=>{
+
+   document.getElementById("progress").style.display="none";
+
+  },3000);
+
+  loadFilms();
 
  }catch(e){
 
-  document.getElementById("list").innerHTML="❌ "+e.message;
+  document.getElementById("status").textContent=
+  "❌ Firebase: "+e.message;
 
  }
 
 }
 
 
+/* LOAD FILMS */
+
+async function loadFilms(){
+
+ try{
+
+  const snap=await getDocs(
+   collection(db,"films")
+  );
+
+  films=[];
+
+  snap.forEach(d=>{
+
+   films.push({
+    id:d.id,
+    ...d.data()
+   });
+
+  });
+
+  showFilms();
+
+ }catch(e){
+
+  document.getElementById("list").innerHTML=
+  "❌ "+e.message;
+
+ }
+
+}
+
+
+/* SEARCH + DISPLAY */
+
 window.showFilms=()=>{
 
- const q=document.getElementById("search").value.toLowerCase();
+ const q=document.getElementById("search")
+ .value.toLowerCase();
 
  const box=document.getElementById("list");
 
@@ -115,7 +324,9 @@ window.showFilms=()=>{
 
  if(!arr.length){
 
-  box.innerHTML="<p>🎬 Nta Film irajako.</p>";
+  box.innerHTML=
+  "<div class='card'>🎬 Nta Film irajako.</div>";
+
   return;
 
  }
@@ -128,28 +339,74 @@ window.showFilms=()=>{
 
   div.className="card";
 
+  let size="";
+
+  if(x.size){
+
+   size=(x.size/1024/1024/1024).toFixed(2)+" GB";
+
+   if(x.size<1024*1024*1024){
+
+    size=(x.size/1024/1024).toFixed(1)+" MB";
+
+   }
+
+  }
+
+
   div.innerHTML=`
-  <h2>${x.title||"Film"}</h2>
-  <p>${x.description||""}</p>
-  <video src="${x.video}" controls preload="metadata"></video>
-  <a href="${x.video}" target="_blank">
-  <button>⬇️ Fungura / Download</button>
-  </a>
+
+   <h2>🎬 ${x.title||"Film"}</h2>
+
+   <p>${x.description||""}</p>
+
+   ${size?`<small>📦 ${size}</small>`:""}
+
+   <video
+    src="${x.video}"
+    controls
+    preload="metadata">
+   </video>
+
+   <a
+    href="${x.video}"
+    target="_blank"
+    style="text-decoration:none">
+    <button>⬇️ Download / Fungura</button>
+   </a>
+
   `;
 
-  if(auth.currentUser&&auth.currentUser.uid===ADMIN){
+
+  /* ADMIN DELETE */
+
+  if(
+   auth.currentUser &&
+   auth.currentUser.uid===ADMIN
+  ){
 
    const b=document.createElement("button");
 
-   b.className="del";
+   b.className="red";
+
    b.textContent="🗑️ Siba Film";
 
    b.onclick=async()=>{
 
-    if(confirm("Urashaka gusiba iyi Film?")){
+    if(!confirm("Urashaka gusiba iyi Film?"))
+     return;
 
-     await deleteDoc(doc(db,"films",x.id));
+    try{
+
+     await deleteDoc(
+      doc(db,"films",x.id)
+     );
+
      loadFilms();
+
+    }catch(e){
+
+     alert(e.message);
 
     }
 
@@ -159,127 +416,14 @@ window.showFilms=()=>{
 
   }
 
+
   box.appendChild(div);
 
  });
 
 };
 
-
-window.uploadFilm=async()=>{
-
- const title=document.getElementById("title").value.trim();
- const desc=document.getElementById("desc").value.trim();
- const file=document.getElementById("file").files[0];
- const msg=document.getElementById("msg");
-
- if(!title||!file){
-
-  msg.textContent="⚠️ Shiramwo izina na video.";
-  return;
-
- }
-
- if(file.size>MAX){
-
-  msg.textContent="❌ Film irarenze 3GB.";
-  return;
-
- }
-
- msg.textContent=
- "⏳ Turiko turashiramwo... Ntufunge page.";
-
- try{
-
-  const uploadId=crypto.randomUUID();
-
-  const chunk=20*1024*1024;
-
-  let start=0;
-  let result=null;
-
-  while(start<file.size){
-
-   const end=Math.min(start+chunk,file.size)-1;
-
-   const part=file.slice(start,end+1);
-
-   const fd=new FormData();
-
-   fd.append("file",part);
-   fd.append("upload_preset","yvgqax4x");
-
-   const r=await fetch(
-    "https://api.cloudinary.com/v1_1/sdtggm0f/video/upload",
-    {
-     method:"POST",
-     headers:{
-      "X-Unique-Upload-Id":uploadId,
-      "Content-Range":
-      "bytes "+start+"-"+end+"/"+file.size
-     },
-     body:fd
-    }
-   );
-
-   result=await r.json();
-
-   if(!r.ok||result.error){
-
-    throw new Error(
-     result.error?.message||
-     "Cloudinary yanse upload."
-    );
-
-   }
-
-   start=end+1;
-
-   const percent=Math.round(
-    start/file.size*100
-   );
-
-   msg.textContent=
-    "⏳ Upload: "+percent+"%";
-
-  }
-
-  if(!result.secure_url){
-
-   throw new Error(
-    "Video ntiyagaragaye muri Cloudinary."
-   );
-
-  }
-
-  await addDoc(collection(db,"films"),{
-
-   title:title,
-   description:desc,
-   video:result.secure_url,
-   admin:ADMIN,
-   createdAt:serverTimestamp()
-
-  });
-
-  document.getElementById("title").value="";
-  document.getElementById("desc").value="";
-  document.getElementById("file").value="";
-
-  msg.textContent="✅ Film yashizweho neza!";
-
-  loadFilms();
-
- }catch(e){
-
-  msg.textContent="❌ "+e.message;
-
- }
-
-};
-
 </script>
 
 </body>
-</html>
+ </html>
