@@ -18,11 +18,12 @@ button{border:0;border-radius:20px;padding:9px 13px}
 #msgs{height:calc(100% - 115px);overflow:auto;padding:10px}
 .msg{max-width:75%;padding:10px 13px;margin:6px 0;background:white;border-radius:16px}
 .mine{margin-left:auto;background:#1877f2;color:white}
-.msg img{max-width:220px;border-radius:12px;display:block}
-.send{height:57px;background:white;display:flex;gap:5px;padding:8px}
+.msg img,.msg video{max-width:220px;border-radius:12px;display:block}
+.send{height:auto;min-height:57px;background:white;display:flex;align-items:center;gap:5px;padding:7px}
 #txt{flex:1;border:1px solid #ddd;border-radius:22px;padding:10px;outline:0}
-#preview{display:none;position:absolute;bottom:60px;left:10px;background:white;padding:8px;border-radius:12px;box-shadow:0 2px 10px #999}
-#preview img{width:100px;height:100px;object-fit:cover;border-radius:10px}
+#pick{display:none;align-items:center;background:#f1f3f5;border-radius:18px;padding:3px}
+#pick img,#pick video{width:45px;height:45px;object-fit:cover;border-radius:12px}
+#pick button{padding:4px;background:#ddd}
 </style>
 </head>
 
@@ -45,16 +46,20 @@ button{border:0;border-radius:20px;padding:9px 13px}
 
 <div id="msgs"></div>
 
-<div id="preview">
-<img id="previewImg">
-<button onclick="cancelPhoto()">✕</button>
-</div>
-
 <div class="send">
-<input id="txt" placeholder="Andika ubutumwa...">
+
 <button onclick="photo.click()">📷</button>
 <input id="photo" type="file" accept="image/*" hidden onchange="choosePhoto()">
+
+<button onclick="video.click()">🎥</button>
+<input id="video" type="file" accept="video/*" hidden onchange="chooseVideo()">
+
+<div id="pick"></div>
+
+<input id="txt" placeholder="Andika ubutumwa...">
+
 <button onclick="send()">➤</button>
+
 </div>
 </div>
 
@@ -79,7 +84,9 @@ const auth=getAuth(app),db=getFirestore(app);
 await setPersistence(auth,browserLocalPersistence);
 
 const CLOUD="sdtggm0f",PRESET="yvgqax4x";
-let me=null,other=null,chatId=null,stopMessages=null,pendingPhoto=null;
+
+let me=null,other=null,chatId=null,stopMessages=null;
+let pending=null,type=null;
 
 onAuthStateChanged(auth,u=>{
 if(!u)return location.href="login.html";
@@ -89,47 +96,73 @@ me=u;loadUsers();
 function loadUsers(){
 onSnapshot(collection(db,"users"),snap=>{
 users.innerHTML="";
+
 snap.forEach(d=>{
 if(d.id===me.uid)return;
-const u={uid:d.id,...d.data()},div=document.createElement("div");
+
+const u={uid:d.id,...d.data()};
+const div=document.createElement("div");
+
 div.className="user";
 div.innerHTML=`<div class="av">${(u.name||"U")[0].toUpperCase()}</div>
 <div class="info"><b>${u.name||"User"}</b><br><small>@${u.username||""}</small></div>`;
+
 div.onclick=()=>openChat(u);
 users.appendChild(div);
 });
-if(!users.innerHTML)users.innerHTML="<p>Nta bandi bakoresha Depp Net ubu.</p>";
+
+if(!users.innerHTML)
+users.innerHTML="<p>Nta bandi bakoresha Depp Net ubu.</p>";
 });
 }
 
 function openChat(u){
 other=u;
 chatId=[me.uid,other.uid].sort().join("_");
+
 users.style.display="none";
 chat.style.display="block";
+
 chatName.textContent=other.name||"User";
 avatar.textContent=(other.name||"U")[0].toUpperCase();
+
 loadMessages();
 }
 
 function loadMessages(){
+
 if(stopMessages)stopMessages();
-const q=query(collection(db,"chats",chatId,"messages"),orderBy("createdAt"));
+
+const q=query(
+collection(db,"chats",chatId,"messages"),
+orderBy("createdAt")
+);
 
 stopMessages=onSnapshot(q,snap=>{
 msgs.innerHTML="";
+
 snap.forEach(d=>{
-const x=d.data(),div=document.createElement("div");
+const x=d.data();
+const div=document.createElement("div");
+
 div.className="msg "+(x.uid===me.uid?"mine":"");
 
 if(x.mediaType==="image"){
 const im=document.createElement("img");
 im.src=x.media;
 div.appendChild(im);
-}else div.textContent=x.text||"";
+}
+else if(x.mediaType==="video"){
+const v=document.createElement("video");
+v.src=x.media;
+v.controls=true;
+div.appendChild(v);
+}
+else div.textContent=x.text||"";
 
 msgs.appendChild(div);
 });
+
 msgs.scrollTop=msgs.scrollHeight;
 });
 }
@@ -144,77 +177,119 @@ photo.value="";
 return;
 }
 
-pendingPhoto=f;
-previewImg.src=URL.createObjectURL(f);
-preview.style.display="block";
+pending=f;
+type="image";
+
+pick.innerHTML=`
+<img src="${URL.createObjectURL(f)}">
+<button onclick="cancelPick()">✕</button>
+`;
+
+pick.style.display="flex";
 };
 
-window.cancelPhoto=()=>{
-pendingPhoto=null;
+window.chooseVideo=()=>{
+const f=video.files[0];
+if(!f)return;
+
+if(f.size>20*1024*1024){
+alert("Video ntirenge 20MB.");
+video.value="";
+return;
+}
+
+pending=f;
+type="video";
+
+pick.innerHTML=`
+<span>🎥 ${f.name}</span>
+<button onclick="cancelPick()">✕</button>
+`;
+
+pick.style.display="flex";
+};
+
+window.cancelPick=()=>{
+pending=null;
+type=null;
 photo.value="";
-preview.style.display="none";
-previewImg.src="";
+video.value="";
+pick.innerHTML="";
+pick.style.display="none";
 };
 
 window.send=async()=>{
-if(pendingPhoto){
-await sendPhoto();
+
+if(pending){
+await sendMedia();
 return;
 }
 
 const text=txt.value.trim();
 if(!text||!other)return;
 
-await addDoc(collection(db,"chats",chatId,"messages"),{
-uid:me.uid,toUid:other.uid,text,createdAt:serverTimestamp()
-});
+await addDoc(
+collection(db,"chats",chatId,"messages"),
+{
+uid:me.uid,
+toUid:other.uid,
+text:text,
+createdAt:serverTimestamp()
+}
+);
 
 txt.value="";
 };
 
-async function sendPhoto(){
-
-const f=pendingPhoto;
-if(!f||!other)return;
+async function sendMedia(){
 
 try{
+
 const fd=new FormData();
-fd.append("file",f);
+fd.append("file",pending);
 fd.append("upload_preset",PRESET);
 
 const r=await fetch(
-`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`,
+`https://api.cloudinary.com/v1_1/${CLOUD}/${type==="image"?"image":"video"}/upload`,
 {method:"POST",body:fd}
 );
 
 const x=await r.json();
 
 if(!r.ok){
-alert(x.error?.message||"Photo yanse kurungikwa.");
+alert(x.error?.message||"Media yanse kurungikwa.");
 return;
 }
 
-await addDoc(collection(db,"chats",chatId,"messages"),{
+await addDoc(
+collection(db,"chats",chatId,"messages"),
+{
 uid:me.uid,
 toUid:other.uid,
 media:x.secure_url,
-mediaType:"image",
+mediaType:type,
 createdAt:serverTimestamp()
-});
+}
+);
 
-cancelPhoto();
+cancelPick();
 
 }catch(e){
-alert("Photo yanse kurungikwa: "+e.message);
+alert("Vyaranse: "+e.message);
 }
 }
 
 window.goBack=()=>{
+
 if(chat.style.display==="block"){
+
 if(stopMessages)stopMessages();
+
 chat.style.display="none";
 users.style.display="block";
+
 }else location.href="home.html";
+
 };
 
 </script>
